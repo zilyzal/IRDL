@@ -8,7 +8,7 @@
   "surface": { "width": 1920, "height": 1080 },
   "refreshRate": 60,
   "textFonts": ["chinese", "japanese", "bengali", "devanagari", "arabic"],
-  "resources": ["data/releases", "data/pages", "data/homebrew.json", "i18n/locales"],
+  "resources": ["data/homebrew.json", "i18n/locales"],
   "payloads": [
     {
       "source": "native/companion_daemon.c",
