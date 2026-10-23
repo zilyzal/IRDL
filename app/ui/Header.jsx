@@ -9,7 +9,7 @@ import '../assets/Exo2.ttf';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { useRef, useState } from 'react';
 import { focusEnd, useLocale, useT } from '../i18n/index.js';
-import { NO_FILTERS, activeCount, genreLabel, genres, getGame } from '../state/catalog.js';
+import { activeCount, getGame } from '../state/catalog.js';
 import { useIsImmersive, useNavActions, useNavState } from '../state/nav.jsx';
 import { useWishlist } from '../state/store.jsx';
 import { openUpdateDialog, useInstall, useUpdate } from '../state/update.js';
@@ -19,7 +19,6 @@ import { DownloadsBadge } from './DownloadsBadge.jsx';
 import { FocusRing } from './FocusRing.jsx';
 import { Logo } from './Logo.jsx';
 import { QuickPreview } from './QuickPreview.jsx';
-import { Menu, MenuDivider, MenuItem } from './Menu.jsx';
 import { NavItem } from './NavItem.jsx';
 import { NavPill, useNavLayouts } from './NavPill.jsx';
 import { useSections } from './useSections.js';
@@ -83,7 +82,6 @@ import { hb } from '../homebrew/palette.js';
     const favorites = wishlist.filter((id) => getGame(id)).length;
     const nav = useNavActions();
     const { top } = useNavState();
-    const [browsing, setBrowsing] = (0, useState)(false);
     const immersive = useIsImmersive();
     const [layouts, track] = useNavLayouts();
     const { update } = useUpdate();
@@ -96,7 +94,6 @@ import { hb } from '../homebrew/palette.js';
         return true;
       }
       if (action !== "l1" && action !== "r1") return false;
-      setBrowsing(false);
       step(action === "r1");
       return true;
     };
@@ -107,7 +104,6 @@ import { hb } from '../homebrew/palette.js';
     };
     // The phone's shortcuts: each goes to its section.
     useRemoteShortcuts((action) => {
-      setBrowsing(false);
       if (action === "settings") on.settings();
       else if (action === "home") on.discover();
       else if (action === "downloads") on.downloads();
@@ -144,32 +140,7 @@ import { hb } from '../homebrew/palette.js';
         item("search", { icon: "search", label: t2("nav.search"), onPress: on.search }),
         /* @__PURE__ */ (0, jsx)(ButtonGlyph, { button: "l1" }),
         item("discover", { label: t2("nav.discover"), onPress: on.discover }),
-        /* @__PURE__ */ (0, jsxs)(View, { style: { position: "relative" }, children: [
-          item("catalog", { label: t2("nav.browse"), trailing: browsing ? "chevronUp" : "chevronDown", onPress: () => setBrowsing((open) => !open) }),
-          /* @__PURE__ */ (0, jsxs)(Menu, { open: browsing, onClose: () => setBrowsing(false), rows: genres.length + 2, children: [
-            /* @__PURE__ */ (0, jsx)(
-              MenuItem,
-              {
-                label: t2("nav.allGames"),
-                checked: section === "catalog" && !filters.genre.length,
-                autoFocus: !onlyGenre,
-                onSelect: () => on.show(NO_FILTERS, "relevance")
-              }
-            ),
-            /* @__PURE__ */ (0, jsx)(MenuDivider, {}),
-            genres.map(
-              (genre) => /* @__PURE__ */ (0, jsx)(
-                MenuItem,
-                {
-                  label: genreLabel(genre),
-                  checked: onlyGenre === genre,
-                  onSelect: () => on.show({ ...NO_FILTERS, genre: [genre] }, "relevance")
-                },
-                genre
-              )
-            )
-          ] })
-        ] }),
+        // IRDL: the Browse-by-category dropdown that sat here is gone.
         item("top", { label: t2("nav.top"), onPress: on.top }),
         item("new", { label: t2("nav.new"), onPress: on.new }),
         divider,

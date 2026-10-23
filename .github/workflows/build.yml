@@ -81,7 +81,16 @@ jobs:
 
       - name: Build
         working-directory: ps5-react
-        run: python3 tools/build_ps5.py --app-dir "$GITHUB_WORKSPACE/app" --llvm /usr/bin
+        run: |
+          set -o pipefail
+          python3 tools/build_ps5.py --app-dir "$GITHUB_WORKSPACE/app" --llvm /usr/bin 2>&1 | tee "$RUNNER_TEMP/build.log" || {
+            code=$?
+            # Annotations stay readable through the API when the raw log is not.
+            tail -n 25 "$RUNNER_TEMP/build.log" | sed 's/%/%25/g' | while IFS= read -r line; do
+              echo "::error::${line:0:900}"
+            done
+            exit $code
+          }
 
       - name: Package
         run: |

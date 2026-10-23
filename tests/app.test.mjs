@@ -1975,12 +1975,13 @@ test('install: the set-aside version does not hold back the next release', async
   assert.equal(world.requests.length, 2, 'the newer release downloaded by itself');
 });
 
-test('boot confirmation: the installer starts once, from Boot, before the startup notice; App remounts do not redo it', () => {
+test('boot confirmation: the installer starts once, from Boot, before the store mounts; App remounts do not redo it', () => {
   const index = readFileSync(path.join(repo, 'app/index.jsx'), 'utf8');
   const update = readFileSync(path.join(repo, 'app/state/update.js'), 'utf8');
   const boot = index.slice(index.indexOf('function Boot()'));
   assert.match(boot, /useEffect\)\(\(\) => startInstaller\(\), \[\]\)/, 'Boot starts the installer on its first render');
-  assert.ok(boot.indexOf('startInstaller()') < boot.indexOf('Disclaimer'), 'before the startup notice is involved');
+  assert.ok(boot.indexOf('startInstaller()') < boot.indexOf('setBooted(true)'), 'before the store is involved');
+  assert.doesNotMatch(index, /Disclaimer/, 'no terms screen between the intro and the store');
   assert.match(update, /if \(installerStarted\) return;\s*installerStarted = true;/, 'once per launch');
   assert.match(update, /function startUpdateChecks\(\) \{\s*startInstaller\(\);/, 'the update checks rely on it, not repeat it');
 });

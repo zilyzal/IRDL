@@ -4,8 +4,8 @@
 // MODIFIED: the phone companion starts with the store when Settings left it on.
 // MODIFIED: pages run from under the floating top island to above the button hints (PAGE_TOP, PAGE_BOTTOM).
 // MODIFIED: after the startup notice the store comes out of a vortex reveal (ui/Reveal.jsx).
-// MODIFIED: every launch shows the terms of use and legal notice (ui/Disclaimer.jsx) between the intro and the
-// store; plain text, it stays until the player presses ✕ (Continue), then the store mounts.
+// MODIFIED (IRDL): the terms-of-use screen that came between the intro and the store is gone; the store opens
+// as soon as the intro ends (the content notice stays in Settings).
 // MODIFIED (0.5.0 Pre Release 4): a one-time "What's new" panel (ui/WhatsNew.jsx) and the screen saver
 // (ui/ScreenSaver.jsx) sit over the whole app.
 // MODIFIED: the DualSense status light follows the download queue (ui/lightBar.js), and a theme chosen in
@@ -46,7 +46,6 @@ import { Header } from './ui/Header.jsx';
 import { Legend } from './ui/Legend.jsx';
 import { Splash } from './ui/Splash.jsx';
 import { Reveal } from './ui/Reveal.jsx';
-import { Disclaimer } from './ui/Disclaimer.jsx';
 import { UpdateDialog } from './ui/UpdateDialog.jsx';
 import { ScreenSaver } from './ui/ScreenSaver.jsx';
 import { WhatsNew } from './ui/WhatsNew.jsx';
@@ -166,6 +165,10 @@ import { useInterfaceSounds } from './ui/sounds.js';
       const id = setTimeout(() => setCurtain(false), CURTAIN_MS);
       return () => clearTimeout(id);
     }, [booted]);
+    // IRDL: no terms screen; the store mounts as soon as the intro starts leaving.
+    (0, useEffect)(() => {
+      if (introDone || introLeaving) setBooted(true);
+    }, [introDone, introLeaving]);
     // The intro reports itself (about 2.5s); this only covers an animation callback that never
     // arrives, where a stuck intro forever is worse than a store without it.
     (0, useEffect)(() => {
@@ -174,6 +177,6 @@ import { useInterfaceSounds } from './ui/sounds.js';
     }, []);
     return /* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080, backgroundColor: colors.canvas }, children: booted
       ? [/* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080 }, children: /* @__PURE__ */ (0, jsx)(LocaleProvider, { children: /* @__PURE__ */ (0, jsx)(StoreProvider, { children: /* @__PURE__ */ (0, jsx)(NavProvider, { children: /* @__PURE__ */ (0, jsx)(App, {}) }) }) }) }, `store:${theme}`), curtain ? /* @__PURE__ */ (0, jsx)(Reveal, { onDone: () => setCurtain(false) }, "curtain") : null]
-      : [introDone || introLeaving ? /* @__PURE__ */ (0, jsx)(Disclaimer, { onDone: () => setBooted(true) }, "notice") : null, introDone ? null : /* @__PURE__ */ (0, jsx)(Splash, { onExit: () => setIntroLeaving(true), onDone: () => setIntroDone(true) }, "intro")] });
+      : [introDone ? null : /* @__PURE__ */ (0, jsx)(Splash, { onExit: () => setIntroLeaving(true), onDone: () => setIntroDone(true) }, "intro")] });
   }
   AppRegistry.registerComponent("irdl", () => () => /* @__PURE__ */ (0, jsx)(Boot, {}));
