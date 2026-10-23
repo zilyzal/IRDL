@@ -29,7 +29,7 @@ No proprietary Sony modules are redistributed.
 | Inter / LLVM / payload SDK | Inter: SIL OFL. LLVM: Apache-2.0 with exceptions. The public SDK contains separately licensed components. |
 
 Sources: [Embedded React](https://github.com/TheMasterCoder007/embedded-react),
-[ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui),
+[ps5-homebrew-ui](https://github.com/mihawk-99/PS5_VKHomebrewUI),
 [ps5-opengl 1.0.0](https://github.com/blackbearreloaded/ps5-opengl/releases/tag/v1.0.0),
 [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk),
 [QuickJS-ng](https://github.com/quickjs-ng/quickjs),
