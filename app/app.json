@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/half144/ps5-react/main/app.schema.json",
+  "titleId": "PPSA99573",
+  "contentId": "UP9000-PPSA99573_00-IRDL000000000000",
+  "name": "IRDL",
+  "version": "01.005.000",
+  "render": { "width": 1920, "height": 1080 },
+  "surface": { "width": 1920, "height": 1080 },
+  "refreshRate": 60,
+  "textFonts": ["chinese", "japanese", "bengali", "devanagari", "arabic"],
+  "resources": ["data/releases", "data/pages", "data/homebrew.json", "i18n/locales"],
+  "payloads": [
+    {
+      "source": "native/companion_daemon.c",
+      "name": "companion-daemon.elf",
+      "libs": ["-lSceUserService", "-lSceSystemService"]
+    },
+    {
+      "source": "native/sandbox_sweeper.c",
+      "name": "sandbox-sweeper.elf",
+      "libs": ["-lSceSystemService"]
+    }
+  ],
+  "filesystemAccess": "console",
+  "networking": true,
+  "userAgent": "IRDL/0.5.0 (PS5)",
+  "timeoutSeconds": 0
+}
