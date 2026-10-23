@@ -292,7 +292,7 @@ test('sources: every PS5 Repository List category maps to one of ours or to noth
   assert.match(sources.upstream.config, /^https:\/\/raw\.githubusercontent\.com\/nexgen999\/PS5-Repository-List\//);
   for (const [name, category] of Object.entries(sources.upstream.categories)) assert.ok(category === null || ours.has(category), `${name} -> ${category}`);
   assert.equal(sources.upstream.categories.pc_apps, null, 'PC tools are not listed');
-  for (const repo2 of ['zilyzal/irdl', 'axotk1k1/hdrezka-ps5']) assert.ok(sources.exclude.includes(repo2), repo2);
+  for (const repo2 of ['zilyzal/IRDL', 'axotk1k1/hdrezka-ps5']) assert.ok(sources.exclude.includes(repo2), repo2);
   const listed = new Set(sources.apps.map((entry) => entry.repo.toLowerCase()));
   for (const repo2 of sources.exclude) assert.ok(!listed.has(repo2.toLowerCase()), `${repo2} is excluded but listed`);
   const builder = readFileSync(path.join(repo, 'tools/homebrew/build-index.mjs'), 'utf8');

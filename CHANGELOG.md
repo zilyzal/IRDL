@@ -1,6 +1,6 @@
 # Changelog
 
-What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/irdl/releases)
+What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/IRDL/releases)
 carries the files and their SHA-256 checksums.
 
 ## 0.5.0
@@ -22,5 +22,5 @@ First IRDL build, a clean copy of [JobeesLair](https://github.com/JVK3R/JobeesLa
 
 - **No bundled catalog.** IRDL starts empty: games come from the Import tab and from feeds you add.
 - Its own title ID, `PPSA99573`, so it installs next to JobeesLair.
-- The update check reads releases of `zilyzal/irdl`.
+- The update check reads releases of `zilyzal/IRDL`.
 - The donation panel and the bundled screen-saver slides are gone.

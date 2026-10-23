@@ -1,5 +1,5 @@
 // IRDL update checker. It asks GitHub for the latest release of the official repository
-// (zilyzal/irdl), compares its tag with the running version, and reports whether a newer build exists.
+// (zilyzal/IRDL), compares its tag with the running version, and reports whether a newer build exists.
 // It downloads nothing itself: state/auto-update.js does, from the assets described here. What it reads is
 // validated: the tag must look like a version, the page it links must be on the repository's own
 // github.com path, and an asset is offered only at that release's own download path, with its exact size

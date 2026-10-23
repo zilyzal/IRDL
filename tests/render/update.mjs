@@ -13,8 +13,8 @@ const en = (await load('app/i18n/locales/en.json')).default;
 (await load('app/i18n/core.js')).configure(() => en, en);
 
 const staging = '/mnt/usb0/IRDL/update_staging/0.5.1';
-const asset = (name, size) => ({ url: `https://github.com/zilyzal/irdl/releases/download/v0.5.1/${name}`, size, sha256: 'a'.repeat(64) });
-const latest = { version: '0.5.1', url: 'https://github.com/zilyzal/irdl/releases/tag/v0.5.1', notes: 'Fixes.', published: '', assets: which === 'none' ? null : { image: asset('IRDL.exfat', 466616320), zip: asset('update.zip', 21421243) } };
+const asset = (name, size) => ({ url: `https://github.com/zilyzal/IRDL/releases/download/v0.5.1/${name}`, size, sha256: 'a'.repeat(64) });
+const latest = { version: '0.5.1', url: 'https://github.com/zilyzal/IRDL/releases/tag/v0.5.1', notes: 'Fixes.', published: '', assets: which === 'none' ? null : { image: asset('IRDL.exfat', 466616320), zip: asset('update.zip', 21421243) } };
 const saved = {
   ready: { phase: 'ready', version: '0.5.1', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
   paused: { phase: 'downloading', version: '0.5.1', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },

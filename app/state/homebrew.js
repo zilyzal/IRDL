@@ -27,7 +27,7 @@
 
 import { normalizeIndex, roleOf } from './homebrew-index.js';
 
-  var INDEX_URL = "https://raw.githubusercontent.com/zilyzal/irdl/main/homebrew/index.json";
+  var INDEX_URL = "https://raw.githubusercontent.com/zilyzal/IRDL/main/homebrew/index.json";
   // Http.request takes at most 4 MiB; the index is about half a megabyte.
   var MAX_INDEX_BYTES = 4 * 1024 * 1024;
   var slugOf = (id) => id.replace("/", "__").replace(/[^A-Za-z0-9_.-]/g, "_");

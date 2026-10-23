@@ -42,7 +42,7 @@ const SOURCES = path.join(ROOT, 'homebrew/sources.json');
 const CACHE = path.join(ROOT, 'homebrew/cache.json');
 const OUTPUTS = [path.join(ROOT, 'homebrew/index.json'), path.join(ROOT, 'app/data/homebrew.json')];
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '';
-const UA = 'IRDL-homebrew-index (+https://github.com/zilyzal/irdl)';
+const UA = 'IRDL-homebrew-index (+https://github.com/zilyzal/IRDL)';
 const PARALLEL = 6;
 // Raised when what is kept per repository changes, so the cache is read again.
 const META_VERSION = 2;
@@ -589,7 +589,7 @@ const same = previous && JSON.stringify(previous.apps) === JSON.stringify(apps) 
 const index = {
   version: 1,
   generated: same ? previous.generated : Date.now(),
-  source: 'https://github.com/zilyzal/irdl/tree/main/homebrew',
+  source: 'https://github.com/zilyzal/IRDL/tree/main/homebrew',
   ...(sources.upstream && { list: { name: sources.upstream.name, author: sources.upstream.author, url: sources.upstream.url } }),
   categories: sources.categories,
   apps,

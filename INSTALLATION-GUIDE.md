@@ -13,7 +13,7 @@ IRDL 0.5.0 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
   (it finds `.exfat` images in a `homebrew` folder and installs them).
 - An **ELF loader on port 9021** (or a resident Lapy). It gives IRDL file access to `/data` and
   your USB drives. Without it the app opens but stays inside its own sandbox.
-- **`IRDL.exfat`** from the [latest release](https://github.com/zilyzal/irdl/releases/latest),
+- **`IRDL.exfat`** from the [latest release](https://github.com/zilyzal/IRDL/releases/latest),
   and an exFAT USB drive, or an FTP client that can reach the console.
 
 Tested on firmware **13.60** with kstuff and ShadowMount+. Other setups may work but are unchecked.

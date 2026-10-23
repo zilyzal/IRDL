@@ -13,6 +13,6 @@
   // state/title-migration.js carries over what it can from the earlier version.
   var TITLE_ID = "PPSA99573";
   // The official repository: the update check reads its latest release, the About page links to it.
-  var REPO = "zilyzal/irdl";
+  var REPO = "zilyzal/IRDL";
 
 export { CREATOR, REPO, TITLE_ID, VERSION, VERSION_LABEL };

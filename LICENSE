@@ -722,7 +722,7 @@ Reporting an infringing feed manifest or catalog entry
 
 A rights holder who believes a catalog entry in this repository, or a feed or mirror address published in its
 documentation, infringes their copyright may open a "Takedown / copyright notice" issue at
-https://github.com/zilyzal/irdl/issues/new?template=takedown.yml , or send the same information through
+https://github.com/zilyzal/IRDL/issues/new?template=takedown.yml , or send the same information through
 GitHub's DMCA process naming this repository
 (https://docs.github.com/en/site-policy/content-removal-policies/dmca-takedown-policy). The notice should
 include: (a) identification of the copyrighted work; (b) where the infringing entry is (for a bundled entry,

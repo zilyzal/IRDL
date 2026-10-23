@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/zilyzal/irdl/releases/latest"><b>Download</b></a> ·
+  <a href="https://github.com/zilyzal/IRDL/releases/latest"><b>Download</b></a> ·
   <a href="INSTALLATION-GUIDE.md">Install guide</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·
   <a href="FEEDS.md">Catalog feeds</a>
@@ -65,7 +65,7 @@ IRDL is a user-driven download tool, not a content service.
 - **You are responsible for what you add and download.**
 
 **To report infringing content in this repository,** open a
-[takedown issue](https://github.com/zilyzal/irdl/issues/new?template=takedown.yml) or use GitHub's
+[takedown issue](https://github.com/zilyzal/IRDL/issues/new?template=takedown.yml) or use GitHub's
 [DMCA process](https://docs.github.com/en/site-policy/content-removal-policies/dmca-takedown-policy), naming
 this repository, with the work and its owner, where it is, your contact details, a good-faith statement that
 the use is not authorized, and a statement under penalty of perjury that the notice is accurate and you are

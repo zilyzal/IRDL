@@ -1414,10 +1414,10 @@ const { VERSION, TITLE_ID } = await load('app/version.js');
 
 const SHA = (c) => c.repeat(64);
 const releaseJson = (overrides = {}) => ({
-  tag_name: 'v0.5.1', html_url: 'https://github.com/zilyzal/irdl/releases/tag/v0.5.1', body: 'notes', published_at: '2026-10-20T00:00:00Z',
+  tag_name: 'v0.5.1', html_url: 'https://github.com/zilyzal/IRDL/releases/tag/v0.5.1', body: 'notes', published_at: '2026-10-20T00:00:00Z',
   assets: [
-    { name: 'IRDL.exfat', size: 5000, digest: `sha256:${SHA('a')}`, browser_download_url: 'https://github.com/zilyzal/irdl/releases/download/v0.5.1/IRDL.exfat' },
-    { name: 'update.zip', size: 300, digest: `sha256:${SHA('b')}`, browser_download_url: 'https://github.com/zilyzal/irdl/releases/download/v0.5.1/update.zip' },
+    { name: 'IRDL.exfat', size: 5000, digest: `sha256:${SHA('a')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v0.5.1/IRDL.exfat' },
+    { name: 'update.zip', size: 300, digest: `sha256:${SHA('b')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v0.5.1/update.zip' },
   ],
   ...overrides,
 });
@@ -1457,13 +1457,13 @@ test('versions: 0.5.0 is newer than 0.4.1 and every 0.5.0 pre-release, and older
 });
 
 test("release assets: offered only at the release's own download path, with GitHub's SHA-256 and a size", () => {
-  const offered = describeRelease(releaseJson(), 'zilyzal/irdl');
+  const offered = describeRelease(releaseJson(), 'zilyzal/IRDL');
   assert.deepEqual(offered.assets, {
-    image: { url: 'https://github.com/zilyzal/irdl/releases/download/v0.5.1/IRDL.exfat', size: 5000, sha256: SHA('a') },
-    zip: { url: 'https://github.com/zilyzal/irdl/releases/download/v0.5.1/update.zip', size: 300, sha256: SHA('b') },
+    image: { url: 'https://github.com/zilyzal/IRDL/releases/download/v0.5.1/IRDL.exfat', size: 5000, sha256: SHA('a') },
+    zip: { url: 'https://github.com/zilyzal/IRDL/releases/download/v0.5.1/update.zip', size: 300, sha256: SHA('b') },
   });
   assert.deepEqual(Object.values(ASSETS), ['IRDL.exfat', 'update.zip']);
-  const without = (change) => describeRelease(releaseJson({ assets: releaseJson().assets.map((asset) => asset.name === 'IRDL.exfat' ? change(asset) : asset) }), 'zilyzal/irdl');
+  const without = (change) => describeRelease(releaseJson({ assets: releaseJson().assets.map((asset) => asset.name === 'IRDL.exfat' ? change(asset) : asset) }), 'zilyzal/IRDL');
   assert.equal(without((asset) => ({ ...asset, digest: undefined })).assets, null, 'no digest, nothing to check it against');
   assert.equal(without((asset) => ({ ...asset, digest: 'sha1:abc' })).assets, null);
   assert.equal(without((asset) => ({ ...asset, browser_download_url: 'https://evil.example/IRDL.exfat' })).assets, null, 'another host');
@@ -1471,8 +1471,8 @@ test("release assets: offered only at the release's own download path, with GitH
   assert.equal(without((asset) => ({ ...asset, browser_download_url: asset.browser_download_url.replace('v0.5.1', 'v0.2.1') })).assets, null, "another release's file");
   assert.equal(without((asset) => ({ ...asset, size: '5000' })).assets, null);
   assert.equal(without((asset) => ({ ...asset, size: 0 })).assets, null);
-  assert.equal(describeRelease(releaseJson({ assets: releaseJson().assets.slice(0, 1) }), 'zilyzal/irdl').assets, null, 'both files, or neither');
-  assert.equal(describeRelease(releaseJson({ assets: undefined }), 'zilyzal/irdl').version, '0.5.1', 'still offered to read and install by hand');
+  assert.equal(describeRelease(releaseJson({ assets: releaseJson().assets.slice(0, 1) }), 'zilyzal/IRDL').assets, null, 'both files, or neither');
+  assert.equal(describeRelease(releaseJson({ assets: undefined }), 'zilyzal/IRDL').version, '0.5.1', 'still offered to read and install by hand');
 });
 
 test('the queue lends the network only while idle, and takes it back the moment a game download is queued', async () => {
@@ -1570,7 +1570,7 @@ function installWorld({ param: paramFields = {}, eboot = 2000, lendable = () => 
     automatic: () => automatic, notify: (v) => world.notified.push(v), wait: () => new Promise((resolve) => setImmediate(resolve)), log: (line) => world.logs.push(line),
   });
   world.saved = saved;
-  world.release = { ...describeRelease(releaseJson(), 'zilyzal/irdl') };
+  world.release = { ...describeRelease(releaseJson(), 'zilyzal/IRDL') };
   // A release one version past this build (0.5.1, package version 01.005.001), with its assets.
   world.until = async (test, limit = 500) => {
     for (let i = 0; i < limit; i++) {

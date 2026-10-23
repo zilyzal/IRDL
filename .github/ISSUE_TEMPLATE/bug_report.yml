@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to report this. If IRDL doesn't show up on the home screen
-        or a new build won't install, the [Troubleshooting](https://github.com/zilyzal/irdl/blob/main/INSTALLATION-GUIDE.md#troubleshooting)
+        or a new build won't install, the [Troubleshooting](https://github.com/zilyzal/IRDL/blob/main/INSTALLATION-GUIDE.md#troubleshooting)
         section may already have the answer.
 
   - type: input
@@ -98,7 +98,7 @@ body:
     attributes:
       label: Before you send it
       options:
-        - label: I'm on the [latest release](https://github.com/zilyzal/irdl/releases/latest).
+        - label: I'm on the [latest release](https://github.com/zilyzal/IRDL/releases/latest).
           required: true
         - label: I searched the existing issues and this hasn't been reported yet.
           required: true
