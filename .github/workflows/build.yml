@@ -86,9 +86,8 @@ jobs:
           python3 tools/build_ps5.py --app-dir "$GITHUB_WORKSPACE/app" --llvm /usr/bin 2>&1 | tee "$RUNNER_TEMP/build.log" || {
             code=$?
             # Annotations stay readable through the API when the raw log is not.
-            tail -n 25 "$RUNNER_TEMP/build.log" | sed 's/%/%25/g' | while IFS= read -r line; do
-              echo "::error::${line:0:900}"
-            done
+            msg=$(tail -n 4 "$RUNNER_TEMP/build.log" | cut -c1-300 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=build failed::$msg"
             exit $code
           }
 
