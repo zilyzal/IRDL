@@ -698,8 +698,8 @@ excluded from version control.
 
 Created by **[half144](https://github.com/half144)** and PS5 React contributors.
 Built on [Embedded React](https://github.com/TheMasterCoder007/embedded-react),
-[ps5-homebrew-ui](https://github.com/mihawk-99/PS5_VKHomebrewUI),
-[ps5-opengl](https://github.com/mihawk-99/ps5-opengl),
+[ps5-homebrew-ui](https://github.com/JVK3R/ps5-homebrew-ui),
+[ps5-opengl](https://github.com/JVK3R/ps5-opengl),
 [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk),
 [QuickJS-ng](https://github.com/quickjs-ng/quickjs) and React. The utility palette
 and scales come from Tailwind CSS v3.4.17 under the MIT License.
