@@ -18,7 +18,7 @@ for file in README.md INSTALLATION-GUIDE.md FEEDS.md CHANGELOG.md LICENSE; do
     cp "$repo/$file" "$docs/$file"
 done
 # The images the READMEs reference, at the same relative paths.
-for image in logo.svg logo-dark.svg logo-light.svg home.png dashboard.png settings-theme.png; do
+for image in logo.svg logo-dark.svg logo-light.svg; do
     cp "$repo/.github/readme/$image" "$docs/.github/readme/$image"
 done
 echo "staged docs: $(find "$docs" -type f | wc -l) files in $docs"
