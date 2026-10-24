@@ -1,6 +1,6 @@
 # IRDL installation guide
 
-IRDL 0.5.0 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
+IRDL 0.5.1 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
 
 > [!WARNING]
 > **Download only what you own or have permission to access.** You are responsible for what you

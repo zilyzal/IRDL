@@ -3,6 +3,24 @@
 What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/IRDL/releases)
 carries the files and their SHA-256 checksums.
 
+## 0.5.1
+
+### Fixed
+
+- **The app froze on its first screen.** The home page's spotlight needed a featured game that a store with no
+  catalog (or with imported games, which carry no hero art) never has, so it failed while drawing and the
+  screen stayed on the intro. The home page is rebuilt for this: a panel showing how to add games, then the
+  downloads and games below it. IRDL now opens straight onto it, with no intro, startup notice, reveal or
+  "What's new" panel.
+
+### New
+
+- **English and Persian (فارسی).** The interface has a full Persian translation, laid out right to left; the
+  other languages are gone. English stays the default; Persian is picked in Settings → Language, or follows the
+  console's language.
+- **The Import box takes an address, download links in any order (sorted into parts), or both**, and the same
+  page opens in the console's own browser at `http://localhost:9898`.
+
 ## 0.5.0
 
 First IRDL build, a clean copy of [JobeesLair](https://github.com/JVK3R/JobeesLair) 0.5.0 by JVK3R (GPL-3.0).
@@ -18,12 +36,6 @@ First IRDL build, a clean copy of [JobeesLair](https://github.com/JVK3R/JobeesLa
 - **Saved games** are kept in `imported.json` and join the store like a feed's games; a batch's volumes on one
   host are joined into one download set.
 - **The phone companion now listens on port 9898** (then 8080, then any free port if that is taken).
-- **English and Persian (فارسی).** The interface has a full Persian translation, laid out right to left; the other
-  languages are gone. English stays the default, and Persian is picked in Settings → Language (or follows the
-  console's language).
-- **A home page built for an empty store.** IRDL opens straight onto the home page, with no intro screens and no
-  startup notice. A panel there shows the phone address, PIN and QR code for adding games; once games are
-  imported they appear below it, with downloads in progress.
 - **A new mark, icon and home-screen art.**
 
 ### Changed

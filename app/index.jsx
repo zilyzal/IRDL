@@ -46,7 +46,6 @@ import { Header } from './ui/Header.jsx';
 import { Legend } from './ui/Legend.jsx';
 import { UpdateDialog } from './ui/UpdateDialog.jsx';
 import { ScreenSaver } from './ui/ScreenSaver.jsx';
-import { WhatsNew } from './ui/WhatsNew.jsx';
 import { useInterfaceHaptics } from './ui/haptics.js';
 import { useInterfaceSounds } from './ui/sounds.js';
 
@@ -123,8 +122,7 @@ import { useInterfaceSounds } from './ui/sounds.js';
           immersive ? null : /* @__PURE__ */ (0, jsx)(Legend, { screen: top.name }),
           /* @__PURE__ */ (0, jsx)(UpdateDialog, {})
         ] }),
-        // 0.5.0 Pre Release 4: the one-time What's new, and the screen saver over everything.
-        /* @__PURE__ */ (0, jsx)(WhatsNew, {}),
+        // The screen saver over everything.
         /* @__PURE__ */ (0, jsx)(ScreenSaver, {})
       ] })
     );
