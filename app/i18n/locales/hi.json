@@ -725,7 +725,7 @@
   "settings.companion.locked": "बहुत सारे गलत PIN आज़माए गए। फ़ोन फिर से साइन इन कर सकें, इसके लिए फ़ोन साथी को बंद करके दोबारा चालू करें।",
   "settings.companion.noPin": "पहली बार चालू करते समय आप छह अंकों का PIN चुनते हैं।",
   "settings.companion.offline": "इसका उपयोग करने के लिए कंसोल को नेटवर्क से जोड़ें।",
-  "settings.companion.open": "फ़ोन के कैमरे से कोड स्कैन करें या फ़ोन पर यह पता खोलें, फिर PIN डालें",
+  "settings.companion.here": "इस कंसोल पर उसके वेब ब्राउज़र में {url} खोलें: वही पेज वहाँ उसी PIN के साथ काम करता है", "settings.companion.open": "फ़ोन के कैमरे से कोड स्कैन करें या फ़ोन पर यह पता खोलें, फिर PIN डालें",
   "settings.companion.phones": "{count, plural, one {# फ़ोन साइन इन है} other {# फ़ोन साइन इन हैं}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "शुरू हो रहा है…",

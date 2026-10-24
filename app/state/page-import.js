@@ -375,11 +375,15 @@ import { webURL } from './download-sources.js';
   }
   // The batch a link belongs to, from the nearest place that names a version: the file name, the link's own
   // text and line, the lines just above it, then the heading above those.
+  // A file name as words: "Game.v1.05.part2.rar" -> "Game v1.05".
+  function stemOf(text) {
+    return String(text || "").replace(/\.(?:part\s*0*\d+\.)?(?:rar|r\d{2})\b.*$/i, "").replace(/(?<!\d)[._]+|[._]+(?!\d)/g, " ").replace(/\s+/g, " ").trim();
+  }
   function batchOf(link, name) {
     const sources = [name, link.text, link.title, link.before, ...[...link.recent].reverse(), link.heading];
     for (const source of sources) {
       const version = versionOf(source);
-      if (version) return { version, key: `v:${norm(version)}`, label: labelOf(link.heading || link.recent.at(-1) || source) };
+      if (version) return { version, key: `v:${norm(version)}`, label: labelOf(link.heading || link.recent.at(-1) || stemOf(source)) };
     }
     const label = labelOf(link.heading || [...link.recent].reverse().find((line) => labelOf(line)) || "");
     return { version: "", key: label ? `h:${norm(label)}` : "", label };
@@ -419,12 +423,15 @@ import { webURL } from './download-sources.js';
       if (!batch.key.startsWith("v:")) {
         // No version anywhere near it: a part number that does not go up starts the next batch on that host.
         const at = `${host}|${batch.key}`;
-        const state = sequence.get(at) ?? { index: 1, last: 0 };
-        if (part != null && state.last && part <= state.last) {
+        const state = sequence.get(at) ?? { index: 1, seen: new Set() };
+        // Links may come in any order (a pasted list): a batch only ends when a part number turns up twice on
+        // the host, which means a second set starts. Sorting happens below.
+        if (part != null && state.seen.has(part)) {
           state.index++;
+          state.seen = new Set();
           state.label = labelOf(link.recent.at(-1) || "");
         }
-        if (part != null) state.last = part;
+        if (part != null) state.seen.add(part);
         sequence.set(at, state);
         batch = { version: "", key: `${batch.key || "n"}#${state.index}`, label: state.index > 1 && state.label ? state.label : batch.label };
       }
@@ -482,6 +489,46 @@ import { webURL } from './download-sources.js';
       batches: list.slice(0, 12),
       other: other.slice(0, 60)
     };
+  }
+
+
+  // ---- one box for everything --------------------------------------------------------------------------
+  // The player pastes whatever he has: a post's address, download links, both, or a page's source. This splits
+  // it: `pages` are addresses to read, `linkText` is the pasted lines that carry download links (kept whole,
+  // so file names beside a link still count), `html` means the text is a page's source.
+  var URL_IN_TEXT = /https?:\/\/[^\s<>"'\u0001\u0002]+/gi;
+  var isDownloadURL = (url) => isFileHost(url) || /\.(?:rar|r\d{2}|zip|7z)(?:[?#]|$)/i.test(url) || /\.part0*\d+\.rar/i.test(url);
+  function planInput(raw) {
+    const text = String(raw ?? "").trim();
+    if (!text) return { pages: [], linkText: "", html: false, links: 0 };
+    if (/<\s*(?:html|body|a\s|div|p\s|head)\b/i.test(text)) return { pages: [], linkText: "", html: true, links: 0, text };
+    const pages = [];
+    const lines = [];
+    let links = 0;
+    for (const line of text.split(/\r?\n/)) {
+      const urls = line.match(URL_IN_TEXT) || [];
+      const downloads = urls.filter(isDownloadURL);
+      for (const url of urls) if (!isDownloadURL(url) && !pages.includes(url)) pages.push(url.replace(/[.,;)\]]+$/, ""));
+      if (downloads.length) {
+        lines.push(line);
+        links += downloads.length;
+      }
+    }
+    return { pages, linkText: lines.join("\n"), html: false, links };
+  }
+  // A game name from the file names when no page gave one: "Some.Game.v1.05.part1.rar" -> "Some Game".
+  function titleFromFiles(preview) {
+    const first = preview?.batches?.[0]?.hosts?.[0]?.links?.find((link) => link.filename);
+    if (!first) return "";
+    const stem = stemOf(first.filename).replace(/\b(?:v|ver\.?|version)\s*\d[\d.]*\b/gi, " ").replace(/\b\d{1,2}\.\d{2,3}\b/g, " ").replace(/\b(?:PPSA|CUSA)\d{5}\b/gi, " ");
+    return cleanTitle(stem.replace(/\b(?:rar|part\s*\d+|pkg|ps5|ps4)\b/gi, " ").replace(/\s+/g, " "));
+  }
+  // The pasted links' batches go in front of the page's own, so what the player pasted is what he sees first.
+  function mergePasted(page, pasted) {
+    const mark = (batch) => ({ ...batch, key: `p:${batch.key}`, label: /^Batch \d+$/.test(batch.label) ? batch.label.replace("Batch", "Pasted links") : `Pasted · ${batch.label}` });
+    page.batches = [...pasted.batches.map(mark), ...page.batches].slice(0, 12);
+    page.other = [...pasted.other, ...page.other].slice(0, 60);
+    return page;
   }
 
   // ---- what the player kept, as a feed game -------------------------------------------------------------
@@ -543,4 +590,4 @@ import { webURL } from './download-sources.js';
     return game;
   }
 
-export { buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, needsBrowser, pageImages, pageTitle, parsePage, versionOf };
+export { buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, mergePasted, needsBrowser, pageImages, pageTitle, parsePage, planInput, titleFromFiles, versionOf };

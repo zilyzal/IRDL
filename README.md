@@ -24,19 +24,21 @@
 IRDL runs on a jailbroken PS5 with [ShadowMount+](https://github.com/drakmor/ShadowMountPlus). It starts with
 an **empty catalog**: you fill it yourself, from your phone or from feeds.
 
-## Import from your phone
+## Import from your phone (or the console's own browser)
 
-The phone companion listens on **port 9898** (`http://<console address>:9898`, the address is shown in
-Settings → Phone companion). Its **Import** tab:
+The companion listens on **port 9898**: `http://<console address>:9898` from a phone (the address and a QR
+code are in Settings → Phone companion), or `http://localhost:9898` in the console's own web browser. Its
+**Import** tab has one box that takes a **post page's address**, **download links**, or both:
 
-1. Paste a post page's address and tap **Fetch**. The console reads the page and finds the **title**,
-   **Title ID**, **cover** and the **`.rar` download links**.
+1. Paste and tap **Fetch**. The console reads the page and finds the **title**, **Title ID**, **cover** and the
+   **`.rar` download links**. Links you paste are sorted into their parts whatever order they come in, and
+   show first.
 2. The links come sorted into **batches**, one per version. Untick a batch to leave it out, tap
    **Keep only this batch**, or drop a host everywhere with the chips.
 3. **Save.** Reopen IRDL on the console and the game is in the store, its volumes joined into one download set
    per batch and host.
 
-If a site refuses the console, paste its links (or the page's source) instead. Only `.rar` volumes become
+If a site refuses the console, the links you pasted beside its address are used on their own. Only `.rar` volumes become
 batches; other file-host links on the page are listed apart and left off. Details are in the
 [installation guide](INSTALLATION-GUIDE.md#importing-a-game-from-a-post-page).
 

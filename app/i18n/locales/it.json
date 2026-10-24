@@ -725,7 +725,7 @@
   "settings.companion.locked": "Sono stati provati troppi PIN errati. Disattiva e riattiva il companion per telefono per permettere ai telefoni di accedere di nuovo.",
   "settings.companion.noPin": "Scegli un PIN di sei cifre la prima volta che lo attivi.",
   "settings.companion.offline": "Collega la console a una rete per usarlo.",
-  "settings.companion.open": "Scansiona il codice con la fotocamera del telefono o apri questo indirizzo sul telefono, poi inserisci il PIN",
+  "settings.companion.here": "Su questa console apri {url} nel suo browser web: la stessa pagina funziona lì, con lo stesso PIN", "settings.companion.open": "Scansiona il codice con la fotocamera del telefono o apri questo indirizzo sul telefono, poi inserisci il PIN",
   "settings.companion.phones": "{count, plural, one {# telefono connesso} other {# telefoni connessi}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "Avvio…",

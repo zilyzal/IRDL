@@ -725,7 +725,7 @@
   "settings.companion.locked": "بہت سے غلط PIN آزمائے گئے۔ فون دوبارہ سائن ان کر سکیں، اس کے لیے فون ساتھی کو بند کر کے دوبارہ چالو کریں۔",
   "settings.companion.noPin": "پہلی بار چالو کرتے وقت آپ چھ ہندسوں کا PIN چنتے ہیں۔",
   "settings.companion.offline": "اسے استعمال کرنے کے لیے کنسول کو نیٹ ورک سے جوڑیں۔",
-  "settings.companion.open": "فون کے کیمرے سے کوڈ اسکین کریں یا فون پر یہ پتہ کھولیں، پھر PIN درج کریں",
+  "settings.companion.here": "اس کنسول پر اس کے ویب براؤزر میں {url} کھولیں: وہی صفحہ وہاں اسی PIN کے ساتھ کام کرتا ہے", "settings.companion.open": "فون کے کیمرے سے کوڈ اسکین کریں یا فون پر یہ پتہ کھولیں، پھر PIN درج کریں",
   "settings.companion.phones": "{count, plural, one {# فون سائن ان ہے} other {# فون سائن ان ہیں}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "شروع ہو رہا ہے…",

@@ -725,7 +725,7 @@
   "settings.companion.locked": "جُرّب عدد كبير من رموز PIN الخاطئة. أوقف رفيق الهاتف ثم شغّله لتتمكن الهواتف من تسجيل الدخول مجددًا.",
   "settings.companion.noPin": "ستختار رمز PIN من ستة أرقام عند تشغيله لأول مرة.",
   "settings.companion.offline": "صِل الجهاز بشبكة لاستخدامه.",
-  "settings.companion.open": "امسح الرمز بكاميرا هاتفك، أو افتح هذا العنوان على هاتفك، ثم أدخل رمز PIN",
+  "settings.companion.here": "على هذه الوحدة، افتح {url} في متصفحها: الصفحة نفسها تعمل هناك، بنفس رمز PIN", "settings.companion.open": "امسح الرمز بكاميرا هاتفك، أو افتح هذا العنوان على هاتفك، ثم أدخل رمز PIN",
   "settings.companion.phones": "{count, plural, zero {لا هواتف مسجّلة} one {هاتف واحد مسجّل} two {هاتفان مسجّلان} few {# هواتف مسجّلة} many {# هاتفًا مسجّلًا} other {# هاتف مسجّل}}",
   "settings.companion.pin": "رمز PIN",
   "settings.companion.starting": "جارٍ البدء…",

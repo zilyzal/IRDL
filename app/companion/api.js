@@ -27,7 +27,7 @@
 //   POST   /api/homebrew/run     {"id": "…"}   sends its installed payload to the payload loader
 //   POST   /api/homebrew/cancel  {"id": "…"}   stops its install
 //   POST   /api/homebrew/update-all            installs every update out
-//   POST   /api/import/fetch {"url": "…"} | {"text": "…"}   reads a post page (or pasted links); answers {"job"}
+//   POST   /api/import/fetch {"input": "…"}   reads a post address and/or pasted download links; answers {"job"}
 //   GET    /api/import/job?id=             the job: fetching | ready (with the page's title, Title ID, cover, batches) | failed
 //   POST   /api/import/save {…draft}       keeps the batches the player ticked as a game in the store
 //   GET    /api/import/library             the games saved this way
@@ -260,8 +260,8 @@
       "POST /api/import/fetch": (request) => {
         if (!importer) return failure(404, "Unknown request.");
         const body = bodyOf(request);
-        if (!body || typeof body.url !== "string" && typeof body.text !== "string") return failure(400, "Send {\"url\": \"…\"} or {\"text\": \"…\"}.");
-        return json(200, { job: importer.start({ url: body.url, text: body.text }) });
+        if (!body || typeof body.input !== "string" && typeof body.url !== "string" && typeof body.text !== "string") return failure(400, "Send {\"input\": \"…\"}.");
+        return json(200, { job: importer.start({ input: body.input, url: body.url, text: body.text }) });
       },
       "GET /api/import/job": (request) => {
         if (!importer) return failure(404, "Unknown request.");

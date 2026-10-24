@@ -12,7 +12,9 @@ First IRDL build, a clean copy of [JobeesLair](https://github.com/JVK3R/JobeesLa
 - **Import tab on the phone companion.** Paste a post page's address: the console reads it and finds the
   title, Title ID, cover and the `.rar` download links. The links are sorted into batches (one per version) so
   you can untick the ones you don't want, drop a host everywhere, and save the game into the store.
-  Pasting links (or the page's source) works when a site refuses the console.
+  One box takes an address, download links in any order (sorted into parts for you), or both; links alone work
+  when a site refuses the console. The same page opens in the console's own browser at
+  `http://localhost:9898`.
 - **Saved games** are kept in `imported.json` and join the store like a feed's games; a batch's volumes on one
   host are joined into one download set.
 - **The phone companion now listens on port 9898** (then 8080, then any free port if that is taken).

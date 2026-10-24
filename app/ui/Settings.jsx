@@ -122,6 +122,7 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
         /* @__PURE__ */ (0, jsxs)(View, { style: { flex: 1, gap: 14 }, children: [
           /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.companion.open") }),
           /* @__PURE__ */ (0, jsx)(View, { style: { borderRadius: radius.md, backgroundColor: colors.canvas2, paddingHorizontal: 22, paddingVertical: 14 }, children: /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "JetBrainsMono-Regular", fontSize: 25, lineHeight: 34, color: colors.fg }, children: companion.url }) }),
+          /* @__PURE__ */ (0, jsx)(Text, { style: text(18, colors.subtle), children: t2("settings.companion.here", { url: companion.url.replace(/^http:\/\/[^:/]+/, "http://localhost") }) }),
           /* @__PURE__ */ (0, jsxs)(View, { style: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 18, borderRadius: radius.md, backgroundColor: colors.canvas2, paddingHorizontal: 22, paddingVertical: 6 }, children: [
             /* @__PURE__ */ (0, jsx)(Text, { style: text(16, colors.subtle, { fontWeight: 600, letterSpacing: 2 }), children: t2("settings.companion.pin") }),
             /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "JetBrainsMono-Regular", fontSize: 36, lineHeight: 46, letterSpacing: 6, color: colors.glow }, children: companion.pin })

@@ -725,7 +725,7 @@
   "settings.companion.locked": "Se probaron demasiados PIN incorrectos. Apaga y vuelve a encender el compañero móvil para que los móviles puedan iniciar sesión de nuevo.",
   "settings.companion.noPin": "Elegirás un PIN de seis dígitos la primera vez que lo actives.",
   "settings.companion.offline": "Conecta la consola a una red para usarlo.",
-  "settings.companion.open": "Escanea el código con la cámara del móvil o abre esta dirección en el móvil, y escribe el PIN",
+  "settings.companion.here": "En esta consola, abre {url} en su navegador web: la misma página funciona allí, con el mismo PIN", "settings.companion.open": "Escanea el código con la cámara del móvil o abre esta dirección en el móvil, y escribe el PIN",
   "settings.companion.phones": "{count, plural, one {# móvil conectado} other {# móviles conectados}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "Iniciando…",

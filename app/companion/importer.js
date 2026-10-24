@@ -3,7 +3,7 @@
 // cover and rar batches (state/page-import.js), and the phone shows them to keep or drop. Fetching takes
 // seconds, so a request starts a job the phone asks about every moment; nothing waits inside a request.
 
-import { buildGame, checkPageURL, parsePage } from '../state/page-import.js';
+import { buildGame, checkPageURL, mergePasted, parsePage, planInput, titleFromFiles } from '../state/page-import.js';
 
   // The JS heap is 32 MiB for everything: a post page is read whole, so a page is capped. 1.5 MiB covers long
   // posts with comments; a bigger one is cut off (the links come first in nearly every post).
@@ -21,36 +21,54 @@ import { buildGame, checkPageURL, parsePage } from '../state/page-import.js';
     };
     function failure(error) {
       const message = String(error?.message || error || "Something went wrong.");
-      if (/HTTP (?:403|429|503)\b/.test(message)) return `The site refused the console (${message}). Open the page on your phone, copy its download links and use "Paste the links instead".`;
+      if (/HTTP (?:403|429|503)\b/.test(message)) return `The site refused the console (${message}). Open the page on your phone, copy its download links and paste them into the same box.`;
       if (/HTTP 404/.test(message)) return "That page was not found (HTTP 404). Check the address.";
       return message;
     }
-    // Starts reading `url` (or the pasted `text`); returns the job's id at once.
-    function start({ url, text }) {
+    // Starts reading what the player gave: `input` is anything pasted into the one box (a post's address,
+    // download links, both, or a page's source); `url` and `text` still work for the older two-field form.
+    // Returns the job's id at once.
+    function start({ input, url, text }) {
       const id = `job${++counter}`;
       const job = { id, state: "fetching", startedAt: clock() };
       jobs.set(id, job);
       trim();
       try {
-        if (typeof text === "string" && text.trim()) {
-          if (text.length > MAX_PASTE) throw new Error("That is too much text. Paste just the links.");
-          const page = typeof url === "string" && /^https?:\/\//i.test(url.trim()) ? url.trim() : "";
-          job.preview = parsePage(text, page, { assumeRar: !/<\s*(?:html|body|a\s|div|p\s)/i.test(text) });
-          job.state = "ready";
+        const raw = typeof input === "string" ? input : typeof text === "string" && text.trim() ? text : String(url ?? "");
+        if (raw.length > MAX_PASTE) throw new Error("That is too much text. Paste just the links.");
+        const plan = planInput(raw);
+        const fail = (message) => { job.state = "failed"; job.error = message; };
+        const done = (preview, notice = "") => {
+          if (!preview.title) preview.title = titleFromFiles(preview);
+          if (notice) preview.notice = notice;
+          job.preview = preview;
+          job.state = preview.batches.length || preview.other.length || !notice ? "ready" : "failed";
+          if (job.state === "failed") job.error = notice;
+        };
+        if (plan.html) {
+          done(parsePage(plan.text, /^https?:\/\//i.test(String(url || "").trim()) ? url.trim() : "", { assumeRar: false }));
           return id;
         }
-        const address = checkPageURL(url);
+        const pasted = plan.links ? parsePage(plan.linkText, "", { assumeRar: true }) : null;
+        if (!plan.pages.length) {
+          if (!pasted) throw new Error("Paste a post's address, or the download links.");
+          done(pasted);
+          return id;
+        }
+        const address = checkPageURL(plan.pages[0]);
         Promise.resolve()
           .then(() => http.request(address, { maxBytes: MAX_BYTES }))
           .then(async (response) => {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const body = await response.text();
-            job.preview = parsePage(body, address);
-            job.state = "ready";
+            const page = parsePage(await response.text(), address);
+            done(pasted ? mergePasted(page, pasted) : page);
           })
           .catch((error) => {
-            job.state = "failed";
-            job.error = failure(error);
+            // The links the player pasted are enough to go on, with or without the page.
+            if (pasted) {
+              pasted.sourceUrl = address;
+              done(pasted, `Could not read the page (${failure(error).split(".")[0]}), so only the pasted links are used. Add the title and cover yourself.`);
+            } else fail(failure(error));
           });
       } catch (error) {
         job.state = "failed";

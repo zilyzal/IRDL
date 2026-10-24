@@ -725,7 +725,7 @@
   "settings.companion.locked": "输入错误 PIN 的次数过多。请关闭再重新开启手机伴侣，手机才能再次登录。",
   "settings.companion.noPin": "首次开启时，你需要设置一个六位数字的 PIN。",
   "settings.companion.offline": "请将主机连接到网络后使用。",
-  "settings.companion.open": "用手机相机扫描二维码，或在手机上打开此地址，然后输入 PIN",
+  "settings.companion.here": "在这台主机上，用它的网页浏览器打开 {url}：同一个页面在那里也能用，PIN 相同", "settings.companion.open": "用手机相机扫描二维码，或在手机上打开此地址，然后输入 PIN",
   "settings.companion.phones": "{count, plural, other {# 部手机已登录}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "正在启动…",

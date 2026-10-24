@@ -725,7 +725,7 @@
   "settings.companion.locked": "অনেকগুলো ভুল PIN চেষ্টা করা হয়েছে। ফোনগুলো আবার সাইন ইন করতে পারার জন্য ফোন সহচর বন্ধ করে আবার চালু করুন।",
   "settings.companion.noPin": "প্রথমবার চালু করার সময় আপনি ছয় অঙ্কের একটি PIN বেছে নেবেন।",
   "settings.companion.offline": "এটি ব্যবহার করতে কনসোলকে একটি নেটওয়ার্কে সংযুক্ত করুন।",
-  "settings.companion.open": "ফোনের ক্যামেরায় কোডটি স্ক্যান করুন বা ফোনে এই ঠিকানা খুলুন, তারপর PIN দিন",
+  "settings.companion.here": "এই কনসোলে এর ওয়েব ব্রাউজারে {url} খুলুন: একই পেজ সেখানে একই PIN দিয়ে কাজ করে", "settings.companion.open": "ফোনের ক্যামেরায় কোডটি স্ক্যান করুন বা ফোনে এই ঠিকানা খুলুন, তারপর PIN দিন",
   "settings.companion.phones": "{count, plural, one {#টি ফোন সাইন ইন আছে} other {#টি ফোন সাইন ইন আছে}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "চালু হচ্ছে…",

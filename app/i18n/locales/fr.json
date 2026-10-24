@@ -725,7 +725,7 @@
   "settings.companion.locked": "Trop de codes PIN erronés ont été essayés. Désactivez puis réactivez le compagnon mobile pour que les téléphones puissent se reconnecter.",
   "settings.companion.noPin": "Vous choisirez un code PIN à six chiffres la première fois que vous l'activerez.",
   "settings.companion.offline": "Connectez la console à un réseau pour l'utiliser.",
-  "settings.companion.open": "Scannez le code avec l’appareil photo du téléphone ou ouvrez cette adresse sur le téléphone, puis saisissez le PIN",
+  "settings.companion.here": "Sur cette console, ouvrez {url} dans son navigateur web : la même page y fonctionne, avec le même PIN", "settings.companion.open": "Scannez le code avec l’appareil photo du téléphone ou ouvrez cette adresse sur le téléphone, puis saisissez le PIN",
   "settings.companion.phones": "{count, plural, one {# téléphone connecté} other {# téléphones connectés}}",
   "settings.companion.pin": "Code PIN",
   "settings.companion.starting": "Démarrage…",

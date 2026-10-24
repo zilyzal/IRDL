@@ -200,7 +200,7 @@ test('importer: a refused page, a missing page, an unreachable site and a bad ad
   await settle();
   const [refused, missing, down] = ids.map((id) => importer.job(id));
   assert.equal(refused.state, 'failed');
-  assert.match(refused.error, /refused the console.*Paste the links/s);
+  assert.match(refused.error, /refused the console.*paste them into the same box/s);
   assert.match(missing.error, /not found/);
   assert.match(down.error, /connection refused/);
   const bad = importer.job(importer.start({ url: 'http://localhost:9021/' }));
@@ -212,7 +212,7 @@ test('importer: a refused page, a missing page, an unreachable site and a bad ad
 test('importer: pasted links work without any fetch, and pasted page source is read as a page', async () => {
   const http = fakeHttp({});
   const importer = createImporter({ http, store: memoryStore() });
-  const list = importer.job(importer.start({ text: page('bare-links.txt') }));
+  const list = importer.job(importer.start({ text: page('bare-links.txt').split('\n').filter((line) => !/some-article/.test(line)).join('\n') }));
   assert.equal(list.state, 'ready');
   assert.equal(list.preview.batches[0].links, 2);
   const source = importer.job(importer.start({ text: page('two-batches.html'), url: SITE }));
@@ -255,4 +255,88 @@ test('api: fetch, poll, save, list and remove over the companion routes', async 
 test('api: without an importer the import routes do not exist', () => {
   const handle = createCompanionApi({ catalog: {}, describe: () => ({}), download: () => ({}), queue: () => [], control: {}, storage: () => [], feeds: { list: () => [] }, remote: () => {}, quick: () => {}, info: () => ({}) });
   assert.equal(handle(request('POST', '/api/import/fetch', { url: SITE })).status, 404);
+});
+
+// ---- one box: addresses, links, or both ---------------------------------------------------------------
+const { planInput, titleFromFiles } = await load('app/state/page-import.js');
+const wait = async (importer, id) => {
+  for (let i = 0; i < 50; i++) {
+    const job = importer.job(id);
+    if (job.state !== 'fetching') return job;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  throw new Error('job never finished');
+};
+
+test('input: pasted links in any order are sorted into parts, and one set stays one batch', () => {
+  const found = parsePage([
+    'https://1fichier.com/?c Some.Game.part3.rar',
+    'https://1fichier.com/?a Some.Game.part1.rar',
+    'https://1fichier.com/?b Some.Game.part2.rar'
+  ].join('\n'), '', { assumeRar: true });
+  assert.equal(found.batches.length, 1);
+  assert.deepEqual(found.batches[0].hosts[0].links.map((link) => link.part), [1, 2, 3]);
+  assert.deepEqual(found.batches[0].hosts[0].links.map((link) => link.url.slice(-1)), ['a', 'b', 'c']);
+  assert.deepEqual(found.batches[0].warnings, []);
+});
+
+test('input: a part number that repeats starts a second set; versions in names split batches', () => {
+  const found = parsePage([
+    'https://pixeldrain.com/u/1 Game.v1.00.part1.rar', 'https://pixeldrain.com/u/2 Game.v1.00.part2.rar',
+    'https://pixeldrain.com/u/4 Game.v1.05.part2.rar', 'https://pixeldrain.com/u/3 Game.v1.05.part1.rar'
+  ].join('\n'), '', { assumeRar: true });
+  assert.deepEqual(found.batches.map((batch) => batch.links), [2, 2]);
+  assert.deepEqual(found.batches[1].hosts[0].links.map((link) => link.part), [1, 2]);
+});
+
+test('input: planInput tells a post address from download links and keeps the link lines', () => {
+  assert.deepEqual(planInput('https://examplesite.test/post').pages, ['https://examplesite.test/post']);
+  const mixed = planInput('see https://examplesite.test/post\nhttps://1fichier.com/?a Game.part1.rar\nhttps://1fichier.com/?b Game.part2.rar');
+  assert.deepEqual(mixed.pages, ['https://examplesite.test/post']);
+  assert.equal(mixed.links, 2);
+  assert.equal(mixed.linkText.split('\n').length, 2);
+  assert.equal(planInput('https://1fichier.com/?a\nhttps://mediafire.com/file/x/a.rar').pages.length, 0);
+  assert.equal(planInput('<html><a href="https://x.test/a.rar">a</a></html>').html, true);
+  assert.equal(planInput('   ').links, 0);
+});
+
+test('input: titleFromFiles names a game from its file names', () => {
+  const found = parsePage('https://1fichier.com/?a Some.Great.Game.v1.05.part1.rar\nhttps://1fichier.com/?b Some.Great.Game.v1.05.part2.rar', '', { assumeRar: true });
+  assert.equal(titleFromFiles(found), 'Some Great Game');
+});
+
+test('input: only links, no page, makes a ready preview with a title taken from the files', async () => {
+  const importer = createImporter({ http: { request: () => { throw new Error('no network expected'); } }, store: memoryStore() });
+  const job = await wait(importer, importer.start({ input: 'https://1fichier.com/?b Some.Game.part2.rar\nhttps://1fichier.com/?a Some.Game.part1.rar' }));
+  assert.equal(job.state, 'ready');
+  assert.equal(job.preview.title, 'Some Game');
+  assert.deepEqual(job.preview.batches[0].hosts[0].links.map((link) => link.part), [1, 2]);
+});
+
+test('input: an address plus links reads the page and puts the pasted links first', async () => {
+  const html = page('two-batches.html');
+  const importer = createImporter({ http: { request: async () => ({ ok: true, status: 200, text: async () => html }) }, store: memoryStore() });
+  const job = await wait(importer, importer.start({ input: `${SITE}\nhttps://1fichier.com/?z My.Own.Batch.part1.rar\nhttps://1fichier.com/?y My.Own.Batch.part2.rar` }));
+  assert.equal(job.state, 'ready');
+  assert.equal(job.preview.titleId, 'PPSA01234');
+  assert.match(job.preview.batches[0].label, /^Pasted/);
+  assert.equal(job.preview.batches[0].links, 2);
+  assert.ok(job.preview.batches.length >= 3);
+});
+
+test('input: a site that refuses the console still gives the pasted links, with a notice', async () => {
+  const importer = createImporter({ http: { request: async () => ({ ok: false, status: 403, text: async () => '' }) }, store: memoryStore() });
+  const job = await wait(importer, importer.start({ input: `${SITE}\nhttps://1fichier.com/?a Some.Game.part1.rar\nhttps://1fichier.com/?b Some.Game.part2.rar` }));
+  assert.equal(job.state, 'ready');
+  assert.match(job.preview.notice, /pasted links/);
+  assert.equal(job.preview.batches[0].links, 2);
+});
+
+test('input: a refused address alone fails with a plain sentence, and empty input is refused', async () => {
+  const importer = createImporter({ http: { request: async () => ({ ok: false, status: 403, text: async () => '' }) }, store: memoryStore() });
+  const refused = await wait(importer, importer.start({ input: SITE }));
+  assert.equal(refused.state, 'failed');
+  assert.match(refused.error, /refused/);
+  const none = await wait(importer, importer.start({ input: 'hello there' }));
+  assert.equal(none.state, 'failed');
 });

@@ -725,7 +725,7 @@
   "settings.companion.locked": "Es wurden zu viele falsche PINs eingegeben. Schalte den Handy-Begleiter aus und wieder ein, damit sich Handys wieder anmelden können.",
   "settings.companion.noPin": "Du wählst beim ersten Einschalten eine sechsstellige PIN.",
   "settings.companion.offline": "Verbinde die Konsole mit einem Netzwerk, um es zu nutzen.",
-  "settings.companion.open": "Scanne den Code mit der Handykamera oder öffne diese Adresse auf dem Handy und gib dann die PIN ein",
+  "settings.companion.here": "Auf dieser Konsole öffnest du {url} im Webbrowser: dieselbe Seite funktioniert dort, mit derselben PIN", "settings.companion.open": "Scanne den Code mit der Handykamera oder öffne diese Adresse auf dem Handy und gib dann die PIN ein",
   "settings.companion.phones": "{count, plural, one {# Handy angemeldet} other {# Handys angemeldet}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "Startet …",

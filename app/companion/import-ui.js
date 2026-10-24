@@ -53,11 +53,9 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 <section id="import" hidden>
 <div class="panel block" style="margin-top:0">
 <div class="label" style="margin-top:0">Import a game <span>from a post page</span></div>
-<div class="row"><input class="field grow" id="impUrl" type="url" inputmode="url" placeholder="https://&hellip;/the-game-post" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn primary" id="impGo">Fetch</button></div>
-<p class="subtle" style="margin:10px 0 0">The console reads the page and finds the title, Title ID, cover and the .rar links. You pick which batch to keep.</p>
-<div style="margin-top:10px"><button class="btn mini" id="impPasteToggle" type="button">Paste the links instead</button></div>
-<div id="impPaste" hidden style="margin-top:10px"><textarea class="field" id="impText" placeholder="Paste the download links (one per line), or the page's source" spellcheck="false" autocapitalize="off"></textarea>
-<div class="row" style="margin-top:8px"><input class="field grow" id="impPasteUrl" type="url" placeholder="Page address (optional, for the cover and title)" autocomplete="off" autocapitalize="off"><button class="btn primary" id="impRead">Read</button></div></div>
+<textarea class="field" id="impInput" rows="3" placeholder="Paste a post's address, download links (any order, one per line), or both" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+<div class="row" style="margin-top:8px"><button class="btn primary grow" id="impGo">Fetch</button><button class="btn" id="impClear" type="button">Clear</button></div>
+<p class="subtle" style="margin:10px 0 0">The console reads the page for the title, Title ID, cover and .rar links, and sorts any links you paste into their parts. You pick which batch to keep.</p>
 <div class="subtle" id="impStatus" style="margin-top:10px" role="status"></div>
 </div>
 <div id="impEditor" hidden>
@@ -88,18 +86,18 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
   var ID_PATTERN = /^(?:CUSA|PPSA)[0-9]{5}$/;
   function impStatus(text, busy) { var s = $("impStatus"); s.textContent = ""; if (busy) s.appendChild(el("span", "spin")); s.appendChild(document.createTextNode(text || "")); }
-  function impReset() { clearInterval(imp.timer); imp.preview = null; $("impEditor").hidden = true; imp.busy = false; $("impGo").disabled = false; $("impRead").disabled = false; }
+  function impReset() { clearInterval(imp.timer); imp.preview = null; $("impEditor").hidden = true; imp.busy = false; $("impGo").disabled = false; }
   function impStart(body) {
     if (imp.busy) return;
-    impReset(); imp.busy = true; $("impGo").disabled = true; $("impRead").disabled = true;
-    impStatus("Reading the page on the console…", true);
+    impReset(); imp.busy = true; $("impGo").disabled = true;
+    impStatus("Reading on the console…", true);
     api("POST", "/api/import/fetch", body).then(function (r) {
       var tries = 0;
       imp.timer = setInterval(function () {
         tries++;
         api("GET", "/api/import/job?id=" + encodeURIComponent(r.job)).then(function (job) {
-          if (job.state === "fetching") { if (tries > 70) impFail("The page took too long. Try again, or paste its links."); return; }
-          clearInterval(imp.timer); imp.busy = false; $("impGo").disabled = false; $("impRead").disabled = false;
+          if (job.state === "fetching") { if (tries > 70) impFail("The page took too long. Try again, or paste its download links into the box."); return; }
+          clearInterval(imp.timer); imp.busy = false; $("impGo").disabled = false;
           if (job.state === "failed") return impFail(job.error);
           impShow(job.preview);
         }).catch(function (e) { impFail(e.message); });
@@ -107,8 +105,8 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     }).catch(function (e) { impFail(e.message); });
   }
   function impFail(message) {
-    clearInterval(imp.timer); imp.busy = false; $("impGo").disabled = false; $("impRead").disabled = false;
-    impStatus(message); $("impPaste").hidden = false;
+    clearInterval(imp.timer); imp.busy = false; $("impGo").disabled = false;
+    impStatus(message);
   }
   function hostList(batch) { return batch.hosts.filter(function (h) { return h.on; }); }
   function impShow(preview) {
@@ -119,8 +117,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     imp.other = preview.other && preview.other.length ? { key: "other", label: "Other files (not .rar)", on: false, open: false, sizeGb: null, warnings: [], hosts: groupOther(preview.other) } : null;
     $("impTitle").value = preview.title || ""; $("impId").value = preview.titleId || "";
     var found = preview.batches.length;
-    impStatus(found ? "Found " + found + " batch" + (found === 1 ? "" : "es") + ". Untick what you don't want." : "No .rar links found on that page. You can paste the links instead.");
-    if (!found && !imp.other) $("impPaste").hidden = false;
+    impStatus((preview.notice ? preview.notice + " " : "") + (found ? "Found " + found + " batch" + (found === 1 ? "" : "es") + ". Untick what you don't want." : "No .rar links found. Paste the download links into the box."));
     $("impEditor").hidden = false; $("impBanner").hidden = true;
     impRender(); window.scrollTo(0, $("impEditor").offsetTop - 70);
   }
@@ -234,7 +231,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     $("impSave").disabled = true;
     api("POST", "/api/import/save", draft()).then(function (r) {
       toast((r.replaced ? "Updated " : "Saved ") + r.entry.title); buzz();
-      impReset(); $("impUrl").value = ""; $("impText").value = ""; impStatus("");
+      impReset(); $("impInput").value = ""; impStatus("");
       $("impBanner").hidden = false; impSaved();
     }).catch(function (e) { toast(e.message, true); impSummary(); });
   }
@@ -252,7 +249,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
         info.appendChild(el("div", "subtle", g.id + " · " + g.links + " link" + (g.links === 1 ? "" : "s") + " · " + (g.batches.length ? g.batches.join(", ") : "")));
         info.appendChild(el("div", "subtle", g.hosts.join(", ")));
         var actions = el("div", "actions");
-        if (g.from) { var again = el("button", "btn mini", "Fetch again"); again.type = "button"; again.onclick = function () { $("impUrl").value = g.from; impStart({ url: g.from }); window.scrollTo(0, 0); }; actions.appendChild(again); }
+        if (g.from) { var again = el("button", "btn mini", "Fetch again"); again.type = "button"; again.onclick = function () { $("impInput").value = g.from; impStart({ input: g.from }); window.scrollTo(0, 0); }; actions.appendChild(again); }
         var drop = el("button", "btn mini danger", "Remove"); drop.type = "button";
         drop.onclick = function () {
           if (!drop.dataset.sure) { drop.dataset.sure = "1"; drop.textContent = "Tap again to remove"; setTimeout(function () { drop.dataset.sure = ""; drop.textContent = "Remove"; }, 3000); return; }
@@ -263,10 +260,8 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       });
     }).catch(function (e) { toast(e.message, true); });
   }
-  $("impGo").onclick = function () { var url = $("impUrl").value.trim(); if (!url) { $("impUrl").focus(); return; } impStart({ url: url }); };
-  $("impUrl").onkeydown = function (e) { if (e.key === "Enter") $("impGo").onclick(); };
-  $("impPasteToggle").onclick = function () { $("impPaste").hidden = !$("impPaste").hidden; if (!$("impPaste").hidden) $("impText").focus(); };
-  $("impRead").onclick = function () { var text = $("impText").value.trim(); if (!text) { $("impText").focus(); return; } impStart({ text: text, url: $("impPasteUrl").value.trim() }); };
+  $("impGo").onclick = function () { var text = $("impInput").value.trim(); if (!text) { $("impInput").focus(); return; } impStart({ input: text }); };
+  $("impClear").onclick = function () { $("impInput").value = ""; impStatus(""); $("impInput").focus(); };
   $("impTitle").oninput = impSummary; $("impId").oninput = function () { this.value = this.value.toUpperCase(); impSummary(); };
   $("impSave").onclick = impSave;
   $("impCancel").onclick = function () { impReset(); impStatus(""); };

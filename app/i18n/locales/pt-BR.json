@@ -725,7 +725,7 @@
   "settings.companion.locked": "Foram tentados PINs errados demais. Desligue e ligue o companion de celular para que os celulares possam entrar de novo.",
   "settings.companion.noPin": "Você escolhe um PIN de seis dígitos na primeira vez que ligar.",
   "settings.companion.offline": "Conecte o console a uma rede para usar.",
-  "settings.companion.open": "Escaneie o código com a câmera do celular ou abra este endereço no celular e digite o PIN",
+  "settings.companion.here": "Neste console, abra {url} no navegador dele: a mesma página funciona lá, com o mesmo PIN", "settings.companion.open": "Escaneie o código com a câmera do celular ou abra este endereço no celular e digite o PIN",
   "settings.companion.phones": "{count, plural, one {# celular conectado} other {# celulares conectados}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "Iniciando…",

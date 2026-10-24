@@ -725,7 +725,7 @@
   "settings.companion.locked": "間違ったPINが何度も入力されました。スマートフォン連携をオフにしてからオンに戻すと、再びサインインできます。",
   "settings.companion.noPin": "初めてオンにするときに、6桁のPINを設定します。",
   "settings.companion.offline": "使うには、本体をネットワークに接続してください。",
-  "settings.companion.open": "スマホのカメラでコードを読み取るか、スマホでこのアドレスを開いて PIN を入力してください",
+  "settings.companion.here": "このコンソールのウェブブラウザで {url} を開いてください。同じページが同じ PIN で使えます", "settings.companion.open": "スマホのカメラでコードを読み取るか、スマホでこのアドレスを開いて PIN を入力してください",
   "settings.companion.phones": "{count, plural, other {サインイン中のスマートフォン#台}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "開始しています…",

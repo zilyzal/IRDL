@@ -725,7 +725,7 @@
   "settings.companion.locked": "Terlalu banyak PIN salah yang dicoba. Matikan lalu nyalakan lagi pendamping ponsel agar ponsel dapat masuk kembali.",
   "settings.companion.noPin": "Anda memilih PIN enam digit saat pertama kali menyalakannya.",
   "settings.companion.offline": "Hubungkan konsol ke jaringan untuk menggunakannya.",
-  "settings.companion.open": "Pindai kode dengan kamera ponsel, atau buka alamat ini di ponsel, lalu masukkan PIN",
+  "settings.companion.here": "Di konsol ini, buka {url} di peramban webnya: halaman yang sama berfungsi di sana, dengan PIN yang sama", "settings.companion.open": "Pindai kode dengan kamera ponsel, atau buka alamat ini di ponsel, lalu masukkan PIN",
   "settings.companion.phones": "{count, plural, other {# ponsel masuk}}",
   "settings.companion.pin": "PIN",
   "settings.companion.starting": "Memulai…",

@@ -95,9 +95,12 @@ The phone companion's **Import** tab turns a post page into a game in your store
 Title ID, so you don't type a catalog by hand. Use it only for pages whose downloads you have the right to
 use.
 
-1. Open the companion on your phone (see above) and tap **Import**.
-2. Paste the post's address and tap **Fetch**. The console reads the page itself (your phone's browser
-   cannot, sites don't allow it), which takes a few seconds.
+1. Open the companion on your phone (see above), or on the console itself at `http://localhost:9898` in its web
+   browser (same PIN), and tap **Import**.
+2. Paste into the one box and tap **Fetch**. It takes a post's address, download links (any order, one per
+   line), or both. The console reads the page itself (your phone's browser cannot, sites don't allow it), which
+   takes a few seconds. Pasted links are sorted into parts and shown first; with no page, the game's name is
+   taken from the file names and you type the Title ID.
 3. Check the **title**, **Title ID** and **cover** (tap another picture to change the cover). If the page has no
    Title ID, type it in (`PPSA12345` or `CUSA12345`); Save stays off until it is valid.
 4. Under **Batches** you get one card per version found on the page, each with its hosts and part counts.
@@ -114,7 +117,8 @@ Saving the same Title ID again replaces the game, so importing again with a batc
 **Remove** takes it out.
 
 **If the site refuses the console** (some sites block anything but a browser), open the page on your phone,
-copy its download links, and use **Paste the links instead**. A list of links, or the page's source, works.
+copy its download links, and paste them into the same box (with or without the address). Links, or the
+page's source, work.
 
 The importer recognises the common file hosts, but it can't know every page layout. If a page splits wrongly,
 use **Show links** to see what it found, and edit the batch name on its card; send me an example page and I can
