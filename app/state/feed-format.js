@@ -96,6 +96,9 @@ import { sourceKind, webURL } from './download-sources.js';
       // Volumes of one set share a record (and a label but for "part N"); one per game unless the feed splits them.
       record: text(raw.record, 80) || `feed-${feedKey}-${gameId}`
     };
+    // The site the link was found on (its host name only), shown under the source.
+    const site = text(raw.site, 80).toLowerCase();
+    if (/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(site)) record.site = site.replace(/^www\./, "");
     const volume = text(raw.volume, 40);
     if (volume) record.volume = volume;
     const password = text(raw.archivePassword, 256);

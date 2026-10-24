@@ -12,6 +12,7 @@
 import { INCOMPLETE_PART, STALE_PARTIAL, cause } from '../downloads/errors.js';
 import { t } from '../i18n/core.js';
 import { archivePassword } from './archive-password.js';
+import { deleteArchiveAfterExtract } from './auto-continue.js';
 import { diagnoseLaunch, launchOutcomes } from './launch-diagnosis.js';
 import { reportLink } from './link-health.js';
 import { BrowserRequired, archiveRefusal, cancellation, createSourceResolver, sourceKind, webURL } from './download-sources.js';
@@ -637,7 +638,6 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         // typed in is not the catalog's.
         const failedSource = job2.parts ? job2.currentSource : job2.release;
         try {
-          if (!job2.directURL && failedSource && sourceKind(failedSource) === "direct") reportLink(failedSource.browserUrl || failedSource.url, cause(error2.message));
         } catch {
         }
         // A link captured from the browser may wait in the queue past its life: refused before a byte
@@ -970,6 +970,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         }
       }
       change();
+      if (!deleteArchiveAfterExtract()) return;
       try {
         await Promise.all(files.flatMap((path) => [path, `${path}.complete`]).map((path) => fs.removeAsync(path)));
         if (job2.release.parts) await fs.removeAsync(setDirectory(job2));

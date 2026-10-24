@@ -111,10 +111,13 @@ import { homebrew } from '../state/homebrew-store.js';
   // asks every second, and a render has no business reading a file that often. Only this module changes
   // them, and it saves through a fresh read, so the other settings (language, vibration) are never
   // overwritten. A PIN in the file that is not six digits (an older build's four) counts as none.
+  // 1.0.0: until the player picks one, the PIN is 989898, and the companion and "keep it on when IRDL is closed"
+  // start on (settings.json holds only an explicit off).
+  var DEFAULT_PIN = "989898";
   var enabledNow = null, pinNow = null;
   var savedPin = () => {
     const pin = loadList(SETTINGS, "settings").companionPin;
-    return typeof pin === "string" && PIN_PATTERN.test(pin) ? pin : "";
+    return typeof pin === "string" && PIN_PATTERN.test(pin) ? pin : DEFAULT_PIN;
   };
   var currentPin = () => pinNow ?? (pinNow = savedPin());
   var SESSION_PATTERN = /^[a-z0-9]{16,64}$/;
@@ -139,7 +142,7 @@ import { homebrew } from '../state/homebrew-store.js';
   }
   var hasPin = () => currentPin() !== "";
   // On means switched on and able to start: a console that had it on before PINs were chosen waits for one.
-  var isEnabled = () => (enabledNow ?? (enabledNow = loadList(SETTINGS, "settings").companion === true)) && hasPin();
+  var isEnabled = () => (enabledNow ?? (enabledNow = loadList(SETTINGS, "settings").companion !== false)) && hasPin();
   function saveSettings(change) {
     saveList(SETTINGS, "settings", { ...loadList(SETTINGS, "settings"), companionCode: void 0, ...change });
   }
@@ -147,7 +150,7 @@ import { homebrew } from '../state/homebrew-store.js';
   var DAEMON = "/app0/companion-daemon.elf";
   var QUEUE_FILE = `/data/ps5-react/${TITLE_ID}/queue/downloads.json`;
   var awayNow = null, awayAnswer = "";
-  var isAway = () => awayNow ?? (awayNow = loadList(SETTINGS, "settings").companionAway === true);
+  var isAway = () => awayNow ?? (awayNow = loadList(SETTINGS, "settings").companionAway !== false);
   // Hands the helper its settings (or "-" to stop it). MODIFIED (0.5.0 Pre Release 3): never waits for its
   // answer here. Waiting for it on the render thread (up to seconds) froze the whole app, which looked like
   // being stuck in Settings. The send itself is a quick local copy; it runs a moment after the switch, and

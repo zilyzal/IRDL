@@ -28,4 +28,27 @@ import { loadList, saveList } from './saved.js';
     return on;
   }
 
-export { autoContinueParts, setAutoContinueParts, useAutoContinueParts };
+// 1.0.0: whether the archive (every part of a set) is deleted once its game has been extracted. On by default.
+  var deleteArchive = null;
+  var deleteListeners = /* @__PURE__ */ new Set();
+  function deleteArchiveAfterExtract() {
+    if (deleteArchive === null) deleteArchive = loadList(SETTINGS, "settings").deleteArchiveAfterExtract !== false;
+    return deleteArchive;
+  }
+  function setDeleteArchiveAfterExtract(on) {
+    deleteArchive = Boolean(on);
+    saveList(SETTINGS, "settings", { ...loadList(SETTINGS, "settings"), deleteArchiveAfterExtract: deleteArchive });
+    for (const listener of deleteListeners) listener(deleteArchive);
+  }
+  function useDeleteArchiveAfterExtract() {
+    const [on, setOn] = useState(deleteArchiveAfterExtract);
+    useEffect(() => {
+      deleteListeners.add(setOn);
+      return () => {
+        deleteListeners.delete(setOn);
+      };
+    }, []);
+    return on;
+  }
+
+export { autoContinueParts, deleteArchiveAfterExtract, setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract };

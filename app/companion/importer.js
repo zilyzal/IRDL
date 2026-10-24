@@ -3,7 +3,7 @@
 // cover and rar batches (state/page-import.js), and the phone shows them to keep or drop. Fetching takes
 // seconds, so a request starts a job the phone asks about every moment; nothing waits inside a request.
 
-import { buildGame, checkPageURL, mergePasted, parsePage, planInput, titleFromFiles } from '../state/page-import.js';
+import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, planInput, titleFromFiles } from '../state/page-import.js';
 
   // The JS heap is 32 MiB for everything: a post page is read whole, so a page is capped. 1.5 MiB covers long
   // posts with comments; a bigger one is cut off (the links come first in nearly every post).
@@ -40,6 +40,14 @@ import { buildGame, checkPageURL, mergePasted, parsePage, planInput, titleFromFi
         const fail = (message) => { job.state = "failed"; job.error = message; };
         const done = (preview, notice = "") => {
           if (!preview.title) preview.title = titleFromFiles(preview);
+          if (!preview.titleId) {
+            const found = titleIdFromLinks(preview, raw);
+            if (found) {
+              preview.titleId = found;
+              preview.titleIds = [found];
+              preview.platform = found.startsWith("CUSA") ? "ps4" : "ps5";
+            }
+          }
           if (notice) preview.notice = notice;
           job.preview = preview;
           job.state = preview.batches.length || preview.other.length || !notice ? "ready" : "failed";

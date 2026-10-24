@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --import ./tests/stub-loader.mjs --test tests/*.test.mjs",
-    "test:render": "node --import ./tests/render/loader.mjs tests/render/links.mjs && SMOKE_GAMES=0 node --import ./tests/render/loader.mjs tests/render/smoke.mjs && SMOKE_GAMES=2 node --import ./tests/render/loader.mjs tests/render/smoke.mjs && node --import ./tests/render/loader.mjs tests/render/update.mjs",
+    "test:render": "SMOKE_GAMES=0 node --import ./tests/render/loader.mjs tests/render/smoke.mjs && SMOKE_GAMES=2 node --import ./tests/render/loader.mjs tests/render/smoke.mjs && node --import ./tests/render/loader.mjs tests/render/update.mjs",
     "test:all": "npm test && npm run test:render"
   }
 }

@@ -147,6 +147,19 @@ import { webURL } from './download-sources.js';
     }
     return [...seen.values()].sort((a, b) => b.count - a.count || a.order - b.order).map((item) => item.id);
   }
+  // The Title ID out of links and file names (".../Game-PPSA01234-v1.05.part1.rar"), where the usual word
+  // boundaries do not hold ("_" counts as a letter there).
+  function titleIdFromLinks(preview, raw = "") {
+    const parts = [String(raw)];
+    for (const batch of preview?.batches ?? []) for (const host of batch.hosts ?? []) for (const link of host.links ?? []) parts.push(link.url || "", link.filename || "");
+    for (const link of preview?.other ?? []) parts.push(link.url || "", link.filename || "");
+    const found = new Map();
+    for (const match of parts.join("\n").matchAll(/(PPSA|CUSA)[\s_-]?(\d{5})(?!\d)/gi)) {
+      const id = `${match[1].toUpperCase()}${match[2]}`;
+      found.set(id, (found.get(id) ?? 0) + 1);
+    }
+    return [...found].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+  }
   // "Game | Site" and "Game » Site" always end in a site name; "Game - Site" only when the tail reads like one,
   // since a hyphen also sets off a subtitle ("Spider-Man 2 - Marvel").
   var SITE_SUFFIX = /\s+[|–—»]\s+[^|–—»]{2,40}$/;
@@ -536,6 +549,15 @@ import { webURL } from './download-sources.js';
   // `draft`: { id, title, cover?, sourceUrl?, batches: [{ key, label, hosts: [{ host, links: [{ url, part?,
   // filename? }] }] }] }, the batches and hosts the player left ticked. Throws a plain sentence when it
   // cannot make a game of it.
+  function randomTint() {
+    const hue = Math.floor(Math.random() * 360), sat = 0.55 + Math.random() * 0.25, light = 0.38 + Math.random() * 0.12;
+    const a = sat * Math.min(light, 1 - light);
+    const channel = (n) => {
+      const k = (n + hue / 30) % 12;
+      return Math.round(255 * (light - a * Math.max(Math.min(k - 3, 9 - k, 1), -1))).toString(16).padStart(2, "0");
+    };
+    return `#${channel(0)}${channel(8)}${channel(4)}`;
+  }
   function buildGame(draft) {
     const id = String(draft?.id ?? "").trim().toUpperCase().replace(/[\s_-]/g, "");
     if (!TITLE_ID_FULL.test(id)) throw new Error("The Title ID must look like PPSA12345 or CUSA12345.");
@@ -543,9 +565,18 @@ import { webURL } from './download-sources.js';
     if (!title) throw new Error("Give the game a title.");
     const releases = [];
     const names = new Set();
+    let site = "";
+    try {
+      site = /^https?:\/\/([^\/:?#\s]+)/i.exec(String(draft?.sourceUrl ?? "").trim())?.[1].toLowerCase().replace(/^www\./, "") ?? "";
+    } catch {
+    }
     for (const batch of Array.isArray(draft?.batches) ? draft.batches.slice(0, 24) : []) {
       const label = squash(batch?.label).slice(0, 60) || "Download";
-      const record = `import-${slug(batch?.key || label)}`;
+      const firstUrl = (Array.isArray(batch?.hosts) ? batch.hosts : []).flatMap((group) => Array.isArray(group?.links) ? group.links : []).find((item) => typeof item?.url === "string")?.url ?? "";
+      let sum = 0;
+      for (const char of firstUrl) sum = (sum * 31 + char.charCodeAt(0)) % 46656;
+      // The same links imported again make the same record (so they replace themselves); other links add a new one.
+      const record = `import-${slug(batch?.key || label)}-${sum.toString(36)}`;
       for (const group of Array.isArray(batch?.hosts) ? batch.hosts.slice(0, 24) : []) {
         const links = (Array.isArray(group?.links) ? group.links : []).filter((item) => typeof item?.url === "string").slice(0, 200);
         links.forEach((item, at) => {
@@ -568,7 +599,8 @@ import { webURL } from './download-sources.js';
             provider: String(group.host || hostName(url)).slice(0, 40),
             format: extension === "7z" || extension === "zip" ? extension : "rar",
             filename,
-            requiresBrowser: needsBrowser(url)
+            requiresBrowser: needsBrowser(url),
+            ...site ? { site } : {}
           });
         });
       }
@@ -583,6 +615,11 @@ import { webURL } from './download-sources.js';
       } catch {
       }
     }
+    // No picture: a colour for the tile, the one the phone picked (a photo's main colour or a random one), else a random one here.
+    if (!art.cover) {
+      const picked = typeof draft?.tint === "string" && /^#[0-9a-f]{6}$/i.test(draft.tint) ? draft.tint : "";
+      art.tint = picked || randomTint();
+    }
     const game = { id, title, platform: id.startsWith("CUSA") ? "ps4" : "ps5", releases };
     if (Object.keys(art).length) game.art = art;
     const sourceUrl = typeof draft?.sourceUrl === "string" ? draft.sourceUrl.trim() : "";
@@ -590,4 +627,4 @@ import { webURL } from './download-sources.js';
     return game;
   }
 
-export { buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, mergePasted, needsBrowser, pageImages, pageTitle, parsePage, planInput, titleFromFiles, versionOf };
+export { titleIdFromLinks, buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, mergePasted, needsBrowser, pageImages, pageTitle, parsePage, planInput, titleFromFiles, versionOf };

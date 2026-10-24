@@ -6,8 +6,6 @@
 // MODIFIED (IRDL): no intro and no reveal; the store opens straight onto the home page.
 // MODIFIED (IRDL): the terms-of-use screen that came between the intro and the store is gone; the store opens
 // as soon as the intro ends (the content notice stays in Settings).
-// MODIFIED (0.5.0 Pre Release 4): a one-time "What's new" panel (ui/WhatsNew.jsx) and the screen saver
-// (ui/ScreenSaver.jsx) sit over the whole app.
 // MODIFIED: the DualSense status light follows the download queue (ui/lightBar.js), and a theme chosen in
 // Settings redraws the store in its accent when Settings closes (the store is keyed on the theme epoch).
 
@@ -45,7 +43,6 @@ import { StoreFreeze, StoreProvider } from './state/store.jsx';
 import { Header } from './ui/Header.jsx';
 import { Legend } from './ui/Legend.jsx';
 import { UpdateDialog } from './ui/UpdateDialog.jsx';
-import { ScreenSaver } from './ui/ScreenSaver.jsx';
 import { useInterfaceHaptics } from './ui/haptics.js';
 import { useInterfaceSounds } from './ui/sounds.js';
 
@@ -121,9 +118,7 @@ import { useInterfaceSounds } from './ui/sounds.js';
           ),
           immersive ? null : /* @__PURE__ */ (0, jsx)(Legend, { screen: top.name }),
           /* @__PURE__ */ (0, jsx)(UpdateDialog, {})
-        ] }),
-        // The screen saver over everything.
-        /* @__PURE__ */ (0, jsx)(ScreenSaver, {})
+        ] })
       ] })
     );
   }

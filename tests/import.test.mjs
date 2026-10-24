@@ -9,7 +9,7 @@ import path from 'node:path';
 const repo = fileURLToPath(new URL('..', import.meta.url));
 const load = (rel) => import(pathToFileURL(path.join(repo, rel)).href);
 const page = (name) => readFileSync(path.join(repo, 'tests/fixtures/pages', name), 'utf8');
-const { parsePage, buildGame, cleanTitle, findTitleIds, versionOf, checkPageURL, needsBrowser } = await load('app/state/page-import.js');
+const { parsePage, buildGame, titleIdFromLinks, cleanTitle, findTitleIds, versionOf, checkPageURL, needsBrowser } = await load('app/state/page-import.js');
 const { createImportedStore } = await load('app/state/imported.js');
 const { createImporter } = await load('app/companion/importer.js');
 const { createCompanionApi } = await load('app/companion/api.js');
@@ -129,7 +129,8 @@ test('import: a draft that cannot make a game says why in a sentence', () => {
   assert.throws(() => buildGame({ ...draftOf(found), batches: [{ label: 'x', hosts: [{ host: 'a', links: [{ url: 'javascript:alert(1)' }] }] }] }), /at least one/);
   const odd = buildGame({ ...draftOf(found), id: ' ppsa 01234 ', cover: 'javascript:alert(1)' });
   assert.equal(odd.id, 'PPSA01234');
-  assert.equal(odd.art, undefined, 'only an http(s) cover is kept');
+  assert.equal(odd.art.cover, undefined, 'only an http(s) cover is kept');
+  assert.match(odd.art.tint, /^#[0-9a-f]{6}$/, 'no picture: a colour tile');
 });
 
 test('import: a single file with no part number stays one release', () => {
@@ -160,7 +161,10 @@ test('imported games: saved, replaced by the same Title ID, listed newest first,
   assert.deepEqual(store.entries().map((entry) => entry.id), ['CUSA00002', 'PPSA01234']);
   const again = store.save(draftOf(found, (batch) => batch.version === 'v1.05'));
   assert.equal(again.replaced, true);
-  assert.equal(store.entries().find((entry) => entry.id === 'PPSA01234').links, 8);
+  assert.equal(store.entries().find((entry) => entry.id === 'PPSA01234').links, 14, 'the same batch replaced itself; the other stays as a source');
+  const merged = store.loadImportedGames().find(({ game }) => game.id === 'PPSA01234');
+  assert.ok(merged.releases[0].label.startsWith('v1.05'), 'the newest import comes first');
+  assert.ok(merged.releases.every((release) => release.site), 'every source names the site it came from');
   const games = store.loadImportedGames();
   assert.deepEqual(games.map(({ game }) => game.id).sort(), ['CUSA00002', 'PPSA01234']);
   assert.deepEqual(store.importedIndex().map(([id]) => id).sort(), ['CUSA00002', 'PPSA01234']);
@@ -339,4 +343,10 @@ test('input: a refused address alone fails with a plain sentence, and empty inpu
   assert.match(refused.error, /refused/);
   const none = await wait(importer, importer.start({ input: 'hello there' }));
   assert.equal(none.state, 'failed');
+});
+
+test('import: a Title ID missing from the page is read from the links', () => {
+  assert.equal(titleIdFromLinks({ batches: [{ hosts: [{ links: [{ url: 'https://host.example/f/Some_Game_PPSA04321_v1.02.part1.rar', filename: '' }] }] }], other: [] }), 'PPSA04321');
+  assert.equal(titleIdFromLinks({ batches: [], other: [] }, 'https://site.example/post/cusa00099-some-game/'), 'CUSA00099');
+  assert.equal(titleIdFromLinks({ batches: [], other: [] }), '');
 });

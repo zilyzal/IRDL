@@ -322,7 +322,8 @@ import { FileSystem, Text, View, useIsFocused } from '@ps5-react/core';
           tag: advice
         }
       ) : null,
-      checkLinks ? /* @__PURE__ */ (0, jsx)(LinkCheck, { gameId: current, onCheck: checkLinks }) : null,
+      // IRDL 1.0.0: no "Check link health" row (state/links.js).
+      null,
       // Links that no longer lead to the file, out of the way until asked for.
       count("unavailable") > 0 && !deadShown ? /* @__PURE__ */ (0, jsx)(View, { onPress: () => setDeadShown(true), style: revealStyle, children: /* @__PURE__ */ (0, jsx)(RevealFace, { icon: "alert", text: t2("links.showDead", { count: count("unavailable") }), note: t2("links.section.deadNote") }) }) : null,
       count("unavailable") > 0 && deadShown ? /* @__PURE__ */ (0, jsx)(

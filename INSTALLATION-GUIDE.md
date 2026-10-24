@@ -1,6 +1,6 @@
 # IRDL installation guide
 
-IRDL 0.5.1 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
+IRDL 1.0.0 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
 
 > [!WARNING]
 > **Download only what you own or have permission to access.** You are responsible for what you
@@ -70,11 +70,12 @@ GitHub release.
 A live dashboard, games, homebrew (install, update and run it), the download queue, your feeds and a
 virtual remote, from your phone. The console serves it, so there is nothing to install.
 
-1. **Settings → Phone companion & remote access**, switch it on.
-2. The first time, **choose a six-digit PIN** (repeated digits like `111111` and runs like `123456` are
-   refused).
+1. The companion is **on by default**, and so is **Keep it on when IRDL is closed**. **Settings → Phone
+   companion & remote access** shows the address and the PIN.
+2. The PIN is **989898** until you change it (**Change PIN**; repeated digits like `111111` and runs like
+   `123456` are refused).
 3. On a phone on the **same Wi-Fi**, open the address shown on the card (usually port `9898`) and enter the
-   PIN.
+   PIN. The **Import** tab is the first page.
 
 Change the PIN under **Change PIN** in the same card; every phone is signed out. Wrong PINs are slowed
 down and the companion locks after 20 (switch it off and on to unlock).
@@ -86,10 +87,12 @@ It steps aside while the app runs, and stops when you switch it off (or the cons
 IRDL once to start it again).
 
 > [!IMPORTANT]
-> Anyone on your network who knows the PIN can sign in while the companion is on. Pick a PIN you don't use
-> elsewhere, and keep it off on a shared network.
+> Anyone on your network who knows the PIN can sign in while the companion is on, and 989898 is the same on
+> every console. Change it, and keep the companion off on a shared network.
 
 ## Importing a game from a post page
+
+(The same steps are in **Settings → Source Addition Guide**, under the phone import guide.)
 
 The phone companion's **Import** tab turns a post page into a game in your store, with its cover, title and
 Title ID, so you don't type a catalog by hand. Use it only for pages whose downloads you have the right to

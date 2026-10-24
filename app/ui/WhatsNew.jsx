@@ -21,8 +21,7 @@ import { colors, radius } from './colors.js';
     { icon: "check", tone: "#38bdf8", title: "whatsNew.ready", detail: "whatsNew.readyDetail" },
     { icon: "globe", tone: "#FF5A61", title: "whatsNew.phone", detail: "whatsNew.phoneDetail" },
     { icon: "search", tone: "#facc15", title: "whatsNew.search", detail: "whatsNew.searchDetail" },
-    { icon: "download", tone: "#a78bfa", title: "whatsNew.parts", detail: "whatsNew.partsDetail" },
-    { icon: "disc", tone: "#f472b6", title: "whatsNew.saver", detail: "whatsNew.saverDetail" }
+    { icon: "download", tone: "#a78bfa", title: "whatsNew.parts", detail: "whatsNew.partsDetail" }
   ];
   var text = (size, color, extra) => ({ fontFamily: "Exo2", fontSize: size, lineHeight: Math.round(size * 1.35), color, ...extra });
   function ButtonFace({ label, primary }) {

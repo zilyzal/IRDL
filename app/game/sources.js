@@ -70,6 +70,7 @@ import { formatBytes } from '../state/size.js';
     const speed = SPEED[release.provider.toLowerCase()];
     const detail2 = [
       host,
+      release.site && release.site !== host ? release.site : null,
       release.debrid ? t("debrid.via") : null,
       isBackport(release) ? t("sources.role.backport") : isDlc(release) ? t("sources.role.dlc") : null,
       parts ? t("sources.parts", { count: parts }) : null,
@@ -132,6 +133,8 @@ import { formatBytes } from '../state/size.js';
     const group = GROUP_RANK[release.unavailableReason ? "unavailable" : access(release)];
     const standing = captureStanding(release);
     return { release, index, group, rank: [
+      // A link imported from a page comes first, the newest import before older ones (it sits earlier in the list).
+      String(release.record ?? "").startsWith("import-") ? index : Number.MAX_SAFE_INTEGER,
       isDlc(release) || isBackport(release) ? 1 : 0,
       release.unavailableReason ? 1 : 0,
       release.linkHealth?.status === "dead" ? 1 : 0,

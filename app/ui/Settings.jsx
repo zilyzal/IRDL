@@ -19,8 +19,7 @@ import { chooseLanguage, languageChoice, systemLocale, useT } from '../i18n/inde
 import { LOCALES } from '../i18n/locales.js';
 import { setTorBoxKey, testTorBox, useDebrid } from '../state/debrid.js';
 import { LIMITS as SPEED_LIMITS, setSpeedLimit, useSpeedLimit } from '../state/speed-limit.js';
-import { setAutoContinueParts, useAutoContinueParts } from '../state/auto-continue.js';
-import { setScreenSaver, showScreenSaver, useScreenSaverOn } from '../state/screen-saver.js';
+import { setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract } from '../state/auto-continue.js';
 import { useNavActions } from '../state/nav.jsx';
 import { downloadQueue, driveName } from '../state/downloads.js';
 import { useDrives } from '../state/drives.js';
@@ -151,16 +150,6 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
       /* @__PURE__ */ (0, jsx)(CardHead, { icon: "star", title: t2("settings.card.feedback") }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:vibration", name: t2("settings.vibration"), detail: t2("settings.vibrationDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: vibration }), onPress: () => setNavigationHaptics(!vibration) }),
       /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.subtle), children: t2("settings.sounds") })
-    ] });
-  }
-  // The screen saver (0.5.0 Pre Release 4; ui/ScreenSaver.jsx): on or off, and a look at it now.
-  function ScreenSaverCard() {
-    const t2 = useT();
-    const on = useScreenSaverOn();
-    return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: CARD, children: [
-      /* @__PURE__ */ (0, jsx)(CardHead, { icon: "disc", title: t2("settings.card.screenSaver") }),
-      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:screenSaver", name: t2("settings.screenSaver"), detail: t2("settings.screenSaverDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on }), onPress: () => setScreenSaver(!on) }),
-      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:screenSaverNow", name: t2("settings.screenSaverNow"), detail: t2("settings.screenSaverNowDetail"), end: /* @__PURE__ */ (0, jsx)(Icon, { name: "play", color: colors.muted }), onPress: showScreenSaver })
     ] });
   }
   // One swatch per preset: its accent filled, the accent frame when focused, a check on the chosen one.
@@ -295,9 +284,12 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
     const t2 = useT();
     const drives = useDrives();
     const autoParts = useAutoContinueParts();
+    const deleteRar = useDeleteArchiveAfterExtract();
     return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: CARD, children: [
       /* @__PURE__ */ (0, jsx)(CardHead, { icon: "download", title: t2("settings.card.downloads") }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:autoParts", name: t2("settings.autoParts"), detail: t2("settings.autoPartsDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: autoParts }), onPress: () => setAutoContinueParts(!autoParts) }),
+      /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
+      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:deleteRar", name: t2("settings.deleteArchive"), detail: t2("settings.deleteArchiveDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: deleteRar }), onPress: () => setDeleteArchiveAfterExtract(!deleteRar) }),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
       /* @__PURE__ */ (0, jsx)(SpeedLimitRow, {}),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
@@ -370,10 +362,20 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
     const t2 = useT();
     const companion = useCompanion();
     const [open, setOpen] = (0, useState)(false);
+    const [importOpen, setImportOpen] = (0, useState)(false);
+    const url = companion.url || "http://192.168.x.x:9898/";
+    const importSteps = [
+      [t2("settings.importGuide.open"), t2("settings.importGuide.openDetail", { url, pin: companion.pin || "989898" })],
+      [t2("settings.importGuide.paste"), t2("settings.importGuide.pasteDetail")],
+      [t2("settings.importGuide.fetch"), t2("settings.importGuide.fetchDetail")],
+      [t2("settings.importGuide.cover"), t2("settings.importGuide.coverDetail")],
+      [t2("settings.importGuide.batches"), t2("settings.importGuide.batchesDetail")],
+      [t2("settings.importGuide.save"), t2("settings.importGuide.saveDetail")]
+    ];
     const steps = [
       [t2("settings.guide.find"), t2("settings.guide.findDetail")],
       [t2("settings.guide.console"), t2("settings.guide.consoleDetail", { count: MAX_FEEDS })],
-      [t2("settings.guide.phone"), t2("settings.guide.phoneDetail", { url: companion.url || "http://192.168.x.x:9898/" })],
+      [t2("settings.guide.phone"), t2("settings.guide.phoneDetail", { url })],
       [t2("settings.guide.mirrors"), t2("settings.guide.mirrorsDetail", { count: MAX_MIRRORS })],
       [t2("settings.guide.refresh"), t2("settings.guide.refreshDetail")],
       [t2("settings.guide.reopen"), t2("settings.guide.reopenDetail")]
@@ -381,7 +383,10 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
     return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: CARD, children: [
       /* @__PURE__ */ (0, jsx)(CardHead, { icon: "list", title: t2("settings.card.guide") }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:guide", name: open ? t2("settings.guide.hide") : t2("settings.guide.show"), detail: t2("settings.guide.detail"), end: /* @__PURE__ */ (0, jsx)(Icon, { name: open ? "chevronUp" : "chevronDown", color: colors.muted }), onPress: () => setOpen((value) => !value) }),
-      ...open ? steps.map(([title, detail], index) => /* @__PURE__ */ (0, jsx)(View, { focusKey: `settings:guide:${index}`, focusable: true, style: STEP, children: /* @__PURE__ */ (0, jsx)(StepFace, { index, title, detail }) }, index)) : []
+      ...open ? steps.map(([title, detail], index) => /* @__PURE__ */ (0, jsx)(View, { focusKey: `settings:guide:${index}`, focusable: true, style: STEP, children: /* @__PURE__ */ (0, jsx)(StepFace, { index, title, detail }) }, index)) : [],
+      /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
+      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:importGuide", name: importOpen ? t2("settings.importGuide.hide") : t2("settings.importGuide.show"), detail: t2("settings.importGuide.detail"), end: /* @__PURE__ */ (0, jsx)(Icon, { name: importOpen ? "chevronUp" : "chevronDown", color: colors.muted }), onPress: () => setImportOpen((value) => !value) }),
+      ...importOpen ? importSteps.map(([title, detail], index) => /* @__PURE__ */ (0, jsx)(View, { focusKey: `settings:importGuide:${index}`, focusable: true, style: STEP, children: /* @__PURE__ */ (0, jsx)(StepFace, { index, title, detail }) }, `i${index}`)) : []
     ] });
   }
   // What the update row says: checking, a newer version (downloading, ready to install, or not installed),
@@ -487,7 +492,7 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
       downloads: [/* @__PURE__ */ (0, jsx)(DownloadsCard, {}, "downloads")],
       feeds: [/* @__PURE__ */ (0, jsx)(FeedsCard, { onAdd: () => setAdding(true), onMirror: setMirrorOf }, "feeds")],
       debrid: [/* @__PURE__ */ (0, jsx)(DebridCard, { onKey: () => setKeying(true) }, "debrid")],
-      look: [/* @__PURE__ */ (0, jsx)(ThemeCard, {}, "theme"), /* @__PURE__ */ (0, jsx)(LanguageCard, {}, "language"), /* @__PURE__ */ (0, jsx)(FeedbackCard, {}, "feedback"), /* @__PURE__ */ (0, jsx)(ScreenSaverCard, {}, "screenSaver")],
+      look: [/* @__PURE__ */ (0, jsx)(ThemeCard, {}, "theme"), /* @__PURE__ */ (0, jsx)(LanguageCard, {}, "language"), /* @__PURE__ */ (0, jsx)(FeedbackCard, {}, "feedback")],
       guide: [/* @__PURE__ */ (0, jsx)(GuideCard, {}, "guide")],
       about: [/* @__PURE__ */ (0, jsx)(AboutCard, {}, "about"), /* @__PURE__ */ (0, jsx)(NoticeCard, {}, "notice")]
     };

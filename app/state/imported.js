@@ -44,6 +44,7 @@ import { loadList, saveList } from './saved.js';
           title: String(raw.title || raw.id),
           platform: raw.platform === "ps4" ? "ps4" : "ps5",
           cover: typeof raw.art?.cover === "string" ? raw.art.cover : null,
+          tint: typeof raw.art?.tint === "string" ? raw.art.tint : null,
           links: releases.length,
           batches: [...labels].filter(Boolean),
           hosts: [...new Set(releases.map((release) => String(release.provider || "")).filter(Boolean))],
@@ -63,11 +64,16 @@ import { loadList, saveList } from './saved.js';
       // It has to survive the same checks the catalog applies, or it would be dropped silently at the next launch.
       const checked = parseFeed({ version: 1, name: "check", games: [raw] }, KEY);
       if (!checked.games.length) throw new Error("None of those links could be used.");
-      if (at >= 0) games[at] = raw;
-      else games.push(raw);
+      // The same game again: its new batches come first (so the newest link is the default download), the same
+      // batches replace themselves, and the batches imported before stay as other sources.
+      if (at >= 0) {
+        const fresh = new Set(raw.releases.map((release) => release.record));
+        const kept = (games[at].releases || []).filter((release) => !fresh.has(release.record));
+        games[at] = { ...raw, releases: [...raw.releases, ...kept].slice(0, 200), art: Object.keys(raw.art || {}).length ? raw.art : games[at].art };
+      } else games.push(raw);
       write(games);
       restartNeeded = true;
-      return { entry: entries().find((entry) => entry.id === raw.id), replaced: at >= 0, restart: true };
+      return { entry: entries().find((entry) => entry.id === raw.id), replaced: at >= 0, restart: true, sources: raw.releases.length };
     }
     function remove(id) {
       const games = readDocument().games;
