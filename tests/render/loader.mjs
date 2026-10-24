@@ -46,8 +46,29 @@ export const useNavigationEvents = () => {};
 export default {};
 `;
 const fakes = {
+  '/state/store.jsx': `
+const state = () => globalThis.__fake.storeState;
+const actions = () => new Proxy({}, { get: () => () => {} });
+export const useStoreState = () => state();
+export const useStoreActions = actions;
+export const useStore = () => ({ ...state(), ...actions() });
+export const useQuery = () => state().query;
+export const useQueryActive = () => false;
+export const useWishlist = () => state().wishlist;
+export const StoreFreeze = ({ children }) => children;
+export const StoreProvider = ({ children }) => children;`,
+  '/state/nav.jsx': `
+const actions = () => new Proxy({}, { get: () => () => {} });
+export const useNavState = () => ({ top: { name: 'browse' }, stack: [{ name: 'browse' }, { name: 'game', id: 'x' }], history: [{ name: 'browse' }, { name: 'game', id: 'x' }] });
+export const useNavActions = actions;
+export const useIsImmersive = () => false;
+export const useImmersive = () => {};
+export const NavProvider = ({ children }) => children;`,
   '/downloads/useQueue.js': `
 export const useJobs = () => ({ jobs: globalThis.__fake.jobs });
+export const useProgress = () => ({ written: 0, total: 0, bytesPerSecond: 0 });
+export const subscribe2 = () => () => {};
+export const shapeOf = () => ({});
 export const fractionOf = (job) => job?.total ? job.written / job.total : 0;
 export const useQueue = () => ({ jobs: globalThis.__fake.jobs });`,
   '/state/drives.js': `

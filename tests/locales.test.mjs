@@ -15,8 +15,8 @@ const english = read('en.json');
 const names = (text) => [...new Set([...text.matchAll(/(?<!(?:\b(?:zero|one|two|few|many|other)|=\d+)\s*)\{(\w+)\s*[,}]/g)].map((match) => match[1]))].sort().join(',');
 const others = readdirSync(dir).filter((file) => file.endsWith('.json') && file !== 'en.json');
 
-test('there are 13 translations next to the English file', () => {
-  assert.equal(others.length, 13);
+test('there is one translation, Persian next to the English file', () => {
+  assert.equal(others.length, 1);
 });
 
 for (const file of others) {

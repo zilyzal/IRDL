@@ -1980,8 +1980,8 @@ test('boot confirmation: the installer starts once, from Boot, before the store 
   const update = readFileSync(path.join(repo, 'app/state/update.js'), 'utf8');
   const boot = index.slice(index.indexOf('function Boot()'));
   assert.match(boot, /useEffect\)\(\(\) => startInstaller\(\), \[\]\)/, 'Boot starts the installer on its first render');
-  assert.ok(boot.indexOf('startInstaller()') < boot.indexOf('setBooted(true)'), 'before the store is involved');
-  assert.doesNotMatch(index, /Disclaimer/, 'no terms screen between the intro and the store');
+  assert.ok(boot.indexOf('startInstaller()') < boot.indexOf('StoreProvider'), 'before the store is involved');
+  assert.doesNotMatch(index, /Disclaimer|Splash|Reveal/, 'no terms screen, intro or reveal between launch and the home page');
   assert.match(update, /if \(installerStarted\) return;\s*installerStarted = true;/, 'once per launch');
   assert.match(update, /function startUpdateChecks\(\) \{\s*startInstaller\(\);/, 'the update checks rely on it, not repeat it');
 });

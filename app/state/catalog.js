@@ -301,4 +301,7 @@ for (const { game: feedGame, page, releases } of [...loadFeedGames(), ...loadImp
   }
   var formatDate3 = (iso) => iso ? formatDate2(iso) : "\u2014";
 
-export { CDN_HOST, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };
+// IRDL: how many games the store holds (none until one is imported or a feed brings some).
+var gameCount = () => games.length;
+
+export { CDN_HOST, gameCount, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };

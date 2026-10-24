@@ -3,7 +3,7 @@
 // MODIFIED: IRDL; catalog feeds refresh in the background once the store is up.
 // MODIFIED: the phone companion starts with the store when Settings left it on.
 // MODIFIED: pages run from under the floating top island to above the button hints (PAGE_TOP, PAGE_BOTTOM).
-// MODIFIED: after the startup notice the store comes out of a vortex reveal (ui/Reveal.jsx).
+// MODIFIED (IRDL): no intro and no reveal; the store opens straight onto the home page.
 // MODIFIED (IRDL): the terms-of-use screen that came between the intro and the store is gone; the store opens
 // as soon as the intro ends (the content notice stays in Settings).
 // MODIFIED (0.5.0 Pre Release 4): a one-time "What's new" panel (ui/WhatsNew.jsx) and the screen saver
@@ -44,8 +44,6 @@ import { NavProvider, useIsImmersive, useNavActions, useNavState } from './state
 import { StoreFreeze, StoreProvider } from './state/store.jsx';
 import { Header } from './ui/Header.jsx';
 import { Legend } from './ui/Legend.jsx';
-import { Splash } from './ui/Splash.jsx';
-import { Reveal } from './ui/Reveal.jsx';
 import { UpdateDialog } from './ui/UpdateDialog.jsx';
 import { ScreenSaver } from './ui/ScreenSaver.jsx';
 import { WhatsNew } from './ui/WhatsNew.jsx';
@@ -70,10 +68,6 @@ import { useInterfaceSounds } from './ui/sounds.js';
   // Pages start under the top island (Header.jsx: 24 from the top, 80 tall) with a gap, and end above
   // the button hints (Legend, 60 tall).
   var PAGE_TOP = 128, PAGE_BOTTOM = 60;
-  // The store comes up out of the vortex (ui/Reveal.jsx): it is mounted, still, under the reveal's backdrop,
-  // which fades once the JL mark has popped and flown toward the island; the reveal unmounts when done.
-  // CURTAIN_MS only covers a reveal that never reports back.
-  var CURTAIN_MS = 3600;
   // A screen slides in over the one it replaces: the full-screen container is translated, never faded or
   // scaled (a full-screen fade repaints every frame of it).
   var SCREEN_FADE = { type: "tween", duration: 0.32, ease: [0.22, 1, 0.36, 1] };
@@ -135,17 +129,10 @@ import { useInterfaceSounds } from './ui/sounds.js';
       ] })
     );
   }
-  // The intro owns the screen until it ends, then the startup notice does: the store is mounted by the
-  // notice's `onDone`, so no page, cover or catalog work happens underneath either of them.
+  // IRDL: no intro, no startup notice and no reveal. The store mounts as soon as the app starts, so the first thing
+  // on screen is the home page; anything that can fail there fails where it can be seen, not behind an animation.
   function Boot() {
-    const [introDone, setIntroDone] = (0, useState)(false);
-    // The intro starts leaving (it slides up) while the startup notice is already mounted under it.
-    const [introLeaving, setIntroLeaving] = (0, useState)(false);
-    const [booted, setBooted] = (0, useState)(false);
-    const [curtain, setCurtain] = (0, useState)(true);
     const theme = useThemeEpoch();
-    // This build says it started right away (state/update.js startInstaller): after an update the updater
-    // waits for that, and the startup notice below can stay up for as long as the player likes.
     // The debug log (services/logger.js) opens first, so everything after it, the speed limit included, is in it.
     (0, useEffect)(() => {
       let facts = {};
@@ -157,26 +144,11 @@ import { useInterfaceSounds } from './ui/sounds.js';
       // What the title-ID migration did as the app loaded, now that the debug log is open.
       for (const line of migrationLog) console.log(line);
     }, []);
+    // This build says it started right away (state/update.js startInstaller): after an update the updater
+    // waits for that.
     (0, useEffect)(() => startInstaller(), []);
     // The saved download speed limit, handed to the engine before any download starts.
     (0, useEffect)(() => applySpeedLimit(), []);
-    (0, useEffect)(() => {
-      if (!booted) return void 0;
-      const id = setTimeout(() => setCurtain(false), CURTAIN_MS);
-      return () => clearTimeout(id);
-    }, [booted]);
-    // IRDL: no terms screen; the store mounts as soon as the intro starts leaving.
-    (0, useEffect)(() => {
-      if (introDone || introLeaving) setBooted(true);
-    }, [introDone, introLeaving]);
-    // The intro reports itself (about 2.5s); this only covers an animation callback that never
-    // arrives, where a stuck intro forever is worse than a store without it.
-    (0, useEffect)(() => {
-      const id = setTimeout(() => setIntroDone(true), 5e3);
-      return () => clearTimeout(id);
-    }, []);
-    return /* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080, backgroundColor: colors.canvas }, children: booted
-      ? [/* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080 }, children: /* @__PURE__ */ (0, jsx)(LocaleProvider, { children: /* @__PURE__ */ (0, jsx)(StoreProvider, { children: /* @__PURE__ */ (0, jsx)(NavProvider, { children: /* @__PURE__ */ (0, jsx)(App, {}) }) }) }) }, `store:${theme}`), curtain ? /* @__PURE__ */ (0, jsx)(Reveal, { onDone: () => setCurtain(false) }, "curtain") : null]
-      : [introDone ? null : /* @__PURE__ */ (0, jsx)(Splash, { onExit: () => setIntroLeaving(true), onDone: () => setIntroDone(true) }, "intro")] });
+    return /* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080, backgroundColor: colors.canvas }, children: /* @__PURE__ */ (0, jsx)(View, { style: { width: 1920, height: 1080 }, children: /* @__PURE__ */ (0, jsx)(LocaleProvider, { children: /* @__PURE__ */ (0, jsx)(StoreProvider, { children: /* @__PURE__ */ (0, jsx)(NavProvider, { children: /* @__PURE__ */ (0, jsx)(App, {}) }) }) }) }, `store:${theme}`) });
   }
   AppRegistry.registerComponent("irdl", () => () => /* @__PURE__ */ (0, jsx)(Boot, {}));

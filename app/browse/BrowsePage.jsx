@@ -9,16 +9,14 @@ import '../assets/JetBrainsMono-Regular.ttf';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import { memo, useState } from 'react';
 import { Catalog } from './Catalog.jsx';
-import { CdnRail } from './CdnRail.jsx';
 import { ContinueRow } from './ContinueRow.jsx';
 import { FilterDrawer } from './FilterDrawer.jsx';
-import { GenreRail } from './GenreRail.jsx';
 import { PageHints } from './PageHints.jsx';
-import { PopularRail } from './PopularRail.jsx';
 import { RecentRow } from './RecentRow.jsx';
-import { Spotlight } from './Spotlight.jsx';
-import { FeaturedLane, HomebrewLane, ReadyLane, RecentLane, TopLane } from './Lanes.jsx';
+import { HomeHero } from './HomeHero.jsx';
+import { HomebrewLane } from './Lanes.jsx';
 import { useT } from '../i18n/index.js';
+import { gameCount } from '../state/catalog.js';
 import { StoreFreeze } from '../state/store.jsx';
 import { useFavoriteAction } from '../ui/GameCard.jsx';
 import { Logo } from '../ui/Logo.jsx';
@@ -32,23 +30,18 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
       /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 21, color: colors.subtle, lineHeight: 30 }, children: t2("browse.footer") })
     ] });
   }
+  // IRDL has no bundled catalog, so there is no spotlight, no ranked lanes and no genre rails: the panel that says
+  // how to add games, what is downloading, the games themselves, and the Homebrew lane. With no game yet, the
+  // grid is left out (it would only say "nothing matches").
   var Sections = (0, memo)(function Sections2({ onOpenFilters }) {
     const onAction = useFavoriteAction();
+    const any = gameCount() > 0;
     return /* @__PURE__ */ (0, jsx)(FocusScope, { trap: true, onAction, children: /* @__PURE__ */ (0, jsxs)(ScrollView, { style: { flex: 1, gap: 60, paddingHorizontal: 48 }, children: [
-      /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: { gap: 24, paddingTop: 24 }, children: [
-        /* @__PURE__ */ (0, jsx)(Spotlight, {})
-      ] }),
-      /* @__PURE__ */ (0, jsx)(FeaturedLane, {}),
-      /* @__PURE__ */ (0, jsx)(ReadyLane, {}),
-      /* @__PURE__ */ (0, jsx)(ContinueRow, {}),
-      /* @__PURE__ */ (0, jsx)(PopularRail, {}),
-      /* @__PURE__ */ (0, jsx)(RecentLane, {}),
+      /* @__PURE__ */ (0, jsx)(View, { scrollAnchor: true, style: { gap: 24, paddingTop: 24 }, children: /* @__PURE__ */ (0, jsx)(HomeHero, {}) }),
+      any ? /* @__PURE__ */ (0, jsx)(ContinueRow, {}) : null,
+      any ? /* @__PURE__ */ (0, jsx)(RecentRow, {}) : null,
+      any ? /* @__PURE__ */ (0, jsx)(Catalog, { onOpenFilters }) : null,
       /* @__PURE__ */ (0, jsx)(HomebrewLane, {}),
-      /* @__PURE__ */ (0, jsx)(TopLane, {}),
-      /* @__PURE__ */ (0, jsx)(RecentRow, {}),
-      /* @__PURE__ */ (0, jsx)(CdnRail, {}),
-      /* @__PURE__ */ (0, jsx)(GenreRail, {}),
-      /* @__PURE__ */ (0, jsx)(Catalog, { onOpenFilters }),
       /* @__PURE__ */ (0, jsx)(Footer, {})
     ] }) });
   });
