@@ -13,6 +13,7 @@ export const createContext = () => ({});
 export const useContext = () => ({});
 export const memo = (component) => component;
 export const FileSystem = { dataDir: '/download0', exists: () => false, readFile: () => '', writeFile() {}, mkdir() {}, rename() {}, stat: () => null, readDir: () => [] };
+export const Image = { warm() {} };
 export const Platform = { OS: 'desktop' };
 export const Http = {};
 export const Downloads = {};

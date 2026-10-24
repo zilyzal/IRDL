@@ -6,7 +6,7 @@
 // hooks below). It reads only the id lists kept in memory; nothing here opens a file or the network.
 
 import { useEffect, useState } from 'react';
-import { bundledIndex } from './catalog.js';
+import { bundledIndex, currentCatalogVersion, onCatalogChange } from './catalog.js';
 import { feedIndexVersion, feedIndexes, subscribeFeeds } from './feeds.js';
 import { importedIndex } from './imported.js';
 
@@ -18,11 +18,12 @@ import { importedIndex } from './imported.js';
     for (const flag of seen.values()) direct += flag;
     return { titles: seen.size, direct };
   }
-  var cached = null, cachedAt = -1;
+  var cached = null, cachedAt = -1, cachedCatalog = -1;
   // The current count, recomputed only when a feed's list changed since the last one.
   function libraryCount() {
     const version = feedIndexVersion();
-    if (!cached || version !== cachedAt) {
+    if (!cached || version !== cachedAt || cachedCatalog !== currentCatalogVersion()) {
+      cachedCatalog = currentCatalogVersion();
       const feeds = feedIndexes();
       cached = { ...tally([bundledIndex, importedIndex(), ...feeds]), feeds: feeds.length };
       cachedAt = version;
@@ -34,7 +35,12 @@ import { importedIndex } from './imported.js';
     (0, useEffect)(() => {
       const update = () => setCount(libraryCount());
       update();
-      return subscribeFeeds(update);
+      const stop = subscribeFeeds(update);
+      const stopCatalog = onCatalogChange(update);
+      return () => {
+        stop();
+        stopCatalog();
+      };
     }, []);
     return count;
   }

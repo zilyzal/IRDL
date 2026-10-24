@@ -19,6 +19,7 @@ import { useLocale, useT } from '../i18n/index.js';
 import { FIRST_KEY, KeyboardSheet } from './DockKeyboard.jsx';
 import { forgetSearch, rememberSearch, useSearchHistory } from './history.js';
 import { searchGames } from './match.js';
+import { useCatalogVersion } from '../state/catalog-live.js';
 import { HomebrewGrid } from '../homebrew/HomebrewScreen.jsx';
 import { hb } from '../homebrew/palette.js';
 import { FACETS, NO_FILTERS, activeCount, filterGames, optionLabel, sortGames } from '../state/catalog.js';
@@ -135,12 +136,13 @@ import { FocusScope, ScrollView, Text, View, motion } from '@ps5-react/core';
   var GameResults = memo(function GameResults2({ query, filters, wishlist, sort }) {
     const t2 = useT();
     const trimmed = query.trim();
+    const catalogVersion = useCatalogVersion();
     const list = useMemo(() => {
       const passing = filterGames({ filters, query: "", wishlist });
       if (!trimmed) return sortGames(passing, sort);
       const kept = new Set(passing);
       return sortGames(searchGames(trimmed).filter((game) => kept.has(game)), sort);
-    }, [trimmed, filters, wishlist, sort]);
+    }, [trimmed, filters, wishlist, sort, catalogVersion]);
     const title = trimmed ? t2("search.resultsFor", { query: trimmed }) : filters.wishlist ? t2("catalog.favorites") : t2("catalog.library");
     const signature = JSON.stringify([trimmed, filters, sort]);
     return jsxs(View, { scrollAnchor: true, style: { gap: 4 }, children: [

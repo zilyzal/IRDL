@@ -3,6 +3,20 @@
 What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/IRDL/releases)
 carries the files and their SHA-256 checksums.
 
+## 1.0.1
+
+### New
+
+- **A game you import shows up at once.** Saving it on the phone adds it to the running store, with no
+  restart (a removal still waits for the next launch). If adding it live ever fails, the game is still saved and the
+  phone says to reopen IRDL, as before.
+- **"by Zilyzal"**, small, beside the logo.
+
+### Changed
+
+- The credits in Settings and in the README are shortened to one line (the licence notices stay in the app's
+  `notices/` and in `LICENSE`).
+
 ## 1.0.0
 
 ### New

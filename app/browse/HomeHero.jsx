@@ -11,6 +11,7 @@ import { Text, View } from '@ps5-react/core';
 import { useCompanion } from '../companion/service.js';
 import { useLocale, useT } from '../i18n/index.js';
 import { gameCount } from '../state/catalog.js';
+import { useCatalogVersion } from '../state/catalog-live.js';
 import { useNavActions } from '../state/nav.jsx';
 import { Button2 } from '../ui/Button.jsx';
 import { Icon } from '../ui/Icon.jsx';
@@ -38,6 +39,7 @@ import { colors, radius } from '../ui/colors.js';
     const { rtl } = useLocale();
     const { push } = useNavActions();
     const companion = useCompanion();
+    useCatalogVersion();
     const empty = gameCount() === 0;
     const live = companion.enabled && companion.state === "listening" && companion.url;
     return /* @__PURE__ */ (0, jsx)(View, { style: { width: 1824, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface2, padding: 56 }, children: /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: rtl ? "row-reverse" : "row", alignItems: "center", justifyContent: "space-between", gap: 48 }, children: [

@@ -350,3 +350,32 @@ test('import: a Title ID missing from the page is read from the links', () => {
   assert.equal(titleIdFromLinks({ batches: [], other: [] }, 'https://site.example/post/cusa00099-some-game/'), 'CUSA00099');
   assert.equal(titleIdFromLinks({ batches: [], other: [] }), '');
 });
+
+test('live: a game saved from the phone joins the running catalog at once, and saving it again updates it', async () => {
+  const catalog = await load('app/state/catalog.js');
+  const { searchGames } = await load('app/search/match.js');
+  const seen = [];
+  const off = catalog.onCatalogChange((version) => seen.push(version));
+  const before = catalog.gameCount();
+  const make = (extra = {}) => {
+    const raw = buildGame({ id: 'PPSA07777', title: 'Live Quest', sourceUrl: 'https://livesite.test/post/', batches: [{ key: 'a', label: 'v1.00', hosts: [{ host: 'mediafire', links: [{ url: 'https://www.mediafire.com/file/a/Live.part1.rar/file', part: 1 }, { url: 'https://www.mediafire.com/file/b/Live.part2.rar/file', part: 2 }] }] }], ...extra });
+    return parseFeed({ version: 1, name: 'x', games: [raw] }, 'irdl:imported').games[0];
+  };
+  assert.equal(catalog.addImportedGame(make()), true);
+  assert.equal(catalog.gameCount(), before + 1);
+  const game = catalog.getGame('PPSA07777');
+  assert.equal(game.title, 'Live Quest');
+  assert.ok(game.art.tint, 'no cover: a colour tile');
+  assert.equal(game.releases.length >= 1, true);
+  assert.deepEqual(catalog.filterGames({ filters: catalog.NO_FILTERS, query: 'live qu', wishlist: [] }).map((g) => g.id), ['PPSA07777']);
+  assert.deepEqual(searchGames('live quest').map((g) => g.id), ['PPSA07777']);
+  assert.equal(seen.length, 1);
+  // again, with another title and another batch in front: the same entry changes, nothing is added twice
+  assert.equal(catalog.addImportedGame(make({ title: 'Live Quest 2', batches: [{ key: 'b', label: 'v2.00', hosts: [{ host: 'gofile', links: [{ url: 'https://gofile.io/d/xyz' }] }] }] })), true);
+  assert.equal(catalog.gameCount(), before + 1);
+  assert.equal(catalog.getGame('PPSA07777'), game, 'the same object, so open pages keep working');
+  assert.equal(game.title, 'Live Quest 2');
+  assert.ok(game.releases.some((release) => /v2\.00/.test(release.label)));
+  assert.equal(seen.length, 2);
+  off();
+});

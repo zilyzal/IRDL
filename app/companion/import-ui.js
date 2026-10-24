@@ -85,7 +85,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 <div id="impOtherBox" hidden></div>
 <div class="impbar"><div class="grow"><b id="impSummary"></b><span class="subtle" id="impSummary2"></span></div><button class="btn" id="impCancel" type="button">Cancel</button><button class="btn primary" id="impSave" type="button">Save</button></div>
 </div>
-<div class="panel block" id="impBanner" hidden style="border-color:var(--ice)"><b>Saved.</b> <span class="muted">Close and reopen IRDL on the console to see the changes in the store.</span></div>
+<div class="panel block" id="impBanner" hidden style="border-color:var(--ice)"><b>Saved.</b> <span class="muted" id="impBannerText">Close and reopen IRDL on the console to see the changes in the store.</span></div>
 <div class="label">Saved games <span id="impCount"></span></div>
 <div id="impSaved"></div>
 <p class="subtle" id="impEmpty" hidden>Nothing saved yet. Fetch a post above.</p>
@@ -242,13 +242,14 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       }).filter(function (b) { return b.hosts.length; })
     };
   }
+  function bannerText(live) { $("impBannerText").textContent = live ? "It is in the store on the console now: no restart needed." : "Close and reopen IRDL on the console to see the changes in the store."; }
   function impSave() {
     if (problem()) return;
     $("impSave").disabled = true;
     api("POST", "/api/import/save", draft()).then(function (r) {
       toast((r.replaced ? "Updated " : "Saved ") + r.entry.title); buzz();
       impReset(); $("impInput").value = ""; impStatus("");
-      $("impBanner").hidden = false; impSaved();
+      bannerText(r.live); $("impBanner").hidden = false; impSaved();
     }).catch(function (e) { toast(e.message, true); impSummary(); });
   }
   function impSaved() {
@@ -256,7 +257,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       var box = $("impSaved"); box.textContent = "";
       $("impCount").textContent = d.games.length ? String(d.games.length) : "";
       $("impEmpty").hidden = d.games.length > 0;
-      if (d.restart) $("impBanner").hidden = false;
+      if (d.restart) { bannerText(false); $("impBanner").hidden = false; }
       d.games.forEach(function (g) {
         var row = el("div", "panel imp-saved block");
         if (g.cover) row.appendChild(img(null, g.cover)); else { var sw = el("span", "imp-sw"); sw.style.background = g.tint || "#333"; row.appendChild(sw); }
@@ -270,7 +271,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
         drop.onclick = function () {
           if (!drop.dataset.sure) { drop.dataset.sure = "1"; drop.textContent = "Tap again to remove"; setTimeout(function () { drop.dataset.sure = ""; drop.textContent = "Remove"; }, 3000); return; }
           drop.disabled = true;
-          api("DELETE", "/api/import/library?id=" + encodeURIComponent(g.id)).then(function () { toast("Removed " + g.title); impSaved(); $("impBanner").hidden = false; }).catch(function (e) { toast(e.message, true); drop.disabled = false; });
+          api("DELETE", "/api/import/library?id=" + encodeURIComponent(g.id)).then(function () { toast("Removed " + g.title); impSaved(); bannerText(false); $("impBanner").hidden = false; }).catch(function (e) { toast(e.message, true); drop.disabled = false; });
         };
         actions.appendChild(drop); info.appendChild(actions); row.appendChild(info); box.appendChild(row);
       });

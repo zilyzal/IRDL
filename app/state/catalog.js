@@ -12,7 +12,7 @@ import { formats as bundledFormats } from '../data/formats.js';
 import { formatDate2, t } from '../i18n/core.js';
 import { createPageCache } from './page-cache.js';
 import { loadFeedGames } from './feeds.js';
-import { loadImportedGames } from './imported.js';
+import { loadImportedGames, onSaved } from './imported.js';
 import { createReleaseCache } from './release-cache.js';
 import { KINDS, gameFormats, ready1360 } from './formats.js';
 import { FileSystem, Image } from '@ps5-react/core';
@@ -91,19 +91,20 @@ for (const { game: feedGame, page, releases } of [...loadFeedGames(), ...loadImp
     }
   }
   var entries = [...games, ...twins];
-  var _a;
-  for (const game of entries) {
+  function shape(game) {
     Object.setPrototypeOf(game, game.feedPage ? FeedEntry : Entry);
     game.genres = [...new Set(game.genres.flatMap((genre) => genre.split(" / ")).map((genre) => SYNONYMS[genre] ?? genre))];
-    (_a = game.art).cover && (_a.cover = coverSize(game.art.cover));
+    game.art.cover && (game.art.cover = coverSize(game.art.cover));
     if (game.art.coverFallbacks) game.art.coverFallbacks = game.art.coverFallbacks.map(coverSize);
   }
-  for (const game of entries) {
+  function formatsOf(game) {
     const bundled = bundledFormats[game.id]?.split(" ") ?? [];
     const fed = feedReleases.get(game.id);
     const fromFeed = fed?.length ? gameFormats(fed, game.platform) : [];
     game.formats = fromFeed.length ? KINDS.filter((kind) => bundled.includes(kind) || fromFeed.includes(kind)) : bundled;
   }
+  for (const game of entries) shape(game);
+  for (const game of entries) formatsOf(game);
   var editionsByWork = /* @__PURE__ */ new Map();
   for (const game of entries) if (game.work) editionsByWork.set(game.work, [...editionsByWork.get(game.work) ?? [], game]);
   var listed = new Set(games);
@@ -301,7 +302,62 @@ for (const { game: feedGame, page, releases } of [...loadFeedGames(), ...loadImp
   }
   var formatDate3 = (iso) => iso ? formatDate2(iso) : "\u2014";
 
+// IRDL 1.0.1: a game saved from the phone while the app runs joins the catalog at once. Only a game that came from
+// the Import tab is added or changed here (a bundled or feed game is left alone); anything that goes wrong
+// answers false and leaves the game for the next launch, which reads it from imported.json as before.
+var catalogVersion = 0;
+var catalogListeners = /* @__PURE__ */ new Set();
+var currentCatalogVersion = () => catalogVersion;
+function onCatalogChange(listener) {
+  catalogListeners.add(listener);
+  return () => catalogListeners.delete(listener);
+}
+function changed() {
+  pools.clear();
+  countsKept.clear();
+  relatedCache.clear();
+  catalogVersion++;
+  for (const listener of [...catalogListeners]) {
+    try {
+      listener(catalogVersion);
+    } catch (error) {
+      console.log(`catalog: a listener failed: ${error.message}`);
+    }
+  }
+}
+function addImportedGame({ game: feedGame, page, releases }) {
+  const known = byId.get(feedGame.id);
+  if (known && !known.feedPage) return false;
+  const copy = { ...feedGame, feedPage: page, art: { ...feedGame.art } };
+  const previous = feedReleases.get(feedGame.id);
+  feedReleases.set(feedGame.id, releases);
+  releaseCache.drop(dataFile("releases", feedGame.id));
+  try {
+    shape(copy);
+    formatsOf(copy);
+    copy.platforms = [copy.platform];
+    if (known) {
+      // The same game again: its entry keeps its place and its identity (open pages hold it); the fields change.
+      Object.assign(known, { title: copy.title, art: copy.art, providers: copy.providers, direct: copy.direct, feedPage: page, formats: copy.formats, sizeGb: copy.sizeGb });
+      searchTexts.delete(known);
+    } else {
+      games.push(copy);
+      entries.push(copy);
+      byId.set(copy.id, copy);
+      catalogIds.set(copy.id, copy);
+      listed.add(copy);
+    }
+  } catch (error) {
+    if (previous) feedReleases.set(feedGame.id, previous);
+    else feedReleases.delete(feedGame.id);
+    throw error;
+  }
+  changed();
+  return true;
+}
+onSaved(addImportedGame);
+
 // IRDL: how many games the store holds (none until one is imported or a feed brings some).
 var gameCount = () => games.length;
 
-export { CDN_HOST, gameCount, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };
+export { CDN_HOST, addImportedGame, currentCatalogVersion, gameCount, onCatalogChange, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };

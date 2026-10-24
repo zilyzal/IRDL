@@ -1,7 +1,8 @@
 // "Imported games": the games the player saved from the phone's Import tab (companion/importer.js), kept in
 // imported.json in the data folder in the same shape as a catalog feed, so the catalog takes them in exactly as
 // it takes a feed's games (state/catalog.js) and a download from one is queued like any other. A feed is
-// read once as the app opens, so a game saved now shows in the store the next time IRDL is opened.
+// read as the app opens; a game saved while it runs is added live (state/catalog.js listens through onSaved), and
+// only a removal, or a failed live add, waits for the next launch.
 
 import { parseFeed } from './feed-format.js';
 import { buildGame } from './page-import.js';
@@ -16,6 +17,25 @@ import { loadList, saveList } from './saved.js';
   // `load(name, what)` / `persist(name, what, value)`: where the list lives (the data folder; tests give a map).
   function createImportedStore({ load = loadList, persist = saveList } = {}) {
     let restartNeeded = false;
+    // The catalog (state/catalog.js) listens here and adds a saved game to itself while the app runs; a listener
+    // answers true when it did, and the game then needs no restart.
+    const savedListeners = new Set();
+    const onSaved = (listener) => {
+      savedListeners.add(listener);
+      return () => savedListeners.delete(listener);
+    };
+    function applyLive(id) {
+      const full = loadImportedGames().find((item) => item.game.id === id);
+      if (!full) return false;
+      for (const listener of savedListeners) {
+        try {
+          if (listener(full) === true) return true;
+        } catch (error) {
+          console.log(`imported: live update failed: ${error.message}`);
+        }
+      }
+      return false;
+    }
     const readDocument = () => {
       const saved = load(FILE, "imported games");
       return { version: 1, name: "Imported games", games: Array.isArray(saved?.games) ? saved.games : [] };
@@ -72,8 +92,9 @@ import { loadList, saveList } from './saved.js';
         games[at] = { ...raw, releases: [...raw.releases, ...kept].slice(0, 200), art: Object.keys(raw.art || {}).length ? raw.art : games[at].art };
       } else games.push(raw);
       write(games);
-      restartNeeded = true;
-      return { entry: entries().find((entry) => entry.id === raw.id), replaced: at >= 0, restart: true, sources: raw.releases.length };
+      const live = applyLive(raw.id);
+      if (!live) restartNeeded = true;
+      return { entry: entries().find((entry) => entry.id === raw.id), replaced: at >= 0, restart: restartNeeded, live, sources: raw.releases.length };
     }
     function remove(id) {
       const games = readDocument().games;
@@ -83,9 +104,9 @@ import { loadList, saveList } from './saved.js';
       restartNeeded = true;
       return true;
     }
-    return { entries, importedIndex, loadImportedGames, needsRestart: () => restartNeeded, remove, save };
+    return { entries, importedIndex, loadImportedGames, needsRestart: () => restartNeeded, onSaved, remove, save };
   }
   var store = createImportedStore();
-  var { entries, importedIndex, loadImportedGames, needsRestart, remove, save } = store;
+  var { entries, importedIndex, loadImportedGames, needsRestart, onSaved, remove, save } = store;
 
-export { createImportedStore, entries, importedIndex, loadImportedGames, needsRestart, remove, save };
+export { createImportedStore, entries, importedIndex, loadImportedGames, needsRestart, onSaved, remove, save };

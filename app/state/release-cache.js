@@ -10,7 +10,7 @@ import { releaseSets, withReleaseTypes } from './release-sets.js';
   var KEPT2 = 6;
   function createReleaseCache(read) {
     const games2 = /* @__PURE__ */ new Map();
-    return (file, extra = []) => {
+    const read2 = (file, extra = []) => {
       if (!/^data\/releases\/[a-z0-9%_-]+\.json$/i.test(file)) throw new Error("Invalid release data path.");
       let releases = games2.get(file);
       if (!releases) {
@@ -29,6 +29,9 @@ import { releaseSets, withReleaseTypes } from './release-sets.js';
       games2.set(file, releases);
       return releases;
     };
+    // Forgets a game's releases (they changed while the app runs).
+    read2.drop = (file) => games2.delete(file);
+    return read2;
   }
 
 export { createReleaseCache };

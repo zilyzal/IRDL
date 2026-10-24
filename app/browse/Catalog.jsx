@@ -10,6 +10,7 @@ import { SortSelect } from './SortSelect.jsx';
 import { SPAN_MAX, fitBytes } from '../i18n/fit.js';
 import { useLocale, useT } from '../i18n/index.js';
 import { activeCount, filterGames, sortGames } from '../state/catalog.js';
+import { useCatalogVersion } from '../state/catalog-live.js';
 import { useNavActions } from '../state/nav.jsx';
 import { useStore } from '../state/store.jsx';
 import { ButtonGlyph } from '../ui/ButtonHints.jsx';
@@ -105,9 +106,10 @@ import { colors, radius } from '../ui/colors.js';
     const { rtl } = useLocale();
     const store = useStore();
     const { filters, query } = store;
+    const catalogVersion = useCatalogVersion();
     const results = (0, useMemo)(
       () => sortGames(filterGames(store), store.sort),
-      [filters, query, store.wishlist, store.sort]
+      [filters, query, store.wishlist, store.sort, catalogVersion]
     );
     const settled = (0, useRef)(false);
     (0, useEffect)(() => {

@@ -5,7 +5,7 @@
 
 <p align="center">
   <b>A catalog browser and download manager for a jailbroken PS5.</b><br>
-  Version 1.0.0 · Title ID <code>PPSA99573</code> · by zilyzal<br>
+  Version 1.0.1 · Title ID <code>PPSA99573</code> · by zilyzal<br>
   <i>A clean copy of <a href="https://github.com/JVK3R/JobeesLair">JobeesLair</a> by JVK3R (GPL-3.0), with its own Import tab.</i>
 </p>
 
@@ -103,20 +103,13 @@ sudo ../packaging/make-exfat.sh ../stage ../IRDL.exfat IRDL
 The GitHub **build** workflow does the same. The tests need only Node.js 22+: `npm test`.
 
 To publish: raise the version in `app/version.js`, run the build workflow, test the image on a console, then
-publish a release tagged with the same version (`v1.0.0`), with `IRDL.exfat` and `update.zip` attached, so
+publish a release tagged with the same version (`v1.0.1`), with `IRDL.exfat` and `update.zip` attached, so
 installed copies can update themselves.
 
 ## Credits
 
-IRDL is a copy of **[JobeesLair](https://github.com/JVK3R/JobeesLair)** by **JVK3R**, which was inspired by
-**MyLuxy**'s [Overdrive](https://github.com/MyLuxy/overdrive). Thanks also to:
-
-- **drakmor** ([ShadowMount+](https://github.com/drakmor/ShadowMountPlus))
-- **nexgen999** ([PS5 Repository List](https://github.com/nexgen999/PS5-Repository-List)), the source of the
-  Homebrew section's list
-- **Every homebrew developer** whose work the Homebrew section lists
-- **PS5 React — created by half144 and PS5 React contributors.**
-  [github.com/half144/ps5-react](https://github.com/half144/ps5-react)
+Based on [JobeesLair](https://github.com/JVK3R/JobeesLair) by JVK3R and [PS5 React](https://github.com/half144/ps5-react)
+by half144. ShadowMount+ is by drakmor; the Homebrew list comes from nexgen999's PS5 Repository List.
 
 Distributed under the GPL-3.0-or-later ([LICENSE](LICENSE)). Third-party notices are in `notices/` inside the
 app and in `ps5-react/docs/DEPENDENCIES.md`.

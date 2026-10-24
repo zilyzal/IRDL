@@ -415,8 +415,7 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
         /* @__PURE__ */ (0, jsx)(JLMark, { height: 72 }),
         /* @__PURE__ */ (0, jsxs)(View, { style: { flex: 1, gap: 4 }, children: [
           /* @__PURE__ */ (0, jsx)(Text, { style: text(26, colors.fg, { fontWeight: 600 }), children: t2("settings.about.version", { version: VERSION_LABEL }) }),
-          /* @__PURE__ */ (0, jsx)(Text, { style: text(22, colors.glow), children: t2("settings.about.creator", { creator: CREATOR }) }),
-          /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.about.ai", { creator: CREATOR }) })
+          /* @__PURE__ */ (0, jsx)(Text, { style: text(22, colors.glow), children: t2("settings.about.creator", { creator: CREATOR }) })
         ] })
       ] }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:update", name: t2("settings.update.row"), detail: updateDetail(t2, update, install), end: /* @__PURE__ */ (0, jsx)(Icon, { name: update.update ? "download" : "restart", color: update.update ? colors.glow : colors.muted }), onPress: () => update.update ? openUpdateDialog() : void checkForUpdate() }),
@@ -427,7 +426,6 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
         } catch {
         }
       } }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.about.origin") }),
       /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.subtle), children: t2("settings.about.credits") })
     ] });
   }

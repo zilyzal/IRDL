@@ -17,6 +17,7 @@ import { HomeHero } from './HomeHero.jsx';
 import { HomebrewLane } from './Lanes.jsx';
 import { useT } from '../i18n/index.js';
 import { gameCount } from '../state/catalog.js';
+import { useCatalogVersion } from '../state/catalog-live.js';
 import { StoreFreeze } from '../state/store.jsx';
 import { useFavoriteAction } from '../ui/GameCard.jsx';
 import { Logo } from '../ui/Logo.jsx';
@@ -35,6 +36,7 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
   // grid is left out (it would only say "nothing matches").
   var Sections = (0, memo)(function Sections2({ onOpenFilters }) {
     const onAction = useFavoriteAction();
+    useCatalogVersion();
     const any = gameCount() > 0;
     return /* @__PURE__ */ (0, jsx)(FocusScope, { trap: true, onAction, children: /* @__PURE__ */ (0, jsxs)(ScrollView, { style: { flex: 1, gap: 60, paddingHorizontal: 48 }, children: [
       /* @__PURE__ */ (0, jsx)(View, { scrollAnchor: true, style: { gap: 24, paddingTop: 24 }, children: /* @__PURE__ */ (0, jsx)(HomeHero, {}) }),
