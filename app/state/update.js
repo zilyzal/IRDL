@@ -22,6 +22,8 @@ import { Archives, BackHandler, Downloads, FileSystem, Http, Notifications, Plat
   // Installing needs the console: an image that ShadowMount+ mounts, and the payload loader.
   var canInstall = Platform.OS === "ps5";
   // The updater's files (apply.txt, result.txt, booted.txt, updater.log), where updater.elf reads them.
+  // The release the dialog last opened by itself for (offerDialog).
+  var prompts = savedList("update-prompt.json", "update prompt");
   var CONTROL_DIR = "/data/IRDL/update";
   var SETTINGS = "settings.json";
   var automatic = canInstall && loadList(SETTINGS, "settings").autoInstallUpdates === true;
@@ -68,6 +70,7 @@ import { Archives, BackHandler, Downloads, FileSystem, Http, Notifications, Plat
       const { update, checkedAt } = await checker.check({ minAge });
       publish({ update, checkedAt, checking: false, failed: false });
       if (update) installer?.offer(update);
+      if (update) offerDialog(update.version);
     } catch (error2) {
       console.log(`update: check failed: ${error2.message}`);
       publish({ checking: false, failed: true });
@@ -93,13 +96,38 @@ import { Archives, BackHandler, Downloads, FileSystem, Http, Notifications, Plat
   // reuses the last answer instead of asking again. The installer has read what the updater did by then.
   function startUpdateChecks() {
     startInstaller();
-    const first = setTimeout(() => void checkForUpdate({ minAge: HOUR_MS }), CHECK_DELAY_MS);
+    // 0.5.1: an answer that found nothing is asked again at every launch (one small request): a release
+    // published within the hour of the last look went unoffered otherwise, and the dock showed nothing.
+    const first = setTimeout(() => void checkForUpdate({ minAge: checker.known() ? HOUR_MS : 0 }), CHECK_DELAY_MS);
     const daily = setInterval(() => void checkForUpdate(), DAY_MS);
     return () => {
       clearTimeout(first);
       clearInterval(daily);
     };
   }
+  var closeUpdateDialog = () => setDialog(false);
+  // 0.5.1: a newer release is offered the moment a check finds it, the way Prospero Store does: the dialog opens
+  // by itself, with Download and install, then Restart to apply. Once per release (update-prompt.json), so a
+  // Close is respected and only the dock's badge stays; not with automatic installs on (the update downloads
+  // by itself then, and a notice says when it is ready).
+  function offerDialog(version) {
+    if (automatic || dialog || prompts.get().version === version) return;
+    const open = () => {
+      if (state.update?.version !== version || dialog || prompts.get().version === version) return;
+      // Recorded as it is shown, not before: an app closed while this waited would otherwise never offer it.
+      prompts.set({ ...prompts.get(), version });
+      setDialog(true);
+    };
+    open();
+  }
+  // The gamer's download finished and checked out: the dialog comes back with Restart to apply (once per
+  // release, across launches: a ready update is kept over a restart), wherever they are in the app, so the
+  // restart is one press away.
+  installer?.subscribe((next) => {
+    if (next.phase !== "ready" || next.error || automatic || prompts.get().ready === next.version) return;
+    prompts.set({ ...prompts.get(), ready: next.version });
+    if (!dialog) setDialog(true);
+  });
   var dialogListeners = /* @__PURE__ */ new Set();
   function setDialog(open) {
     dialog = open;

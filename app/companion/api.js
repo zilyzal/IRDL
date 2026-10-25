@@ -30,6 +30,9 @@
 //   POST   /api/import/fetch {"input": "…"}   reads a post address and/or pasted download links; answers {"job"}
 //   GET    /api/import/job?id=             the job: fetching | ready (with the page's title, Title ID, cover, batches) | failed
 //   POST   /api/import/save {…draft}       keeps the batches the player ticked as a game in the store
+//   POST   /api/import/catalog {games:[…]}  adds feed games (a few per request) to the store and the running catalog
+//   GET    /api/import/game?id=            one saved game for editing (title, batches, links)
+//   POST   /api/import/edit {id,title,batches,…} applies the edits
 //   GET    /api/import/library             the games saved this way
 //   DELETE /api/import/library?id=         removes one
 
@@ -274,6 +277,35 @@
         if (!body) return failure(400, "Send the game to keep.");
         try {
           return json(200, importer.save(body));
+        } catch (error) {
+          return failure(409, error.message);
+        }
+      },
+      "POST /api/import/catalog": (request) => {
+        if (!importer) return failure(404, "Unknown request.");
+        const body = bodyOf(request);
+        if (!body || !Array.isArray(body.games) || !body.games.length) return failure(400, "Send {\"games\": [ … ]}.");
+        try {
+          return json(200, importer.upload(body.games));
+        } catch (error) {
+          return failure(409, error.message);
+        }
+      },
+      "GET /api/import/game": (request) => {
+        if (!importer) return failure(404, "Unknown request.");
+        try {
+          const found = importer.detail(params(request.query).id || "");
+          return found ? json(200, found) : failure(404, "No such game.");
+        } catch (error) {
+          return failure(409, error.message);
+        }
+      },
+      "POST /api/import/edit": (request) => {
+        if (!importer) return failure(404, "Unknown request.");
+        const body = bodyOf(request);
+        if (!body || typeof body.id !== "string") return failure(400, "Send {\"id\": \"…\", …changes}.");
+        try {
+          return json(200, importer.edit(body.id, body));
         } catch (error) {
           return failure(409, error.message);
         }

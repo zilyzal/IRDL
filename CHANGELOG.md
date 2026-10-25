@@ -3,6 +3,30 @@
 What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/IRDL/releases)
 carries the files and their SHA-256 checksums.
 
+## 1.1.0
+
+### New
+
+- **Upload a catalog from the phone** (Import tab → Upload a catalog). Choose or paste a JSON catalog in the feed
+  format ([FEEDS.md](FEEDS.md)); it is sent in small pieces and every game joins the running store at once.
+  A game that is already there gets the new links in front of its old ones.
+- **Edit a saved game from the phone**: title, batch names, order (the first batch is the default download),
+  delete single links or whole batches, and add links as a new batch.
+- **Phone page in Persian** (the فا / EN button at the top), and a few wording fixes in the app's Persian.
+- **A pop-up when a game is added live**: its cover, a Download button and a smaller Back button.
+- **"Recently added"** replaces "Recently viewed" on the store page.
+- **Two different multipart sets are two batches.** Files only share a batch when their names are identical
+  apart from the part number.
+- Header: the "IRDL" text beside the logo is gone and "by" sits above "Zilyzal". The stray white specks around the
+  logo are cleaned up.
+- The phone's cover chooser and uploader are gone: the cover is the one found on the post page, otherwise a colour tile.
+
+### Fixed (ported from JobeesLair 0.5.1)
+
+- Extracted games start: files are made executable so the game's `eboot.bin` can run after unpacking.
+- Cancelling while a game is extracting, deleting a game no longer holds the download queue, games from a
+  `backport` folder, Rootz direct links, the in-app updater's socket line and release check, and the progress bar.
+
 ## 1.0.1
 
 ### New

@@ -570,8 +570,11 @@ std::string extract(Session& session, CommandData& command, Archive& archive, Cm
     if (header.Dir) {
       if (mkdir(target.c_str(), 0777) && (errno != EEXIST || !plain_directory(target))) return strerror(errno);
     } else {
-      const int fd = open(target.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0666);
+      // MODIFIED (JobeesLair 0.5.1): 0777, as shared/archives.cpp create_file: a game's eboot.bin without the
+      // execute bit is refused by ShellCore before any process exists, and apps copied over FTP are 0777 throughout.
+      const int fd = open(target.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0777);
       if (fd < 0) return strerror(errno);
+      chmod(target.c_str(), 0777);
       session.writer.begin(fd, name);
       session.writing = true;
     }
@@ -653,7 +656,7 @@ size_t suspect_volume(const Session& session, bool early_end) {
   return early_end && session.reading < sources.size() ? session.reading + 1 : 0;
 }
 
-// MODIFIED (IRDL 0.5.0 Pre Release 3): the first volume, 1-based, whose own header numbers it as an
+// MODIFIED (JobeesLair 0.5.0 Pre Release 3): the first volume, 1-based, whose own header numbers it as an
 // earlier place in the set (RAR5 always; RAR 3 and later when the end block stores the number), with the part
 // it is a copy of (1-based); {0, 0} when none is. A link captured for the wrong part of a set downloads a copy
 // of another volume under this one's name: the set is the right size, but UnRAR finds a volume missing.

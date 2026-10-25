@@ -45,6 +45,12 @@ address served it, and a download started from one keeps its identity. A mirror 
 with an error, or answers with something that is not a feed is skipped like any other failure. A mirror
 is only ever used to fetch the feed file; it does not change how games are downloaded.
 
+## Uploading a catalog from your phone
+
+The phone companion's Import tab has **Upload a catalog**: pick a `.json` file in the format below (a feed object, a
+bare list of games, or a single game) and every game is added to the store right away. Uploaded games are kept in
+IRDL's own imported list, can be edited or removed from the same tab, and are merged by `id` with games already there.
+
 ## Format
 
 ```json

@@ -204,4 +204,4 @@ import { sourceKind, webURL } from './download-sources.js';
     };
   }
 
-export { MAX_GAMES, MAX_MIRRORS, feedDocument, parseFeed, parseFeedAsync, stableKey, stableKeyAsync };
+export { MAX_GAMES, MAX_MIRRORS, MAX_RELEASES, MAX_TOTAL_RELEASES, feedDocument, parseFeed, parseFeedAsync, stableKey, stableKeyAsync };

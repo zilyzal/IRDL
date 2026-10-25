@@ -15,9 +15,11 @@ import { CREATOR } from '../version.js';
     const muted = color !== colors.fg;
     return /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: "row", alignItems: "center", gap: 12 }, children: [
       /* @__PURE__ */ (0, jsx)(View, { style: muted ? { opacity: 0.55 } : null, children: /* @__PURE__ */ (0, jsx)(JLMark, { height: px(34) }) }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: [{ fontFamily: "Exo2", fontSize: 26, fontWeight: 600, letterSpacing: 1.2 }, { color }], children: "IRDL" }),
-      // 1.0.1: the maker's name, small, beside the wordmark.
-      /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 15, color: colors.subtle, marginTop: 8 }, children: `by ${CREATOR.charAt(0).toUpperCase()}${CREATOR.slice(1)}` })
+      // 1.1.0: no wordmark; the maker's name sits beside the mark, "by" over the name.
+      /* @__PURE__ */ (0, jsxs)(View, { children: [
+        /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 13, color: colors.subtle }, children: "by" }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 17, fontWeight: 600, color: colors.subtle }, children: `${CREATOR.charAt(0).toUpperCase()}${CREATOR.slice(1)}` })
+      ] })
     ] });
   }
 

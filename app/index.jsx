@@ -42,6 +42,7 @@ import { NavProvider, useIsImmersive, useNavActions, useNavState } from './state
 import { StoreFreeze, StoreProvider } from './state/store.jsx';
 import { Header } from './ui/Header.jsx';
 import { Legend } from './ui/Legend.jsx';
+import { AddedDialog } from './ui/AddedDialog.jsx';
 import { UpdateDialog } from './ui/UpdateDialog.jsx';
 import { useInterfaceHaptics } from './ui/haptics.js';
 import { useInterfaceSounds } from './ui/sounds.js';
@@ -117,7 +118,8 @@ import { useInterfaceSounds } from './ui/sounds.js';
             /* @__PURE__ */ (0, jsx)(motion.View, { initial: { x: 56 }, animate: { x: 0 }, transition: SCREEN_FADE, style: immersive ? { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 } : top.name === "downloads" || top.name === "files" || top.name === "storage" ? { position: "absolute", left: 0, right: 0, top: PAGE_TOP, bottom: PAGE_BOTTOM } : { position: "absolute", left: 0, right: 0, top: PAGE_TOP, bottom: PAGE_BOTTOM }, children: /* @__PURE__ */ (0, jsx)(FocusScope, { focusKey: "screen", children: /* @__PURE__ */ (0, jsx)(Screen, { screen: top }) }) }, key)
           ),
           immersive ? null : /* @__PURE__ */ (0, jsx)(Legend, { screen: top.name }),
-          /* @__PURE__ */ (0, jsx)(UpdateDialog, {})
+          /* @__PURE__ */ (0, jsx)(UpdateDialog, {}),
+          /* @__PURE__ */ (0, jsx)(AddedDialog, {})
         ] })
       ] })
     );

@@ -3,7 +3,7 @@
   "titleId": "PPSA99573",
   "contentId": "UP9000-PPSA99573_00-IRDL000000000000",
   "name": "IRDL",
-  "version": "02.000.001",
+  "version": "02.001.000",
   "render": { "width": 1920, "height": 1080 },
   "surface": { "width": 1920, "height": 1080 },
   "refreshRate": 60,
@@ -23,6 +23,6 @@
   ],
   "filesystemAccess": "console",
   "networking": true,
-  "userAgent": "IRDL/1.0.1 (PS5)",
+  "userAgent": "IRDL/1.1.0 (PS5)",
   "timeoutSeconds": 0
 }

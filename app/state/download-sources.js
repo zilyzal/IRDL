@@ -18,7 +18,8 @@
     buzzheavier: ["buzzheavier.com"],
     vikingfile: ["vikingfile.com", "vik1ngfile.site"],
     datanodes: ["datanodes.to"],
-    filekeeper: ["filekeeper.net"]
+    filekeeper: ["filekeeper.net"],
+    rootz: ["rootz.so"]
   };
   var isHost = (host2, domain) => host2 === domain || host2.endsWith(`.${domain}`);
   // Archive.org answers 401 for a restricted item and 403 for one taken down. Neither is a
@@ -32,6 +33,8 @@
     }
     return /\bHTTP (401|403)\b/.exec(message)?.[1] ?? null;
   }
+  // The hosts this resolver reaches the file of without the browser, whatever the catalog says.
+  var RESOLVED_KINDS = /* @__PURE__ */ new Set(["filekeeper", "rootz"]);
   function sourceKind(release) {
     if (release.debrid) return "debrid";
     if (release.manifestUrl) return "manifest";
@@ -101,6 +104,23 @@
     // posts op=download2 with the file's code, and the answer redirects to the file on Datanodes'
     // dlproxy.uk gateway. The page keeps the file in a cookie the engine never hands to the app, so the
     // same form goes to the file's own address, /<code>, which needs none, once the countdown is out.
+    // 0.5.1: Rootz's page (/d/<id>) is a script that sends the browser to /api/files/proxy-download/<id>,
+    // which redirects to the file on its CDN (cdn-files.alcyone.so) with no check of any kind. The console
+    // browser seldom got that far, so the address is asked for here. A missing file answers 404; a
+    // DDoS-Guard challenge (403) falls back to the browser.
+    async function rootz(url, signal) {
+      const id = /^\/d\/([A-Za-z0-9_-]{4,32})(?:[/?#]|$)/.exec(webURL(url).path)?.[1];
+      if (!id) throw new BrowserRequired(url);
+      const next = await request(`https://www.rootz.so/api/files/proxy-download/${id}`, { signal, followRedirects: false, headers: { Referer: url } });
+      const location2 = next.headers?.location;
+      console.log("[sources] rootz", id, "answered HTTP", next.status, location2 ? `with ${webURL(absolute(location2, url)).host}` : "without a file");
+      if (!location2) throw new BrowserRequired(url);
+      const file = absolute(location2, url);
+      const head = await request(file, { method: "HEAD", signal });
+      if (htmlResponse(head) || head.status >= 300) throw new BrowserRequired(url);
+      const bytes = Number(head.headers?.["content-length"]);
+      return { url: webURL(head.url || file).url, rejectHtml: true, ...Number.isSafeInteger(bytes) && bytes > 0 ? { expectedBytes: bytes } : {} };
+    }
     async function fileKeeper(url, signal) {
       const code = /^\/([a-z0-9]{12})(?:[/?]|$)/i.exec(webURL(url).path)?.[1];
       if (!code) throw new BrowserRequired(url);
@@ -139,6 +159,7 @@
       }
       if (kind === "browser" || kind === "datanodes") throw new BrowserRequired(url);
       if (kind === "filekeeper") return fileKeeper(url, signal);
+      if (kind === "rootz") return rootz(url, signal);
       const response = await request(url, { signal });
       const base = response.url || url;
       if (response.headers?.["content-disposition"]?.includes("attachment")) return direct(base, signal);
@@ -173,4 +194,4 @@
     } };
   }
 
-export { archiveRefusal, BrowserRequired, cancellation, createSourceResolver, sourceKind, webURL };
+export { archiveRefusal, BrowserRequired, RESOLVED_KINDS, cancellation, createSourceResolver, sourceKind, webURL };

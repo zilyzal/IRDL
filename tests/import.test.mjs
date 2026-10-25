@@ -379,3 +379,47 @@ test('live: a game saved from the phone joins the running catalog at once, and s
   assert.equal(seen.length, 2);
   off();
 });
+
+test('import: two different multipart sets under one heading are two batches; one set stays together', () => {
+  const links = [
+    ...[1, 2, 3].map((n) => `https://1fichier.com/?aaa${n}  Cool.Game.PPSA01111.v1.00.part${n}.rar`),
+    ...[4, 5].map((n) => `https://1fichier.com/?bbb${n}  Cool.Game.PPSA01111.v1.05.Update.part${n}.rar`)
+  ].join('\n');
+  const found = parsePage(links, '', { assumeRar: true });
+  const shapes = found.batches.map((batch) => batch.hosts.flatMap((host) => host.links.map((link) => link.part)).join(','));
+  assert.equal(found.batches.length, 2, JSON.stringify(shapes));
+  assert.deepEqual(shapes.sort(), ['1,2,3', '4,5']);
+});
+
+test('catalog upload: feed games are added together, merged by id, and the importer routes carry them', () => {
+  const store = memoryStore();
+  const game = (id, title, urls, rec = '') => ({ id, title, art: {}, releases: urls.map((url, i) => ({ url, label: `Full part ${i + 1}`, record: `r-${id}${rec}`, provider: 'mediafire', filename: `${title}.part${i + 1}.rar`, format: 'rar' })) });
+  const first = store.saveMany([game('PPSA10001', 'Alpha', ['https://www.mediafire.com/file/a1/A.part1.rar/file', 'https://www.mediafire.com/file/a2/A.part2.rar/file']), game('PPSA10002', 'Beta', ['https://www.mediafire.com/file/b1/B.rar/file'])]);
+  assert.equal(first.added, 2);
+  assert.equal(first.total, 2);
+  const again = store.saveMany([game('PPSA10001', 'Alpha', ['https://www.mediafire.com/file/a9/A2.rar/file'], '-b')]);
+  assert.equal(again.updated, 1);
+  assert.equal(store.detail('PPSA10001').batches.length, 2);
+  assert.throws(() => store.saveMany([{ id: 'x', title: '' }]));
+  const importer = createImporter({ http: {}, store });
+  assert.equal(importer.upload([game('PPSA10003', 'Gamma', ['https://www.mediafire.com/file/c1/C.rar/file'])]).added, 1);
+});
+
+test('editing: title, batch names, order and links change; a batch of new links is added; the cover stays', () => {
+  const store = memoryStore();
+  store.save({ id: 'PPSA20001', title: 'Edit Me', cover: 'https://img.example/c.jpg', batches: [
+    { label: 'v1.00', hosts: [{ host: 'mediafire', links: [{ url: 'https://www.mediafire.com/file/e1/E.part1.rar/file' }, { url: 'https://www.mediafire.com/file/e2/E.part2.rar/file' }] }] },
+    { label: 'v1.01', hosts: [{ host: 'mediafire', links: [{ url: 'https://www.mediafire.com/file/e3/E101.rar/file' }] }] }] });
+  const before = store.detail('PPSA20001');
+  const [one, two] = before.batches;
+  const out = store.update('PPSA20001', { title: 'Edited', batches: [
+    { record: two.record, label: 'Newest', links: two.links.map((link) => ({ url: link.url })) },
+    { record: one.record, label: 'Old', links: [{ url: one.links[0].url }] },
+    { label: 'Mirror', links: [{ url: 'https://gofile.io/d/abc123' }] }] });
+  assert.equal(out.entry.title, 'Edited');
+  const after = store.detail('PPSA20001');
+  assert.deepEqual(after.batches.map((batch) => batch.label), ['Newest', 'Old', 'Mirror']);
+  assert.equal(after.batches[1].links.length, 1);
+  assert.equal(after.cover, 'https://img.example/c.jpg');
+  assert.throws(() => store.update('PPSA20001', { title: 'x', batches: [] }));
+});

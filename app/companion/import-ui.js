@@ -6,22 +6,13 @@
 
   var IMPORT_CSS = String.raw`
 .imp-head{display:flex;gap:14px;align-items:flex-start}
-.imp-cover{flex:0 0 96px;width:96px;aspect-ratio:3/4;object-fit:cover;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,var(--panel2),var(--deep))}
-.imp-coverbtn{flex:0 0 96px;width:96px;aspect-ratio:3/4;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative;background:var(--panel2);cursor:pointer}
-.imp-coverbtn img,.imp-coverbtn .sw{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0;border-radius:0}
-.imp-coverbtn .edit{position:absolute;right:4px;bottom:4px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;padding:2px 7px;border-radius:8px}
-.imp-coverpanel{display:grid;gap:8px;margin-top:10px}
-.imp-sw{display:inline-block;flex:0 0 52px;width:52px;aspect-ratio:3/4;border-radius:10px}
+.imp-tile{flex:0 0 96px;width:96px;aspect-ratio:1;border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;font-size:11px;color:var(--subtle);background:linear-gradient(135deg,var(--panel2),var(--deep))}
+.imp-sw{display:inline-block;flex:0 0 52px;width:52px;aspect-ratio:1;border-radius:10px}
 .imp-fields{flex:1;min-width:0;display:grid;gap:8px}
 .imp-fields label{display:block;color:var(--subtle);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
 .imp-fields input.field{padding:10px 12px}
 input.field.bad{border-color:rgba(248,113,113,.7)}
 .imp-note{font-size:12.5px;color:var(--subtle);margin-top:4px}.imp-note.bad{color:#fecaca}.imp-note.good{color:#bbf7d0}
-.imp-images{display:flex;gap:8px;overflow-x:auto;margin:10px -16px 0;padding:2px 16px 8px;scrollbar-width:none}
-.imp-images::-webkit-scrollbar{display:none}
-.imp-images button{flex:0 0 auto;width:58px;aspect-ratio:3/4;padding:0;border:2px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel2);cursor:pointer}
-.imp-images button[aria-pressed=true]{border-color:var(--ice);box-shadow:0 0 12px rgba(76,201,240,.4)}
-.imp-images img{width:100%;height:100%;object-fit:cover;display:block}
 .batch{padding:12px 14px}
 .batch.off{opacity:.55}
 .batch .top{display:flex;align-items:center;gap:12px}
@@ -45,11 +36,18 @@ input.field.bad{border-color:rgba(248,113,113,.7)}
 .impbar .grow .subtle{font-size:12px;line-height:1.3;display:block}
 .impbar .btn{padding:10px 16px}
 .imp-saved{display:flex;gap:12px;align-items:center;padding:10px}
-.imp-saved img{flex:0 0 52px;width:52px;aspect-ratio:3/4;object-fit:cover;border-radius:10px;background:var(--panel2)}
+.imp-saved img{flex:0 0 52px;width:52px;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--panel2)}
 .imp-saved .t{font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .imp-saved .actions{margin-top:8px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ice);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ed-batch{padding:12px 14px;margin-top:10px}
+.ed-batch .top{display:flex;gap:8px;align-items:center}
+.ed-batch input.name{flex:1;min-width:0}
+.ed-link{display:flex;gap:8px;align-items:center;padding:4px 0;border-top:1px solid var(--line);font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.ed-link span{flex:1;min-width:0;word-break:break-all}
+.ed-link.gone span{text-decoration:line-through;opacity:.5}
+.btn.mini.sq{padding:6px 10px}
 textarea.field{width:100%;padding:12px 14px;border:1px solid var(--line);background:var(--deep);color:var(--fg);font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;outline:none;resize:vertical;border-radius:12px;min-height:110px}
 textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,240,.16)}
 `;
@@ -65,20 +63,12 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 </div>
 <div id="impEditor" hidden>
 <div class="panel block imp-head">
-<button class="imp-coverbtn" id="impCoverBtn" type="button" aria-label="Change the cover"><div class="sw" id="impSw"></div><img id="impCover" alt="" hidden><span class="edit">Cover</span></button>
+<div class="imp-tile" id="impTile">The cover is taken from the page</div>
 <div class="imp-fields">
 <div><label for="impTitle">Title</label><input class="field" id="impTitle" maxlength="120" autocomplete="off"></div>
 <div><label for="impId">Title ID</label><input class="field" id="impId" maxlength="9" placeholder="PPSA12345" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="imp-note" id="impIdNote"></div></div>
 </div>
 </div>
-<div class="panel block imp-coverpanel" id="impCoverPanel" hidden>
-<label for="impCoverUrl" class="subtle">Cover image link</label>
-<div class="row"><input class="field grow" id="impCoverUrl" placeholder="https://…/cover.jpg" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn" id="impCoverSet" type="button">Use</button></div>
-<div class="row"><button class="btn grow" id="impCoverUpload" type="button">Upload from this device</button><button class="btn grow" id="impCoverNone" type="button">Random colour</button></div>
-<input type="file" id="impCoverFile" accept="image/*" hidden>
-<div class="subtle" id="impCoverNote">A picture from a link shows on the console. A photo from this device gives the game a tile in its main colour (the console can only load pictures from links).</div>
-</div>
-<div class="imp-images" id="impImages"></div>
 <div class="label">Batches <span id="impBatchNote"></span></div>
 <div class="chips" id="impHostChips" style="margin-top:0"></div>
 <div id="impBatches"></div>
@@ -89,12 +79,29 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 <div class="label">Saved games <span id="impCount"></span></div>
 <div id="impSaved"></div>
 <p class="subtle" id="impEmpty" hidden>Nothing saved yet. Fetch a post above.</p>
+<div id="impEdit" hidden class="panel block">
+<div class="label" style="margin-top:0">Edit game <span id="edId"></span></div>
+<label for="edTitle" class="subtle">Title</label><input class="field" id="edTitle" maxlength="120" autocomplete="off">
+<div id="edBatches"></div>
+<div class="ed-batch panel"><div class="subtle" style="margin-bottom:6px">Add links as a new batch</div>
+<input class="field" id="edNewName" maxlength="60" placeholder="Batch name" autocomplete="off" style="margin-bottom:8px">
+<textarea class="field" id="edNewLinks" rows="3" placeholder="One download link per line" spellcheck="false" autocapitalize="off"></textarea></div>
+<div class="row" style="margin-top:12px"><button class="btn primary grow" id="edSave" type="button">Save changes</button><button class="btn" id="edCancel" type="button">Cancel</button></div>
+</div>
+<div class="label">Upload a catalog <span>JSON</span></div>
+<div class="panel block">
+<p class="subtle" style="margin:0 0 10px">Send a catalog file (the JSON feed format) from this phone. Every game in it joins the console's store right away.</p>
+<input type="file" id="catFile" accept=".json,application/json,text/plain" hidden>
+<textarea class="field" id="catText" rows="3" placeholder="Or paste the catalog JSON here" spellcheck="false" autocapitalize="off"></textarea>
+<div class="row" style="margin-top:8px"><button class="btn grow" id="catPick" type="button">Choose a file</button><button class="btn primary grow" id="catSend" type="button">Upload</button></div>
+<div class="subtle" id="catStatus" style="margin-top:10px" role="status"></div>
+</div>
 </section>
 `;
 
   var IMPORT_JS = String.raw`
   // ---- Import: read a post page, keep the batches wanted ----------------------------------------------------
-  var imp = { preview: null, cover: "", tint: "", local: "", batches: [], hostOff: {}, other: null, timer: null, busy: false };
+  var imp = { preview: null, batches: [], hostOff: {}, other: null, timer: null, busy: false };
   var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
   var ID_PATTERN = /^(?:CUSA|PPSA)[0-9]{5}$/;
   function impStatus(text, busy) { var s = $("impStatus"); s.textContent = ""; if (busy) s.appendChild(el("span", "spin")); s.appendChild(document.createTextNode(text || "")); }
@@ -122,7 +129,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function hostList(batch) { return batch.hosts.filter(function (h) { return h.on; }); }
   function impShow(preview) {
-    imp.preview = preview; imp.hostOff = {}; imp.cover = preview.cover || ""; imp.local = ""; imp.tint = ""; $("impCoverPanel").hidden = true;
+    imp.preview = preview; imp.hostOff = {}; 
     imp.batches = preview.batches.map(function (b) {
       return { key: b.key, label: b.label, on: true, open: false, sizeGb: b.sizeGb, warnings: b.warnings, hosts: b.hosts.map(function (h) { return { host: h.host, links: h.links, missing: h.missing, on: true }; }) };
     });
@@ -150,19 +157,9 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function impRender() {
     var p = imp.preview;
-    var cover = $("impCover"); cover.removeAttribute("src");
-    var shown = /^https:\/\//.test(imp.cover) ? imp.cover : imp.local;
-    if (!shown && !imp.tint) imp.tint = randomTint();
-    cover.hidden = !shown; if (shown) cover.src = shown;
-    $("impSw").style.background = imp.tint || "#333";
-    var strip = $("impImages"); strip.textContent = "";
-    var imgs = (p.images || []).filter(function (u) { return /^https:\/\//.test(u); });
-    strip.hidden = imgs.length < 2;
-    imgs.forEach(function (u) {
-      var b = el("button"); b.type = "button"; b.setAttribute("aria-pressed", String(u === imp.cover)); b.appendChild(img(null, u));
-      b.onclick = function () { buzz(); imp.cover = u; impRender(); };
-      strip.appendChild(b);
-    });
+    var tile = $("impTile"); tile.textContent = "";
+    if (/^https:\/\//.test(p.cover || "")) { var pic = img(null, p.cover); pic.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:12px"; tile.appendChild(pic); }
+    else tile.textContent = p.title || "";
     // Hosts: one chip each, across every batch, to drop a host everywhere in a tap.
     var hosts = {}, order = [];
     allBatches().forEach(function (b) { b.hosts.forEach(function (h) { if (!hosts[h.host]) { hosts[h.host] = 0; order.push(h.host); } hosts[h.host] += h.links.length; }); });
@@ -236,7 +233,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function draft() {
     return {
-      id: $("impId").value, title: $("impTitle").value, cover: imp.cover, tint: imp.cover ? "" : imp.tint, sourceUrl: imp.preview.sourceUrl || "",
+      id: $("impId").value, title: $("impTitle").value, cover: /^https:\/\//.test(imp.preview.cover || "") ? imp.preview.cover : "", sourceUrl: imp.preview.sourceUrl || "",
       batches: allBatches().filter(function (b) { return b.on; }).map(function (b) {
         return { key: b.key, label: b.label, hosts: hostList(b).filter(function (h) { return !imp.hostOff[h.host]; }).map(function (h) { return { host: h.host, links: h.links.map(function (l) { return { url: l.url, part: l.part, filename: l.filename }; }) }; }) };
       }).filter(function (b) { return b.hosts.length; })
@@ -267,6 +264,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
         info.appendChild(el("div", "subtle", g.hosts.join(", ")));
         var actions = el("div", "actions");
         if (g.from) { var again = el("button", "btn mini", "Fetch again"); again.type = "button"; again.onclick = function () { $("impInput").value = g.from; impStart({ input: g.from }); window.scrollTo(0, 0); }; actions.appendChild(again); }
+        var edit = el("button", "btn mini", "Edit"); edit.type = "button"; edit.onclick = function () { edOpen(g.id); }; actions.appendChild(edit);
         var drop = el("button", "btn mini danger", "Remove"); drop.type = "button";
         drop.onclick = function () {
           if (!drop.dataset.sure) { drop.dataset.sure = "1"; drop.textContent = "Tap again to remove"; setTimeout(function () { drop.dataset.sure = ""; drop.textContent = "Remove"; }, 3000); return; }
@@ -278,45 +276,102 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     }).catch(function (e) { toast(e.message, true); });
   }
   $("impGo").onclick = function () { var text = $("impInput").value.trim(); if (!text) { $("impInput").focus(); return; } impStart({ input: text }); };
-  function randomTint() {
-    var h = Math.floor(Math.random() * 360), s = 55 + Math.floor(Math.random() * 25), l = 38 + Math.floor(Math.random() * 12);
-    var a = s * Math.min(l, 100 - l) / 10000;
-    function f(n) { var k = (n + h / 30) % 12; var c = l / 100 - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return ("0" + Math.round(255 * c).toString(16)).slice(-2); }
-    return "#" + f(0) + f(8) + f(4);
-  }
-  $("impCoverBtn").onclick = function () { buzz(); $("impCoverPanel").hidden = !$("impCoverPanel").hidden; };
-  $("impCoverSet").onclick = function () {
-    var u = $("impCoverUrl").value.trim();
-    if (!/^https:\/\/\S+$/i.test(u)) { toast("Paste a full https:// image address.", true); return; }
-    imp.cover = u; imp.local = ""; imp.tint = ""; $("impCoverUrl").value = ""; impRender();
-  };
-  $("impCoverNone").onclick = function () { imp.cover = ""; imp.local = ""; imp.tint = randomTint(); impRender(); };
-  $("impCoverUpload").onclick = function () { $("impCoverFile").click(); };
-  // A photo is shrunk here: its picture stays on this phone; the console gets its main colour.
-  $("impCoverFile").onchange = function () {
-    var file = this.files && this.files[0]; this.value = "";
-    if (!file) return;
-    var url = URL.createObjectURL(file), im = new Image();
-    im.onload = function () {
-      try {
-        var c = document.createElement("canvas"); c.width = 150; c.height = 200;
-        var g = c.getContext("2d"), k = Math.max(150 / im.width, 200 / im.height);
-        g.drawImage(im, (150 - im.width * k) / 2, (200 - im.height * k) / 2, im.width * k, im.height * k);
-        var d = g.getImageData(0, 0, 150, 200).data, r = 0, gr = 0, b = 0, n = 0;
-        for (var i = 0; i < d.length; i += 16) { r += d[i]; gr += d[i + 1]; b += d[i + 2]; n++; }
-        function hx(v) { return ("0" + Math.round(v / n).toString(16)).slice(-2); }
-        imp.local = c.toDataURL("image/jpeg", 0.8); imp.cover = ""; imp.tint = "#" + hx(r) + hx(gr) + hx(b);
-        impRender();
-      } catch (e) { toast("That picture could not be read.", true); }
-      URL.revokeObjectURL(url);
-    };
-    im.onerror = function () { toast("That is not a picture.", true); URL.revokeObjectURL(url); };
-    im.src = url;
-  };
   $("impClear").onclick = function () { $("impInput").value = ""; impStatus(""); $("impInput").focus(); };
   $("impTitle").oninput = impSummary; $("impId").oninput = function () { this.value = this.value.toUpperCase(); impSummary(); };
   $("impSave").onclick = impSave;
   $("impCancel").onclick = function () { impReset(); impStatus(""); };
+  // ---- Edit one saved game: title, batch names and order, single links, and new links as a batch ----------
+  var ed = null;
+  function edOpen(id) {
+    api("GET", "/api/import/game?id=" + encodeURIComponent(id)).then(function (g) {
+      ed = { id: g.id, title: g.title, batches: g.batches.map(function (b) { return { record: b.record, label: b.label, links: b.links.map(function (l) { return { url: l.url, part: l.part, provider: l.provider, off: false }; }), off: false }; }) };
+      $("edId").textContent = g.id; $("edTitle").value = g.title; $("edNewName").value = ""; $("edNewLinks").value = "";
+      $("impEdit").hidden = false; edRender(); $("impEdit").scrollIntoView({ behavior: "smooth", block: "start" });
+    }).catch(function (e) { toast(e.message, true); });
+  }
+  function edMove(at, by) { var to = at + by; if (to < 0 || to >= ed.batches.length) return; var x = ed.batches.splice(at, 1)[0]; ed.batches.splice(to, 0, x); edRender(); }
+  function edRender() {
+    var box = $("edBatches"); box.textContent = "";
+    ed.batches.forEach(function (b, at) {
+      var card = el("div", "ed-batch panel" + (b.off ? " off" : ""));
+      var top = el("div", "top");
+      var name = el("input", "field name"); name.value = b.label; name.maxLength = 60; name.setAttribute("aria-label", "Batch name"); name.oninput = function () { b.label = name.value; };
+      var up = el("button", "btn mini sq", "↑"); up.type = "button"; up.onclick = function () { edMove(at, -1); }; up.disabled = at === 0;
+      var down = el("button", "btn mini sq", "↓"); down.type = "button"; down.onclick = function () { edMove(at, 1); }; down.disabled = at === ed.batches.length - 1;
+      var del = el("button", "btn mini sq danger", b.off ? "Undo" : "Delete"); del.type = "button"; del.onclick = function () { b.off = !b.off; edRender(); };
+      top.appendChild(name); top.appendChild(up); top.appendChild(down); top.appendChild(del); card.appendChild(top);
+      if (at === 0 && !b.off) card.appendChild(el("div", "imp-note good", "Default download"));
+      if (!b.off) b.links.forEach(function (l) {
+        var row = el("div", "ed-link" + (l.off ? " gone" : ""));
+        row.appendChild(el("span", null, (l.part != null ? "part " + l.part + " · " : "") + l.url));
+        var x = el("button", "btn mini sq", l.off ? "Undo" : "✕"); x.type = "button"; x.onclick = function () { l.off = !l.off; edRender(); };
+        row.appendChild(x); card.appendChild(row);
+      });
+      box.appendChild(card);
+    });
+  }
+  function edSave() {
+    if (!ed) return;
+    var batches = ed.batches.filter(function (b) { return !b.off; }).map(function (b) {
+      return { record: b.record, label: b.label, links: b.links.filter(function (l) { return !l.off; }).map(function (l) { return { url: l.url }; }) };
+    }).filter(function (b) { return b.links.length; });
+    var extra = $("edNewLinks").value.split(/\s+/).filter(function (u) { return /^https:\/\//i.test(u); });
+    if (extra.length) batches.push({ label: $("edNewName").value.trim() || "Added", links: extra.map(function (u) { return { url: u }; }) });
+    $("edSave").disabled = true;
+    api("POST", "/api/import/edit", { id: ed.id, title: $("edTitle").value, batches: batches }).then(function (r) {
+      toast("Saved " + r.entry.title); buzz(); $("impEdit").hidden = true; ed = null; bannerText(r.live); $("impBanner").hidden = false; impSaved();
+    }).catch(function (e) { toast(e.message, true); }).then(function () { $("edSave").disabled = false; });
+  }
+  $("edSave").onclick = edSave;
+  $("edCancel").onclick = function () { $("impEdit").hidden = true; ed = null; };
+  // ---- Upload a catalog: the file (or pasted text) is read here and sent in small pieces ----------------------
+  var CHUNK = 36000;
+  function catGames(text) {
+    var data = JSON.parse(text);
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.games)) return data.games;
+    if (data && data.id && data.releases) return [data];
+    throw new Error("That is not a catalog: it needs a games list.");
+  }
+  function catStatus(text, busy) { var s = $("catStatus"); s.textContent = ""; if (busy) s.appendChild(el("span", "spin")); s.appendChild(document.createTextNode(text || "")); }
+  function catSend() {
+    var text = $("catText").value.trim(), games;
+    if (!text) { catStatus("Choose a file or paste the catalog first."); return; }
+    try { games = catGames(text); } catch (e) { catStatus(e instanceof SyntaxError ? "That is not valid JSON." : e.message); return; }
+    if (!games.length) { catStatus("The catalog has no games."); return; }
+    var pieces = [], cur = [], size = 0, skipped = 0;
+    games.forEach(function (g) {
+      var n = JSON.stringify(g).length;
+      if (n > 60000) { skipped++; return; }
+      if (cur.length && size + n > CHUNK) { pieces.push(cur); cur = []; size = 0; }
+      cur.push(g); size += n;
+    });
+    if (cur.length) pieces.push(cur);
+    var sum = { added: 0, updated: 0, skipped: skipped, live: true }, done = 0;
+    $("catSend").disabled = true;
+    (function next() {
+      if (done >= pieces.length) {
+        $("catSend").disabled = false; $("catText").value = "";
+        catStatus("Added " + sum.added + ", updated " + sum.updated + (sum.skipped ? ", skipped " + sum.skipped : "") + (sum.live ? ". They are in the store now." : ". Restart IRDL on the console to see them."));
+        toast("Catalog uploaded"); buzz(); impSaved(); return;
+      }
+      catStatus("Sending " + (done + 1) + " of " + pieces.length + "…", true);
+      api("POST", "/api/import/catalog", { games: pieces[done] }).then(function (r) {
+        sum.added += r.added; sum.updated += r.updated; sum.skipped += r.skipped; if (!r.live) sum.live = false; done++; next();
+      }).catch(function (e) { $("catSend").disabled = false; catStatus((done ? "Stopped after " + done + " of " + pieces.length + ": " : "") + e.message); });
+    })();
+  }
+  $("catPick").onclick = function () { $("catFile").click(); };
+  $("catFile").onchange = function () {
+    var file = this.files && this.files[0]; this.value = "";
+    if (!file) return;
+    if (file.size > 12 * 1024 * 1024) { catStatus("That file is too big."); return; }
+    var r = new FileReader();
+    r.onload = function () { $("catText").value = String(r.result || ""); catStatus(file.name + " is ready. Tap Upload."); };
+    r.onerror = function () { catStatus("That file could not be read."); };
+    r.readAsText(file);
+  };
+  $("catSend").onclick = catSend;
   function impOpen() { impSaved(); }
 `;
 

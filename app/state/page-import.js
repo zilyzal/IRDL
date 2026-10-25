@@ -341,6 +341,7 @@ import { webURL } from './download-sources.js';
           before,
           lead,
           lineText: text,
+          lineLinks: markers.length,
           recent: [...recent],
           heading
         });
@@ -358,6 +359,11 @@ import { webURL } from './download-sources.js';
   function fileNameOf(link) {
     for (const source of [link.text, link.title]) {
       const match = FILE_NAME.exec(source || "");
+      if (match) return match[1];
+    }
+    // "url  Game.part1.rar": a file name typed next to the link counts when the line holds that one link.
+    if (link.lineLinks === 1) {
+      const match = FILE_NAME.exec(link.lineText || "");
       if (match) return match[1];
     }
     try {
@@ -391,6 +397,11 @@ import { webURL } from './download-sources.js';
   // A file name as words: "Game.v1.05.part2.rar" -> "Game v1.05".
   function stemOf(text) {
     return String(text || "").replace(/\.(?:part\s*0*\d+\.)?(?:rar|r\d{2})\b.*$/i, "").replace(/(?<!\d)[._]+|[._]+(?!\d)/g, " ").replace(/\s+/g, " ").trim();
+  }
+  // A file name with its part number taken out, as one comparable word: "Game.v1.05.part2.rar" and "...part1.rar" agree.
+  function setStem(name) {
+    if (!name) return "";
+    return norm(String(name).toLowerCase().replace(/[._\s-]*part[._\s-]*0*\d+/g, "").replace(/\.r\d{2}$/, ".rar").replace(/\.rar$/, "")).slice(0, 80);
   }
   function batchOf(link, name) {
     const sources = [name, link.text, link.title, link.before, ...[...link.recent].reverse(), link.heading];
@@ -448,6 +459,11 @@ import { webURL } from './download-sources.js';
         sequence.set(at, state);
         batch = { version: "", key: `${batch.key || "n"}#${state.index}`, label: state.index > 1 && state.label ? state.label : batch.label };
       }
+      // Parts of one set differ only by their number: two files whose names differ in anything else (another version,
+      // base game against update) are two batches, however the page lays them out. A file with no readable name
+      // keeps the batch the page gave it.
+      const stem = setStem(name);
+      if (stem) batch = { ...batch, key: `${batch.key || "n"}~${stem}`, label: batch.label || labelOf(stemOf(name)) };
       let entry = batches.get(batch.key);
       if (!entry) {
         entry = { key: batch.key, label: batch.label, version: batch.version, sizeGb: null, hosts: new Map(), order: batches.size };
@@ -558,19 +574,16 @@ import { webURL } from './download-sources.js';
     };
     return `#${channel(0)}${channel(8)}${channel(4)}`;
   }
-  function buildGame(draft) {
-    const id = String(draft?.id ?? "").trim().toUpperCase().replace(/[\s_-]/g, "");
-    if (!TITLE_ID_FULL.test(id)) throw new Error("The Title ID must look like PPSA12345 or CUSA12345.");
-    const title = squash(draft?.title).slice(0, 200);
-    if (!title) throw new Error("Give the game a title.");
+  // The releases a list of batches ({ key, label, hosts: [{ host, links }] }) makes, one per link.
+  function releasesFromBatches(batches, title, sourceUrl) {
     const releases = [];
     const names = new Set();
     let site = "";
     try {
-      site = /^https?:\/\/([^\/:?#\s]+)/i.exec(String(draft?.sourceUrl ?? "").trim())?.[1].toLowerCase().replace(/^www\./, "") ?? "";
+      site = /^https?:\/\/([^\/:?#\s]+)/i.exec(String(sourceUrl ?? "").trim())?.[1].toLowerCase().replace(/^www\./, "") ?? "";
     } catch {
     }
-    for (const batch of Array.isArray(draft?.batches) ? draft.batches.slice(0, 24) : []) {
+    for (const batch of Array.isArray(batches) ? batches.slice(0, 24) : []) {
       const label = squash(batch?.label).slice(0, 60) || "Download";
       const firstUrl = (Array.isArray(batch?.hosts) ? batch.hosts : []).flatMap((group) => Array.isArray(group?.links) ? group.links : []).find((item) => typeof item?.url === "string")?.url ?? "";
       let sum = 0;
@@ -605,6 +618,14 @@ import { webURL } from './download-sources.js';
         });
       }
     }
+    return releases;
+  }
+  function buildGame(draft) {
+    const id = String(draft?.id ?? "").trim().toUpperCase().replace(/[\s_-]/g, "");
+    if (!TITLE_ID_FULL.test(id)) throw new Error("The Title ID must look like PPSA12345 or CUSA12345.");
+    const title = squash(draft?.title).slice(0, 200);
+    if (!title) throw new Error("Give the game a title.");
+    const releases = releasesFromBatches(draft?.batches, title, draft?.sourceUrl);
     if (!releases.length) throw new Error("Tick at least one batch with links to save.");
     const art = {};
     const cover = typeof draft?.cover === "string" ? draft.cover.trim() : "";
@@ -627,4 +648,4 @@ import { webURL } from './download-sources.js';
     return game;
   }
 
-export { titleIdFromLinks, buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, mergePasted, needsBrowser, pageImages, pageTitle, parsePage, planInput, titleFromFiles, versionOf };
+export { randomTint, releasesFromBatches, squash, titleIdFromLinks, buildGame, checkPageURL, cleanTitle, findTitleIds, hostName, mergePasted, needsBrowser, pageImages, pageTitle, parsePage, planInput, titleFromFiles, versionOf };

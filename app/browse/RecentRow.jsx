@@ -21,7 +21,7 @@ import { GameCard } from '../ui/GameCard.jsx';
     const { openGame } = useNavActions();
     const games2 = [...new Set(kept.current.map(listedId))].map(getGame).filter(Boolean);
     if (!games2.length) return null;
-    return /* @__PURE__ */ (0, jsx)(GameRail, { title: t2("browse.recentlyViewed"), children: games2.map((game, index) => {
+    return /* @__PURE__ */ (0, jsx)(GameRail, { title: t2("browse.recentlyAdded"), children: games2.map((game, index) => {
       const key = `recent:${game.id}`;
       return /* @__PURE__ */ (0, jsx)(
         GameCard,

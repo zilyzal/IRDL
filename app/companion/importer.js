@@ -96,6 +96,11 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
       save: (draft) => ({ ...store.save(draft), saved: true }),
       list: () => ({ games: store.entries(), restart: store.needsRestart() }),
       remove: (id) => store.remove(id),
+      // A catalog sent from the phone, a few games per request (the console's server takes small bodies): `games`
+      // are feed games; the store checks them and adds them to the running catalog.
+      upload: (games) => store.saveMany(games),
+      detail: (id) => store.detail(id),
+      edit: (id, spec) => store.update(id, spec),
       // Exposed for tests: the same checks a save applies, without writing anything.
       check: (draft) => buildGame(draft)
     };

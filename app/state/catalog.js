@@ -7,12 +7,13 @@
 // MODIFIED: each game carries `formats`, the kinds of download it has (state/formats.js), for the Format filter:
 // the bundled games' from data/formats.js, a feed's releases sorted when the feeds load.
 
+import { announceAdded, recordAdded } from './recent.js';
 import { features, games, twins } from '../data/catalog.js';
 import { formats as bundledFormats } from '../data/formats.js';
 import { formatDate2, t } from '../i18n/core.js';
 import { createPageCache } from './page-cache.js';
 import { loadFeedGames } from './feeds.js';
-import { loadImportedGames, onSaved } from './imported.js';
+import { loadImportedGames, onRemoved, onSaved } from './imported.js';
 import { createReleaseCache } from './release-cache.js';
 import { KINDS, gameFormats, ready1360 } from './formats.js';
 import { FileSystem, Image } from '@ps5-react/core';
@@ -302,7 +303,7 @@ for (const { game: feedGame, page, releases } of [...loadFeedGames(), ...loadImp
   }
   var formatDate3 = (iso) => iso ? formatDate2(iso) : "\u2014";
 
-// IRDL 1.0.1: a game saved from the phone while the app runs joins the catalog at once. Only a game that came from
+// IRDL 1.0.1: a game saved, changed or removed from the phone while the app runs joins the catalog at once. Only a game that came from
 // the Import tab is added or changed here (a bundled or feed game is left alone); anything that goes wrong
 // answers false and leaves the game for the next launch, which reads it from imported.json as before.
 var catalogVersion = 0;
@@ -325,39 +326,81 @@ function changed() {
     }
   }
 }
-function addImportedGame({ game: feedGame, page, releases }) {
+// Adds or updates one saved game without announcing it; the caller announces a whole batch once.
+function applyImportedGame({ game: feedGame, page, releases }) {
   const known = byId.get(feedGame.id);
-  if (known && !known.feedPage) return false;
+  if (known && !known.feedPage) throw new Error(`${feedGame.id} belongs to the bundled catalog`);
   const copy = { ...feedGame, feedPage: page, art: { ...feedGame.art } };
-  const previous = feedReleases.get(feedGame.id);
+  shape(copy);
   feedReleases.set(feedGame.id, releases);
   releaseCache.drop(dataFile("releases", feedGame.id));
+  formatsOf(copy);
+  copy.platforms = [copy.platform];
+  if (known) {
+    // The same game again: its entry keeps its place and its identity (open pages hold it); the fields change.
+    Object.assign(known, { title: copy.title, art: copy.art, providers: copy.providers, direct: copy.direct, feedPage: page, formats: copy.formats, sizeGb: copy.sizeGb });
+    searchTexts.delete(known);
+  } else {
+    games.push(copy);
+    entries.push(copy);
+    byId.set(copy.id, copy);
+    catalogIds.set(copy.id, copy);
+    listed.add(copy);
+  }
+}
+// `list`: saved games as { game, page, releases }. All of them or none: a failure puts back what was changed
+// and answers false, and the games wait for the next launch (they are already saved).
+function addImportedGames(list, options = {}) {
+  const before = list.map(({ game: feedGame }) => ({ id: feedGame.id, existed: byId.has(feedGame.id), releases: feedReleases.get(feedGame.id) }));
+  const added = [];
+  const touched = [];
   try {
-    shape(copy);
-    formatsOf(copy);
-    copy.platforms = [copy.platform];
-    if (known) {
-      // The same game again: its entry keeps its place and its identity (open pages hold it); the fields change.
-      Object.assign(known, { title: copy.title, art: copy.art, providers: copy.providers, direct: copy.direct, feedPage: page, formats: copy.formats, sizeGb: copy.sizeGb });
-      searchTexts.delete(known);
-    } else {
-      games.push(copy);
-      entries.push(copy);
-      byId.set(copy.id, copy);
-      catalogIds.set(copy.id, copy);
-      listed.add(copy);
+    for (const item of list) {
+      const existed = byId.has(item.game.id);
+      applyImportedGame(item);
+      touched.push(item.game.id);
+      if (!existed) added.push(item.game.id);
     }
   } catch (error) {
-    if (previous) feedReleases.set(feedGame.id, previous);
-    else feedReleases.delete(feedGame.id);
-    throw error;
+    for (const id of added) dropImportedGame(id);
+    for (const { id, existed, releases } of before) if (existed) releases ? feedReleases.set(id, releases) : feedReleases.delete(id);
+    console.log(`catalog: live add failed: ${error.message}`);
+    return false;
   }
+  changed();
+  // The Recently added row, and the popup that offers the newest of them.
+  try {
+    recordAdded(touched);
+    if (!options.quiet) announceAdded(touched);
+  } catch (error) {
+    console.log(`catalog: announce failed: ${error.message}`);
+  }
+  return true;
+}
+var addImportedGame = (item) => addImportedGames([item]);
+function dropImportedGame(id) {
+  const game = byId.get(id);
+  if (!game || !game.feedPage) return false;
+  for (const list of [games, entries]) {
+    const at = list.indexOf(game);
+    if (at >= 0) list.splice(at, 1);
+  }
+  byId.delete(id);
+  catalogIds.delete(id);
+  listed.delete(game);
+  feedReleases.delete(id);
+  releaseCache.drop(dataFile("releases", id));
+  return true;
+}
+function removeImportedGame(id) {
+  if (!dropImportedGame(id)) return false;
   changed();
   return true;
 }
-onSaved(addImportedGame);
+onSaved(addImportedGames);
+onRemoved(removeImportedGame);
 
 // IRDL: how many games the store holds (none until one is imported or a feed brings some).
 var gameCount = () => games.length;
 
-export { CDN_HOST, addImportedGame, currentCatalogVersion, gameCount, onCatalogChange, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };
+export { CDN_HOST, addImportedGame, addImportedGames, removeImportedGame, currentCatalogVersion, gameCount, onCatalogChange, FACETS, NO_FILTERS, SORTS, activeCount, bundledIndex, editionsOf, facetCounts, facetLabel, facetTitle, featureLabel, filterGames, formatDate3, fromArchive, genreLabel, genres, getGame, listedId, onCdn, optionLabel, relatedGames, showcase, sortGames, sortLabel, summaryOf, toggleValue, warmCovers };

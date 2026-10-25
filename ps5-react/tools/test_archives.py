@@ -137,7 +137,7 @@ def main():
    for p in [tree,*tree.rglob("*")]:
     if p.name.startswith(".ps5-react-"):continue
     mode=p.stat().st_mode&0o777
-    assert mode==(0o777 if p.is_dir() else 0o666),(p,oct(mode))
+    assert mode==0o777,(p,oct(mode))  # 0.5.1: files too, so a game's eboot.bin can be executed
   app=root/"app.zip"
   with zipfile.ZipFile(app,"w") as z:z.writestr("PPSA01473-app/sce_sys/param.json","{}");z.writestr("PPSA01473-app/eboot.bin",DATA)
   assert run("zip-app",[app])[0]=="completed"
@@ -275,7 +275,7 @@ def main():
   assert result[0]=="failed" and result[-1].endswith("Volume 2 of 4 looks incomplete."),result
   assert "Volume 3 of 3 looks incomplete." in run("rar-missing-volume-named",[real[0],real[1],real[3]],password="fixture-password")[-1]
   # A volume that is a copy of an earlier one (a link captured for the wrong part) is named, so the app
-  # downloads that one again (IRDL 0.5.0 Pre Release 3).
+  # downloads that one again (Jobee'sLair 0.5.0 Pre Release 3).
   result=run("rar-duplicate-volume",[real[0],real[1],real[1],real[3]],password="fixture-password")
   assert result[0]=="failed" and result[-1].endswith("Volume 3 of 4 is a copy of part 2."),result
   # A set without its last or first volume fails before anything is decoded, with exactly these reasons
@@ -454,6 +454,15 @@ def main():
   (staging/".ps5-react-stage").write_text("P5ST001:"+hashlib.sha256(identity.encode()).hexdigest()+"\n")
   assert run("interrupted",[zip])[0]=="completed"
   assert (root/"interrupted/game.ffpfsc").read_bytes()==DATA
+  # 0.5.1: the earlier run's staging is set aside (.discard) before it is cleared, and nothing of it stays.
+  assert not (root/"interrupted.extracting").exists() and not (root/"interrupted.extracting.discard").exists()
+  # A clear cut off (the app closed during it) leaves a .discard, never ownerless staging; the next run clears it.
+  staging=root/"cutoff.extracting";staging.mkdir();(staging/"unfinished").write_bytes(b"partial")
+  (staging/".ps5-react-stage").write_text("P5ST001:"+hashlib.sha256(identity.encode()).hexdigest()+"\n")
+  left=root/"cutoff.extracting.discard";(left/"deep").mkdir(parents=True);(left/"deep/rest").write_bytes(b"x")
+  assert run("cutoff",[zip])[0]=="completed"
+  assert (root/"cutoff/game.ffpfsc").read_bytes()==DATA
+  assert not left.exists() and not staging.exists()
   orphan=root/"orphan.extracting";orphan.mkdir();(orphan/"keep").write_bytes(b"unowned")
   assert run("orphan",[zip])[0]=="failed"
   assert (orphan/"keep").read_bytes()==b"unowned"

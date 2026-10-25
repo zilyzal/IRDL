@@ -52,9 +52,9 @@ def main():
   env={**os.environ,"UPDATER_TIME_SCALE":"50","UPDATER_SM_PORT":str(shadow.port),"UPDATER_LOCK_PORT":str(lock)}
   def scene(name,relaunch=True,size=None,old=b"old image",new=b"new image v2"):
    """A console: the installed image, a staged one beside it, the app running and asking for the update."""
-   base=root/name;control=base/"IRDL/update";homebrew=base/"homebrew";staging=base/"IRDL/update_staging/0.2.1"
+   base=root/name;control=base/"JobeesLair/update";homebrew=base/"homebrew";staging=base/"JobeesLair/update_staging/0.2.1"
    for folder in (control,homebrew,staging):folder.mkdir(parents=True)
-   target=homebrew/"IRDL.exfat";staged=staging/"IRDL.exfat.staged"
+   target=homebrew/"JobeesLair.exfat";staged=staging/"JobeesLair.exfat.staged"
    target.write_bytes(old);staged.write_bytes(new);(control/"test-running").touch()
    (control/"apply.txt").write_text(f"UPD1\nversion=0.2.1-beta.1\ntarget={target}\nstaged={staged}\nsize={size or len(new)}\nrelaunch={int(relaunch)}\n")
    shadow.images=[str(target)];shadow.routes.clear()

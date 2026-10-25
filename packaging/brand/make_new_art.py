@@ -21,7 +21,19 @@ SCE = ROOT / "app/sce_sys"
 def cut_logo(im):
     a = np.asarray(im.convert("RGB")).astype(np.float32)
     m = a.max(axis=2)
-    alpha = np.clip((m - 4) * 16, 0, 255)
+    alpha = np.clip((m - 18) * 12, 0, 255)
+    # JPEG noise leaves isolated bright specks: keep only regions of the mask that belong to the mark itself.
+    from scipy import ndimage
+    labels, count = ndimage.label(ndimage.binary_dilation(alpha > 40, iterations=3))
+    if count:
+        sizes = ndimage.sum(np.ones_like(labels), labels, range(1, count + 1))
+        keep = np.isin(labels, [i + 1 for i, n in enumerate(sizes) if n >= 0.02 * sizes.max()])
+        alpha = np.where(keep, alpha, 0)
+    # and inside that region, drop detached fragments: only the mark's own body stays
+    labels, count = ndimage.label(alpha > 0)
+    if count > 1:
+        sizes = ndimage.sum(np.ones_like(labels), labels, range(1, count + 1))
+        alpha = np.where(labels == 1 + int(np.argmax(sizes)), alpha, 0)
     out = Image.fromarray(np.dstack([a, alpha]).astype(np.uint8), "RGBA")
     box = out.getchannel("A").point(lambda v: 255 if v > 24 else 0).getbbox()
     pad = 24
@@ -29,12 +41,21 @@ def cut_logo(im):
     return out.crop(box)
 
 
+def small(im, size):
+    """Resize without Lanczos ringing: faint alpha specks around the edge are what showed as white points."""
+    r = np.array(im.resize(size, Image.LANCZOS))
+    a = r[..., 3]
+    a[a < 12] = 0
+    r[a == 0, :3] = 0
+    return Image.fromarray(r, "RGBA")
+
+
 def main():
     logo = Image.open(SRC / "logo.jpg").convert("RGB")
     bg = Image.open(SRC / "background.jpg").convert("RGB")
     mark = cut_logo(logo)
     s = 512 / max(mark.size)
-    mark_small = mark.resize((round(mark.width * s), round(mark.height * s)), Image.LANCZOS)
+    mark_small = small(mark, (round(mark.width * s), round(mark.height * s)))
     mark_small.save(ROOT / "app/assets/logo.png", optimize=True)
     # icon: the supplied square, cropped to its centre so the mark fills the tile
     w = logo.width
@@ -52,7 +73,7 @@ def main():
         home.write_dds(SCE / f"{name}.dds", np.asarray(big))
         big.resize((1920, 1080), Image.LANCZOS).save(SCE / f"{name}.png", optimize=True)
     # README logos: the mark as an embedded PNG
-    buf = io.BytesIO(); mark.resize((round(mark.width * 256 / mark.height), 256), Image.LANCZOS).save(buf, "PNG")
+    buf = io.BytesIO(); small(mark, (round(mark.width * 256 / mark.height), 256)).save(buf, "PNG")
     b64 = base64.b64encode(buf.getvalue()).decode()
     mw = round(mark.width * 256 / mark.height)
     svg = lambda col, wm: (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{mw*72//256 + (130 if wm else 0)}" height="72" '
