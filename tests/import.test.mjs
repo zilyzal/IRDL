@@ -423,3 +423,14 @@ test('editing: title, batch names, order and links change; a batch of new links 
   assert.equal(after.cover, 'https://img.example/c.jpg');
   assert.throws(() => store.update('PPSA20001', { title: 'x', batches: [] }));
 });
+
+test('covers: a Title ID in JobeesLair\'s list gets its pictures and fall-backs; an unknown one gets the guessed address; a bad id gets none', async () => {
+  const { coverFor } = await load('app/state/covers.js');
+  const known = coverFor('PPSA03753');
+  assert.match(known.cover, /^https:\/\/image\.api\.playstation\.com\/vulcan\/ap\/rnd\/202407\/2915\//);
+  assert.ok(known.coverFallbacks.length >= 1);
+  assert.equal(coverFor('PPSA00001x'), null);
+  const unknown = coverFor('PPSA00000');
+  assert.equal(unknown.cover, 'https://cover.spectrumlibrary.online/COVER/PPSA00000.png');
+  assert.equal(coverFor('PPSA00000', { guessed: false }), null);
+});

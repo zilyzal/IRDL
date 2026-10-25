@@ -7,6 +7,7 @@
 // MODIFIED: each game carries `formats`, the kinds of download it has (state/formats.js), for the Format filter:
 // the bundled games' from data/formats.js, a feed's releases sorted when the feeds load.
 
+import { coverFor } from './covers.js';
 import { announceAdded, recordAdded } from './recent.js';
 import { features, games, twins } from '../data/catalog.js';
 import { formats as bundledFormats } from '../data/formats.js';
@@ -95,6 +96,11 @@ for (const { game: feedGame, page, releases } of [...loadFeedGames(), ...loadImp
   function shape(game) {
     Object.setPrototypeOf(game, game.feedPage ? FeedEntry : Entry);
     game.genres = [...new Set(game.genres.flatMap((genre) => genre.split(" / ")).map((genre) => SYNONYMS[genre] ?? genre))];
+    // A cover by Title ID (JobeesLair's list); a game it does not list keeps the cover it came with, or is guessed.
+    if (game.feedPage) {
+      const found = coverFor(game.id, { guessed: !game.art.cover });
+      if (found) game.art = { ...game.art, cover: found.cover, coverFallbacks: found.coverFallbacks };
+    }
     game.art.cover && (game.art.cover = coverSize(game.art.cover));
     if (game.art.coverFallbacks) game.art.coverFallbacks = game.art.coverFallbacks.map(coverSize);
   }

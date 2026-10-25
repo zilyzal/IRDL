@@ -63,7 +63,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 </div>
 <div id="impEditor" hidden>
 <div class="panel block imp-head">
-<div class="imp-tile" id="impTile">The cover is taken from the page</div>
+<div class="imp-tile" id="impTile">The cover is found from the Title ID</div>
 <div class="imp-fields">
 <div><label for="impTitle">Title</label><input class="field" id="impTitle" maxlength="120" autocomplete="off"></div>
 <div><label for="impId">Title ID</label><input class="field" id="impId" maxlength="9" placeholder="PPSA12345" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="imp-note" id="impIdNote"></div></div>
@@ -157,9 +157,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function impRender() {
     var p = imp.preview;
-    var tile = $("impTile"); tile.textContent = "";
-    if (/^https:\/\//.test(p.cover || "")) { var pic = img(null, p.cover); pic.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:12px"; tile.appendChild(pic); }
-    else tile.textContent = p.title || "";
+    $("impTile").textContent = p.title || "";
     // Hosts: one chip each, across every batch, to drop a host everywhere in a tap.
     var hosts = {}, order = [];
     allBatches().forEach(function (b) { b.hosts.forEach(function (h) { if (!hosts[h.host]) { hosts[h.host] = 0; order.push(h.host); } hosts[h.host] += h.links.length; }); });
@@ -233,7 +231,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function draft() {
     return {
-      id: $("impId").value, title: $("impTitle").value, cover: /^https:\/\//.test(imp.preview.cover || "") ? imp.preview.cover : "", sourceUrl: imp.preview.sourceUrl || "",
+      id: $("impId").value, title: $("impTitle").value, sourceUrl: imp.preview.sourceUrl || "",
       batches: allBatches().filter(function (b) { return b.on; }).map(function (b) {
         return { key: b.key, label: b.label, hosts: hostList(b).filter(function (h) { return !imp.hostOff[h.host]; }).map(function (h) { return { host: h.host, links: h.links.map(function (l) { return { url: l.url, part: l.part, filename: l.filename }; }) }; }) };
       }).filter(function (b) { return b.hosts.length; })
