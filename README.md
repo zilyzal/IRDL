@@ -5,8 +5,7 @@
 
 <p align="center">
   <b>A catalog browser and download manager for a jailbroken PS5.</b><br>
-  Version 1.1.1 · Title ID <code>PPSA99573</code> · by zilyzal<br>
-  <i>A clean copy of <a href="https://github.com/JVK3R/JobeesLair">JobeesLair</a> by JVK3R (GPL-3.0), with its own Import tab.</i>
+  Version 1.1.2 · Title ID <code>PPSA99573</code>
 </p>
 
 <p align="center">
@@ -24,22 +23,30 @@
 IRDL runs on a jailbroken PS5 with [ShadowMount+](https://github.com/drakmor/ShadowMountPlus). It starts with
 an **empty catalog**: you fill it yourself, from your phone or from feeds.
 
-## Import from your phone (or the console's own browser)
+## Quick start
 
-The companion listens on **port 9898**: `http://<console address>:9898` from a phone (the address and a QR
-code are in Settings → Phone companion), or `http://localhost:9898` in the console's own web browser. Its
-**Import** tab has one box that takes a **post page's address**, **download links**, or both:
+1. Install IRDL ([install guide](INSTALLATION-GUIDE.md)) and open it.
+2. Open **Settings → Phone companion** for the address and QR code, then open it on your phone and sign in with
+   the PIN (default `989898`; change it in Settings).
+3. In the **Import** tab, add games (below). They appear in the store straight away.
 
-1. Paste and tap **Fetch**. The console reads the page and finds the **title**, **Title ID**, **cover** and the
-   **`.rar` download links**. Links you paste are sorted into their parts whatever order they come in, and
-   show first.
-2. The links come sorted into **batches**, one per version. Untick a batch to leave it out, tap
-   **Keep only this batch**, or drop a host everywhere with the chips.
-3. **Save.** Reopen IRDL on the console and the game is in the store, its volumes joined into one download set
-   per batch and host.
+## Add games from your phone
 
-If a site refuses the console, the links you pasted beside its address are used on their own. Only `.rar` volumes become
-batches; other file-host links on the page are listed apart and left off. Details are in the
+The companion listens on **port 9898**: `http://<console address>:9898` from a phone, or
+`http://localhost:9898` in the console's own web browser.
+
+- **Import from a post page.** Paste a post's address, download links (any order), or both, and tap **Fetch**.
+  The console reads the title, Title ID and `.rar` links, and sorts the links into **batches**, one per
+  version. Parts of one multipart set stay together; different sets stay apart. Untick what you don't want and
+  **Save**. Importing the same game again adds to it, with the newest links first.
+- **Upload a catalog.** Choose or paste a JSON catalog in the [feed format](FEEDS.md); every game in it joins
+  the store at once.
+- **Edit a game.** Change its title, rename or reorder batches (the first is the default download), delete
+  links, or add new ones.
+- **Persian.** The phone page has a فا / EN button; the app itself has a full Persian translation.
+
+When a game is added, the console shows a pop-up with its cover and a **Download** button. Covers are matched
+by Title ID; a game without one gets a colour tile. More in the
 [installation guide](INSTALLATION-GUIDE.md#importing-a-game-from-a-post-page).
 
 ## What else it does
@@ -49,8 +56,8 @@ batches; other file-host links on the page are listed apart and left off. Detail
 - **Homebrew section:** open-source PS5 apps, emulators and payloads, installed and kept up to date from their
   authors' own releases (nothing is rehosted).
 - **Downloads** straight to internal storage or a USB drive, with a live dashboard, pause, resume and retry;
-  split archives are downloaded and extracted for you.
-- **Labels every source** (Folder Dump, .exfat Image, FFPKG, Backport), **13.60 Ready**, broken-link marks.
+  split archives are downloaded and extracted for you, and the `.rar` files can be deleted afterwards.
+- **Labels every source** (Folder Dump, .exfat Image, FFPKG, Backport) and **13.60 Ready**.
 - **Library, play time and Make Room:** what's installed and how long you played it, free up space safely, move
   games between drives, and find out why a game won't start.
 - **Phone companion:** dashboard, queue, feeds and a virtual remote, PIN-protected.
@@ -82,11 +89,11 @@ of Sony Interactive Entertainment.
 
 | Path | What it is |
 | --- | --- |
-| `app/` | The application (JSX, state, phone page) and `app.json` (title ID `PPSA99573`) |
-| `app/state/page-import.js` | Reads a post page: title, Title ID, cover, `.rar` batches |
-| `app/companion/` | The phone companion: `api.js` routes, `importer.js`, `import-ui.js` (the Import tab) |
-| `ps5-react/` | The framework it runs on, vendored from [half144/ps5-react](https://github.com/half144/ps5-react) |
-| `tests/` | Tests, including `import.test.mjs` and its sample pages in `tests/fixtures/pages/` |
+| `app/` | The application (JSX, state, phone page) and `app.json` |
+| `app/state/page-import.js` | Reads a post page: title, Title ID, `.rar` batches |
+| `app/companion/` | The phone companion: routes, importer, Import tab, Persian layer |
+| `ps5-react/` | The framework it runs on, from [half144/ps5-react](https://github.com/half144/ps5-react) |
+| `tests/` | Tests and sample pages |
 | `packaging/` | Builds the exFAT image and adds the docs to it |
 
 On Linux (or WSL) with `clang-18`, `llvm-18`, `cmake`, `ninja-build`, `nodejs`, `npm`, `zlib1g-dev`,
@@ -102,14 +109,11 @@ sudo ../packaging/make-exfat.sh ../stage ../IRDL.exfat IRDL
 
 The GitHub **build** workflow does the same. The tests need only Node.js 22+: `npm test`.
 
-To publish: raise the version in `app/version.js`, run the build workflow, test the image on a console, then
-publish a release tagged with the same version (`v1.1.1`), with `IRDL.exfat` and `update.zip` attached, so
-installed copies can update themselves.
+To release: raise the version in `app/version.js`, run the build workflow, test the image on a console, then
+publish the draft release tagged with the same version (`v1.1.2`), with `IRDL.exfat` and `update.zip`
+attached, so installed copies can update themselves.
 
 ## Credits
 
 Based on [JobeesLair](https://github.com/JVK3R/JobeesLair) by JVK3R and [PS5 React](https://github.com/half144/ps5-react)
-by half144. ShadowMount+ is by drakmor; the Homebrew list comes from nexgen999's PS5 Repository List.
-
-Distributed under the GPL-3.0-or-later ([LICENSE](LICENSE)). Third-party notices are in `notices/` inside the
-app and in `ps5-react/docs/DEPENDENCIES.md`.
+by half144. Made by zilyzal. Licensed GPL-3.0-or-later ([LICENSE](LICENSE)).

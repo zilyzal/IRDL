@@ -1,6 +1,6 @@
 # IRDL installation guide
 
-IRDL 1.1.1 · Title ID `PPSA99573` · by zilyzal (based on JobeesLair by JVK3R)
+IRDL 1.1.2 · Title ID `PPSA99573`
 
 > [!WARNING]
 > **Download only what you own or have permission to access.** You are responsible for what you
@@ -104,28 +104,38 @@ use.
    line), or both. The console reads the page itself (your phone's browser cannot, sites don't allow it), which
    takes a few seconds. Pasted links are sorted into parts and shown first; with no page, the game's name is
    taken from the file names and you type the Title ID.
-3. Check the **title**, **Title ID** and **cover** (tap another picture to change the cover). If the page has no
-   Title ID, type it in (`PPSA12345` or `CUSA12345`); Save stays off until it is valid.
+3. Check the **title** and **Title ID**. If the page has no Title ID, type it in (`PPSA12345` or `CUSA12345`); Save stays
+   off until it is valid. The cover is found from the Title ID; a game without one gets a colour tile.
 4. Under **Batches** you get one card per version found on the page, each with its hosts and part counts.
+   Parts of one multipart set stay in one batch; different sets are separate batches.
    - Untick a batch to leave it out, or tap **Keep only this batch**.
    - The chips under the batch cards drop a host (say, one you don't use) from every batch at once.
    - **Show links** lists exactly what will be saved. A warning appears when a part is missing from a set.
    - Only `.rar` volumes become batches. Other links to file hosts on the page appear apart, under **Not .rar**,
      switched off.
-5. Tap **Save**. **Close and reopen IRDL on the console** to see the game in the store; downloading works like any
-   other game, and a batch's volumes on one host are joined into one download set.
+5. Tap **Save**. The game is in the store at once, with a pop-up showing its cover and a **Download** button.
+   If adding it live ever fails, reopen IRDL on the console and it will be there.
 
-Saving the same Title ID again replaces the game, so importing again with a batch left out removes that batch.
-**Saved games** at the bottom of the tab lists what you have kept; **Fetch again** re-reads its page and
-**Remove** takes it out.
+Importing a game again adds the new batches in front of the old ones; the newest link is the default download,
+and the sources list shows the site each link came from.
+
+**Saved games** at the bottom of the tab lists what you have kept:
+
+- **Edit** changes the title, renames and reorders batches (the first is the default download), deletes single
+  links or whole batches, and adds links as a new batch.
+- **Fetch again** re-reads the game's page. **Remove** takes it out.
+
+**Upload a catalog.** Under the saved games, choose a `.json` file (or paste it) in the [feed format](FEEDS.md): a
+feed object, a list of games, or one game. It is sent in small pieces and every game joins the store at once.
+
+**Persian.** The فا / EN button at the top of the phone page switches it to Persian, laid out right to left.
 
 **If the site refuses the console** (some sites block anything but a browser), open the page on your phone,
 copy its download links, and paste them into the same box (with or without the address). Links, or the
 page's source, work.
 
 The importer recognises the common file hosts, but it can't know every page layout. If a page splits wrongly,
-use **Show links** to see what it found, and edit the batch name on its card; send me an example page and I can
-tune it.
+use **Show links** to see what it found, and edit the batch name on its card, or fix it afterwards with **Edit**.
 
 ## Catalog feeds
 
