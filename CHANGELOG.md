@@ -3,6 +3,12 @@
 What changed in each version of IRDL. Each release on [GitHub](https://github.com/zilyzal/IRDL/releases)
 carries the files and their SHA-256 checksums.
 
+## 1.1.1
+
+### New
+
+- **Covers by Title ID, the JobeesLair way.** The pictures from JobeesLair 0.5.1's list (about 1,350 games, with their fall-backs) are built in; a game you import, upload or get from a feed shows its cover when its Title ID matches, and a game not in the list tries the address JobeesLair's list ends on, then falls back to its colour tile. The phone's cover chooser and uploader are gone.
+
 ## 1.1.0
 
 ### New
@@ -19,7 +25,6 @@ carries the files and their SHA-256 checksums.
   apart from the part number.
 - Header: the "IRDL" text beside the logo is gone and "by" sits above "Zilyzal". The stray white specks around the
   logo are cleaned up.
-- **Covers by Title ID, the JobeesLair way.** The pictures from JobeesLair 0.5.1's list (about 1,350 games, with their fall-backs) are built in; a game you import, upload or get from a feed shows its cover when its Title ID matches, and a game not in the list tries the address JobeesLair's list ends on, then falls back to its colour tile. The phone's cover chooser and uploader are gone.
 
 ### Fixed (ported from JobeesLair 0.5.1)
 
