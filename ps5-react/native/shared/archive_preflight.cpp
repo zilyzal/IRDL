@@ -486,9 +486,19 @@ constexpr std::uint64_t window_unit = 128 * 1024, max_header_size = 2 * 1024 * 1
 enum : std::uint64_t { file = 2, service = 3, encryption = 4, end = 5 };
 
 // worker_window: the dictionary the RAR worker will take (it needs no libarchive doubling); 0 when libarchive extracts.
-std::string check(Volumes& in, bool partial, std::uint64_t worker_window = 0) {
+std::string check(Volumes& in, bool partial, std::uint64_t worker_window = 0, std::uint64_t after_window = 0) {
   std::uint64_t at = signature.size(), memory = 0;
-  const auto fits = [&](std::uint64_t used) { return worker_window ? (used / 2 > worker_window ? too_much_memory : std::string()) : archives::fits(used); };
+  const auto fits = [&](std::uint64_t used) -> std::string {
+    if (!worker_window) return archives::fits(used);
+    const auto dictionary = used / 2;
+    if (dictionary <= worker_window) return {};
+    const auto size = std::to_string(dictionary / mib) + " MiB";
+    if (after_window && dictionary <= after_window)
+      return "This archive needs more memory to extract while downloads are running than the console app can use (dictionary " + size
+          + "; limit " + std::to_string(worker_window / mib) + " MiB while downloading, " + std::to_string(after_window / mib) + " MiB when nothing downloads).";
+    return "This archive needs more memory to extract than the console app can use (dictionary " + size + ", limit "
+        + std::to_string((after_window ? after_window : worker_window) / mib) + " MiB).";
+  };
   // A partial download stops at its first hole or at the walk's budget.
   bool file_seen = false;
   for (const auto deadline = std::chrono::steady_clock::now() + inspect_budget; within(partial, file_seen, deadline);) {
@@ -679,14 +689,14 @@ bool starts_with(const std::array<unsigned char, 8>& magic, std::string_view pre
 }
 }
 
-std::string preflight(const std::vector<std::string>& sources, std::uint64_t rar_worker_window) {
+std::string preflight(const std::vector<std::string>& sources, std::uint64_t rar_worker_window, std::uint64_t rar_after_window) {
   Volumes in(sources);
   std::array<unsigned char, 8> magic{};
   in.read(0, magic.data(), static_cast<std::size_t>(std::min<std::uint64_t>(magic.size(), in.size())));
   // libarchive searches executables for an embedded archive, which these checks do not follow.
   if (starts_with(magic, "MZ") || starts_with(magic, "\x7F" "ELF")) return "Self-extracting archives are not supported.";
   if (starts_with(magic, "7z\xBC\xAF\x27\x1C")) return seven_zip::check(in);
-  if (starts_with(magic, rar5::signature)) return rar5::check(in, false, rar_worker_window);
+  if (starts_with(magic, rar5::signature)) return rar5::check(in, false, rar_worker_window, rar_after_window);
   if (starts_with(magic, rar4::signature)) return rar4::check(in, false);
   // Compression around a TAR: only the outer layer is checked.
   if (const auto window = std::max({xz_window(in, 0), zstd_window(in, 0), lzip_window(in)})) return fits(window);
@@ -696,7 +706,7 @@ std::string preflight(const std::vector<std::string>& sources, std::uint64_t rar
   return fits(lzma_alone_window(in));
 }
 
-Inspection inspect(const std::vector<std::string>& sources) {
+Inspection inspect(const std::vector<std::string>& sources, std::uint64_t rar_worker_window, std::uint64_t rar_after_window) {
   Volumes in(sources);
   std::array<unsigned char, 8> magic{};
   in.read(0, magic.data(), static_cast<std::size_t>(std::min<std::uint64_t>(magic.size(), in.size())));
@@ -705,7 +715,7 @@ Inspection inspect(const std::vector<std::string>& sources) {
   in.read(257, ustar.data(), 5);
   // UFS2 keeps its superblock at 64 KiB, with fs_magic 1372 bytes in.
   in.read(65536 + 1372, ufs.data(), 4);
-  if (starts_with(magic, rar5::signature)) return {"rar", rar5::check(in, true)};
+  if (starts_with(magic, rar5::signature)) return {"rar", rar5::check(in, true, rar_worker_window, rar_after_window)};
   if (starts_with(magic, rar4::signature)) return {"rar", rar4::check(in, true)};
   // 7z and ZIP keep their directories at the end, so a partial download shows nothing to refuse yet.
   if (starts_with(magic, "7z\xBC\xAF\x27\x1C")) return {"7z", {}};

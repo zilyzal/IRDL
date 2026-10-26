@@ -42,7 +42,6 @@ constexpr size_t max_path_length = 4096, max_line = 8192, buffer_bytes = 4 << 20
 constexpr size_t max_queued_files = 32;
 constexpr unsigned max_depth = 128;
 constexpr uint64 progress_ns = 250000000;
-const char* too_much_memory = "This archive needs more memory to extract than the console app can use.";
 const char* missing_first = "Missing first RAR volume.";
 
 struct Options {
@@ -485,8 +484,8 @@ std::string describe(int code) {
     case ERAR_EREAD: return "Cannot read the RAR archive; it may be truncated.";
     case ERAR_MISSING_PASSWORD: return "RAR archive password is missing.";
     case ERAR_BAD_PASSWORD: return "Incorrect RAR archive password.";
-    case ERAR_NO_MEMORY:
-    case ERAR_LARGE_DICT: return too_much_memory;
+    case ERAR_NO_MEMORY: return "This archive needs more memory to extract than the console app can use (the decoder ran out of memory).";
+    case ERAR_LARGE_DICT: return "This archive needs more memory to extract than the console app can use (dictionary over the limit).";
     case ERAR_BAD_ARCHIVE:
     case ERAR_UNKNOWN_FORMAT: return "Unsupported or damaged RAR archive.";
     default: return "RAR extraction failed.";
@@ -558,7 +557,8 @@ std::string extract(Session& session, CommandData& command, Archive& archive, Cm
     if (!name.empty() && name[0] != '/') name = without_dots(name);
     if (!safe(name) || header.RedirType != FSREDIR_NONE || (!options.reserved.empty() && name.find(options.reserved) != std::string::npos))
       return "Archive contains an unsafe path, link or special file.";
-    if (header.Method != 0 && header.WinSize > options.window) return too_much_memory;
+    if (header.Method != 0 && header.WinSize > options.window)
+      return std::string("This archive needs more memory to extract than the console app can use (dictionary ") + std::to_string(uint64(header.WinSize) >> 20) + " MiB, limit " + std::to_string(options.window >> 20) + " MiB).";
     if (!header.Dir) {
       if (header.UnpSize < 0 || uint64(header.UnpSize) > options.limit - declared) return "Archive exceeds the extraction size limit.";
       declared += header.UnpSize;
@@ -844,9 +844,9 @@ int main() {
       }
     } catch (RAR_EXIT code) {
       error = !session.error.empty() ? session.error : session.writer.error();
-      if (error.empty() && !cancelled) error = code == RARX_MEMORY ? too_much_memory : describe(ERAR_UNKNOWN);
+      if (error.empty() && !cancelled) error = code == RARX_MEMORY ? "This archive needs more memory to extract than the console app can use (the decoder ran out of memory)." : describe(ERAR_UNKNOWN);
     } catch (std::bad_alloc&) {
-      error = too_much_memory;
+      error = "This archive needs more memory to extract than the console app can use (the decoder ran out of memory).";
     } catch (...) {
       error = describe(ERAR_UNKNOWN);
     }

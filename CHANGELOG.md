@@ -3,6 +3,18 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.4
+
+### New
+
+- **The memory error says why.** The failed download shows the archive's dictionary size and the limit that
+  refused it, or that the decoder ran out of memory.
+- **128 MiB limit after downloading.** RAR archives with up to a 128 MiB dictionary extract when nothing is
+  downloading; while downloads run (or a set extracts as it downloads) the limit stays 32 MiB.
+- **Extracting while downloading** now says when Extract after downloading (Settings → Downloads) would fix it,
+  instead of the general message. The check at the start of a download no longer refuses what the later
+  extraction could take. Untested on a console.
+
 ## 1.2.3
 
 ### Fixed

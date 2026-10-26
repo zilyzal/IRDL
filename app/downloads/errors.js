@@ -17,6 +17,7 @@ import { t } from '../i18n/core.js';
     [/partial files were deleted/i, "partialDeleted", "restart"],
     [STALE_PARTIAL, "staleProgress", "restart"],
     [/file changed since this partial/i, "fileChanged", "restart"],
+    [/while downloads are running/i, "archiveBusy", "extractLater"],
     [/needs more memory to extract/i, "archiveTooLarge", "otherSource"],
     // The engine's heap had no room for the extraction; a fresh launch frees it.
     [/not enough memory to extract/i, "noMemory", "reopenApp"],
@@ -54,7 +55,9 @@ import { t } from '../i18n/core.js';
     }
     const known = CASES.find(([pattern, , , only]) => (!only || set) && pattern.test(message));
     if (!known) return { title: message, action: t("errors.action.retryOrOtherSource") };
-    return { title: t(`errors.${known[1]}`), action: t(`errors.action.${known[2]}`) };
+    // The native check names what it found in parentheses (dictionary size and limit): shown with the title.
+    const detail = known[1] === "archiveTooLarge" || known[1] === "archiveBusy" ? /\(([^()]*)\)\.?$/.exec(message) : null;
+    return { title: t(`errors.${known[1]}`) + (detail ? ` (${detail[1]})` : ""), action: t(`errors.action.${known[2]}`) };
   }
 
 export { INCOMPLETE_PART, STALE_PARTIAL, cause, explainError };

@@ -557,7 +557,6 @@ std::string extract(Job& job, archive* archive, const std::string& staging, std:
 // path takes those), so every part must start a volume.
 constexpr std::array<std::string_view, 2> rar_signatures{std::string_view("Rar!\x1A\x07\x01\x00", 8), std::string_view("Rar!\x1A\x07\x00", 7)};
 // The decoder window the worker accepts, the RAR5 window the preflight admits for libarchive.
-constexpr std::uint64_t rar_window_busy = 32ULL * 1024 * 1024, rar_window_idle = 64ULL * 1024 * 1024;
 // Reports come a few times a second; read_rar_worker waits about a quarter second each time.
 constexpr unsigned rar_silent_reads = 120, rar_cancel_reads = 40;
 bool rar_volumes(const Request& request) {
@@ -770,12 +769,12 @@ void run(const std::shared_ptr<Job>& pointer) {
   // A streamed set is checked on its first volume, as a partial download is; the worker refuses any later
   // header over its limits. Its paths go to the worker's line protocol.
   const auto streamed = [&] {
-    const auto found = inspect({request.sources.front()});
+    const auto found = inspect({request.sources.front()}, rar_window_busy, rar_window_idle);
     const bool lines = request.destination.find('\n') == std::string::npos &&
         std::none_of(request.sources.begin(), request.sources.end(), [](const std::string& path) { return path.find('\n') != std::string::npos; });
     return found.kind != "rar" || !lines ? std::string("Only a RAR set can be extracted while it downloads.") : found.refusal;
   };
-  if (const auto refusal = request.stream ? streamed() : preflight(request.sources, rar_volumes(request) ? rar_window(request) : 0); !refusal.empty()) {
+  if (const auto refusal = request.stream ? streamed() : preflight(request.sources, rar_volumes(request) ? rar_window(request) : 0, rar_volumes(request) && rar_window(request) < rar_window_idle ? rar_window_idle : 0); !refusal.empty()) {
     trace("preflight refused", refusal.c_str());
     fail(job, refusal);
     return;
