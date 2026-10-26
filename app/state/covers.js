@@ -10,8 +10,11 @@ import { covers } from '../data/covers.js';
   // { cover, coverFallbacks } or null
   function coverFor(id, { guessed = true } = {}) {
     const known = covers[id];
-    if (known) return { cover: expand(known[0]), coverFallbacks: known.slice(1).map(expand) };
+    if (known && known.length > 1) return { cover: expand(known[1]), coverFallbacks: known.slice(2).map(expand) };
     return guessed && /^(?:PPSA|CUSA)\d{5}$/.test(id) ? { cover: guess(id), coverFallbacks: [] } : null;
   }
 
-export { coverFor };
+// The game's name, by Title ID, or "" when the list does not have it.
+var titleFor = (id) => covers[id]?.[0] ?? "";
+
+export { coverFor, titleFor };

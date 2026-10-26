@@ -9,7 +9,6 @@ import '../assets/JetBrainsMono-Regular.ttf';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import { memo, useState } from 'react';
 import { Catalog } from './Catalog.jsx';
-import { ContinueRow } from './ContinueRow.jsx';
 import { FilterDrawer } from './FilterDrawer.jsx';
 import { PageHints } from './PageHints.jsx';
 import { RecentRow } from './RecentRow.jsx';
@@ -38,9 +37,8 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
     const onAction = useFavoriteAction();
     useCatalogVersion();
     const any = gameCount() > 0;
-    return /* @__PURE__ */ (0, jsx)(FocusScope, { trap: true, onAction, children: /* @__PURE__ */ (0, jsxs)(ScrollView, { style: { flex: 1, gap: 60, paddingHorizontal: 48 }, children: [
-      /* @__PURE__ */ (0, jsx)(View, { scrollAnchor: true, style: { gap: 24, paddingTop: 24 }, children: /* @__PURE__ */ (0, jsx)(HomeHero, {}) }),
-      any ? /* @__PURE__ */ (0, jsx)(ContinueRow, {}) : null,
+    return /* @__PURE__ */ (0, jsx)(FocusScope, { trap: true, onAction, children: /* @__PURE__ */ (0, jsxs)(ScrollView, { style: { flex: 1, gap: 44, paddingHorizontal: 48 }, children: [
+      /* @__PURE__ */ (0, jsx)(View, { scrollAnchor: true, style: { gap: 16, paddingTop: 16 }, children: /* @__PURE__ */ (0, jsx)(HomeHero, {}) }),
       any ? /* @__PURE__ */ (0, jsx)(RecentRow, {}) : null,
       any ? /* @__PURE__ */ (0, jsx)(Catalog, { onOpenFilters }) : null,
       /* @__PURE__ */ (0, jsx)(HomebrewLane, {}),

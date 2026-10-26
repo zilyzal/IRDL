@@ -1,6 +1,6 @@
 # IRDL installation guide
 
-IRDL 1.1.2 · Title ID `PPSA99573`
+IRDL 1.2.0 · Title ID `PPSA99573`
 
 > [!WARNING]
 > **Download only what you own or have permission to access.** You are responsible for what you
@@ -111,6 +111,7 @@ use.
    - Untick a batch to leave it out, or tap **Keep only this batch**.
    - The chips under the batch cards drop a host (say, one you don't use) from every batch at once.
    - **Show links** lists exactly what will be saved. A warning appears when a part is missing from a set.
+   - If an archive is locked, type its password in the batch's **Archive password** box (optional).
    - Only `.rar` volumes become batches. Other links to file hosts on the page appear apart, under **Not .rar**,
      switched off.
 5. Tap **Save**. The game is in the store at once, with a pop-up showing its cover and a **Download** button.
@@ -178,5 +179,8 @@ no browser step.
 - **Forgot the PIN:** it is shown on the phone companion card while it is on, or choose **Change PIN**.
 - **A feed failed:** `HTTP 404` means a wrong address, `Not JSON` means the address is a web page rather
   than the `.json` file, and `No usable games` means check the fields against [FEEDS.md](FEEDS.md).
+- **"This archive can't be extracted on the console":** the archive needs more memory to unpack than the app can use (a very large compression dictionary). Pick another source, or unpack it on a PC.
+- **"The archive's password is missing or wrong":** open the game's **Edit** on the phone and set the batch's password.
+- **Downloads fail or stall:** lower **Settings → Downloads → Connections per download**; some links dislike many connections.
 - **Something else:** the app keeps a debug log at `/data/ps5-react/PPSA99573/logs/jobeeslair.log`
   (readable over FTP, with keys, tokens and addresses blanked out). Attach it to a bug report.

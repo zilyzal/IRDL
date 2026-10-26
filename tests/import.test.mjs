@@ -434,3 +434,29 @@ test('covers: a Title ID in JobeesLair\'s list gets its pictures and fall-backs;
   assert.equal(unknown.cover, 'https://cover.spectrumlibrary.online/COVER/PPSA00000.png');
   assert.equal(coverFor('PPSA00000', { guessed: false }), null);
 });
+
+test('archive password: a batch\'s password is kept on its links, shown when editing, and can be changed or cleared', () => {
+  const store = memoryStore();
+  store.save({ id: 'PPSA30001', title: 'Locked', batches: [{ label: 'v1.00', password: ' secret ', hosts: [{ host: 'mediafire', links: [{ url: 'https://www.mediafire.com/file/p1/L.part1.rar/file' }, { url: 'https://www.mediafire.com/file/p2/L.part2.rar/file' }] }] }] });
+  const batch = store.detail('PPSA30001').batches[0];
+  assert.equal(batch.password, 'secret');
+  const parsed = parseFeed({ version: 1, name: 'x', games: [{ id: 'PPSA30001', title: 'Locked', art: {}, releases: [] }] }, 'k');
+  assert.ok(parsed);
+  store.update('PPSA30001', { title: 'Locked', batches: [{ record: batch.record, label: 'v1.00', password: 'other', links: batch.links.map((l) => ({ url: l.url })) }] });
+  assert.equal(store.detail('PPSA30001').batches[0].password, 'other');
+  store.update('PPSA30001', { title: 'Locked', batches: [{ record: batch.record, label: 'v1.00', password: '', links: batch.links.map((l) => ({ url: l.url })) }] });
+  assert.equal(store.detail('PPSA30001').batches[0].password, '');
+});
+
+test('names by Title ID: a saved game shows the name from the list, unless the player renamed it; the phone can look an id up', () => {
+  const store = memoryStore();
+  store.save({ id: 'PPSA03753', title: 'The.Riftbreaker.v1.2-GROUP', batches: [{ label: 'Full', hosts: [{ host: 'mediafire', links: [{ url: 'https://www.mediafire.com/file/r/R.rar/file' }] }] }] });
+  assert.equal(store.entries()[0].title, 'The Riftbreaker');
+  assert.match(store.entries()[0].cover, /^https:\/\//);
+  const detail = store.detail('PPSA03753');
+  store.update('PPSA03753', { title: 'My Riftbreaker', batches: detail.batches.map((b) => ({ record: b.record, label: b.label, links: b.links.map((l) => ({ url: l.url })) })) });
+  assert.equal(store.entries()[0].title, 'My Riftbreaker');
+  const importer = createImporter({ http: {}, store });
+  assert.equal(importer.lookup('ppsa03753').title, 'The Riftbreaker');
+  assert.deepEqual(importer.lookup('nonsense'), { title: '', cover: '' });
+});

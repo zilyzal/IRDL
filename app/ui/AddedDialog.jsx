@@ -56,7 +56,7 @@ import { FocusScope, Text, View, motion } from '@ps5-react/core';
           note ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(19, "#fbbf24", { textAlign: "center" }), children: note }) : null,
           /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: "row", alignItems: "center", gap: 16 }, children: [
             /* @__PURE__ */ (0, jsx)(Button2, { variant: "primary", size: "lg", icon: "download", label: t2("added.download"), autoFocus: true, onPress: download }, "download"),
-            /* @__PURE__ */ (0, jsx)(Button2, { variant: "secondary", size: "sm", label: t2("added.back"), onPress: close }, "back")
+            /* @__PURE__ */ (0, jsx)(Button2, { variant: "secondary", size: "lg", label: t2("added.back"), onPress: close }, "back")
           ] })
         ]
       }) }) })

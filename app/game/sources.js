@@ -33,7 +33,7 @@ import { formatBytes } from '../state/size.js';
   }
   // The release's version, from its own field or its label ("(v01.21)"), as "v1.21"; null when none.
   function versionOf(release) {
-    const value = release.version || /\bv(\d+(?:\.\d+)+)\b/i.exec(release.label || "")?.[1];
+    const value = release.version || /\bv(\d+(?:\.\d+)+)\b/i.exec(release.label || "")?.[1] || /\bv(\d+(?:\.\d+)+)/i.exec(release.filename || "")?.[1] || /(?:^|[^\d.])(\d{1,2}\.\d{2})(?![\d])/.exec(`${release.filename || ""}`.replace(/\.part\d+\.rar$/i, ""))?.[1];
     return value ? `v${version(value)}` : null;
   }
   function edition({ label, provider }) {
@@ -65,7 +65,9 @@ import { formatBytes } from '../state/size.js';
     const region = regionOf(release);
     const shownVersion = versionOf(release);
     const said = [region, shownVersion].filter(Boolean).join(" ");
-    const name = [kindOf(release), said || edition(release)].filter(Boolean).join(" \xB7 ");
+    // An archive is just its version (usually in the link or file name), not "Archive"; other kinds keep theirs.
+    const isArchive = KIND[release.format] === "sources.kind.archive";
+    const name = isArchive ? shownVersion || [region, edition(release)].filter(Boolean).join(" ") || kindOf(release) : [kindOf(release), said || edition(release)].filter(Boolean).join(" \xB7 ");
     const host = release.provider.replace(/^www\./, "");
     const speed = SPEED[release.provider.toLowerCase()];
     const detail2 = [
@@ -91,9 +93,10 @@ import { formatBytes } from '../state/size.js';
     return hostStanding(release.parts?.[0]?.sources[0] ?? release);
   }
   var version = (value) => {
-    const parts = (value || "").replace(/^v/i, "").split(".").map(Number);
-    while (parts.length > 1 && parts.at(-1) === 0) parts.pop();
-    return parts.join(".");
+    // As written, but for the leading zero of the first number ("01.05" is "1.05"); trailing ".00" parts are dropped.
+    const parts = (value || "").replace(/^v/i, "").split(".");
+    while (parts.length > 1 && Number(parts.at(-1)) === 0) parts.pop();
+    return [String(Number(parts[0])), ...parts.slice(1)].join(".");
   };
   var sameSize = (a, b) => Boolean(a && b) && Math.abs(a - b) <= a * 0.01;
   var partOf = ({ label, filename }) => /\bpart\s*(\d+)\b/i.exec(`${label || ""} ${filename || ""}`)?.[1] ?? "";

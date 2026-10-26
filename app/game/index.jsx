@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import { URLDialog } from '../downloads/URLDialog.jsx';
 import { BrowserCaptureDialog } from '../downloads/BrowserCaptureDialog.jsx';
 import { About } from './About.jsx';
-import { GameFacts } from './GameFacts.jsx';
 import { GameHero } from './GameHero.jsx';
 import { InstallToast, TOAST_MS } from './InstallToast.jsx';
 import { MediaGallery } from './MediaGallery.jsx';
@@ -100,8 +99,7 @@ import { colors, radius } from '../ui/colors.js';
               game.shots.length > 0 ? /* @__PURE__ */ (0, jsx)(MediaGallery, { shots: game.shots, nextDown: about.length > 0 ? "game:about" : void 0, onOpen: setViewing }) : null,
               about.length > 0 ? /* @__PURE__ */ (0, jsx)(About, { paragraphs: about }) : null,
               game.features.length > 0 ? /* @__PURE__ */ (0, jsx)(Features, { features: game.features }) : null
-            ] }),
-            /* @__PURE__ */ (0, jsx)(GameFacts, { game })
+            ] })
           ] }),
           related.length > 0 ? /* @__PURE__ */ (0, jsx)(Related, { games: related, onOpenGame }) : null
         ] })

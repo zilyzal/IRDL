@@ -226,9 +226,6 @@ __PERSIAN_CSS__
 <button class="btn" data-quick="refresh">Refresh store<small>Sync every feed</small></button>
 <button class="btn" id="openFeeds">Catalog feeds<small>Add and manage</small></button>
 </div>
-<div class="label">Report a problem</div>
-<div class="panel block"><p class="subtle" style="margin:0 0 12px">Something went wrong? Send the console's log with your report. Keys, tokens and e-mail addresses are already blanked out of it.</p>
-<div class="quick"><button class="btn" id="shareLog">Share log<small>Send it from your phone</small></button><button class="btn" id="saveLog">Save log<small>A .txt file</small></button><button class="btn" id="copyLog">Copy log<small>To paste it</small></button></div></div>
 </section>
 <section id="feeds" hidden>
 <button class="btn mini back" id="feedsBack">&larr; Home</button>
@@ -424,86 +421,6 @@ __IMPORT_HTML__
   }
   $("updateAll").onclick = function () { buzz(); $("updateAll").disabled = true; api("POST", "/api/homebrew/update-all").then(function (r) { toast(r.started.length ? "Updating " + r.started.length + " on the console" : "Nothing to update"); lastUpdates = -1; loadHome(); }).catch(function (e) { toast(e.message, true); }).then(function () { $("updateAll").disabled = false; }); };
   $("openFeeds").onclick = function () { show("feeds"); };
-  // Report a problem (0.5.0 Pre Release 4): the console's debug log, shared, saved or copied from the phone.
-  // A phone only shares or copies from the tap itself, not after a wait, so the log is fetched ahead and kept
-  // (warmLog); and over plain http the browser has no share sheet at all, so Share and Copy fall back to a
-  // sheet showing the log, ready to select (and Save always works).
-  var LOG_NAME = "irdl-log.txt", logText = null, logAt = 0, logLoading = null;
-  function getLog() {
-    return fetch("/api/logs", { headers: { "X-JBH": "1" }, cache: "no-store", credentials: "same-origin" }).then(function (r) {
-      if (r.status === 401) throw new Error("Sign in again to get the log.");
-      if (!r.ok) throw new Error("The console didn't send its log (HTTP " + r.status + ").");
-      return r.text();
-    }, function () { throw new Error("Couldn't reach the console."); });
-  }
-  function warmLog(force) {
-    if (logLoading || (!force && logText !== null && Date.now() - logAt < 30000)) return logLoading || Promise.resolve();
-    logLoading = getLog().then(function (text) { logText = text; logAt = Date.now(); }, function () {}).then(function () { logLoading = null; });
-    return logLoading;
-  }
-  function saveText(text) {
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-    a.download = LOG_NAME;
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-  }
-  function showLogSheet(text, note) {
-    var sheet = document.createElement("div"); sheet.className = "sheet";
-    var card = document.createElement("div"), body = document.createElement("div"); body.className = "body"; body.style.paddingTop = "16px";
-    var h = document.createElement("h2"); h.textContent = "Console log";
-    var p = document.createElement("p"); p.className = "subtle"; p.textContent = note;
-    var box = document.createElement("textarea"); box.className = "field"; box.readOnly = true; box.value = text;
-    box.style.cssText = "width:100%;height:46vh;font-size:12px;font-family:ui-monospace,Menlo,monospace";
-    var row = document.createElement("div"); row.className = "row"; row.style.cssText = "margin-top:12px;gap:10px";
-    var all = document.createElement("button"); all.className = "btn primary grow"; all.textContent = "Select all";
-    var save = document.createElement("button"); save.className = "btn grow"; save.textContent = "Save file";
-    var close = document.createElement("button"); close.className = "btn grow"; close.textContent = "Close";
-    row.appendChild(all); row.appendChild(save); row.appendChild(close);
-    body.appendChild(h); body.appendChild(p); body.appendChild(box); body.appendChild(row); card.appendChild(body); sheet.appendChild(card);
-    document.body.appendChild(sheet);
-    function pick() { box.focus(); box.select(); try { box.setSelectionRange(0, text.length); } catch (e) {} }
-    all.onclick = function () { pick(); var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} if (ok) toast("Log copied"); };
-    save.onclick = function () { saveText(text); toast("Log saved as " + LOG_NAME); };
-    close.onclick = function () { sheet.remove(); };
-    sheet.onclick = function (e) { if (e.target === sheet) sheet.remove(); };
-    setTimeout(pick, 80);
-  }
-  // Runs act with the log: at once from the tap when it is already here, else after fetching it.
-  function withLog(button, act) {
-    button.onclick = function () {
-      buzz();
-      if (logText !== null) { act(logText, true); return; }
-      button.disabled = true;
-      warmLog(true).then(function () {
-        button.disabled = false;
-        if (logText === null) toast("Couldn't get the log from the console.", true);
-        else act(logText, false);
-      });
-    };
-  }
-  withLog($("shareLog"), function (text, fresh) {
-    var file = typeof File === "function" ? new File([text], LOG_NAME, { type: "text/plain" }) : null;
-    if (fresh && navigator.share) {
-      var data = file && navigator.canShare && navigator.canShare({ files: [file] }) ? { files: [file], title: "IRDL log" } : { title: "IRDL log", text: text.slice(-100000) };
-      navigator.share(data).catch(function (e) { if (e && e.name !== "AbortError") showLogSheet(text, "Your browser wouldn't open its share sheet. Select all, copy, and paste it into your report."); });
-      return;
-    }
-    showLogSheet(text, navigator.share ? "Tap Share log again to send it." : "Your browser can't open a share sheet from this address. Select all, copy, and paste it into your report, or save the file.");
-  });
-  withLog($("saveLog"), function (text) { saveText(text); toast("Log saved as " + LOG_NAME); });
-  withLog($("copyLog"), function (text, fresh) {
-    if (fresh && navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(function () { toast("Log copied"); }, function () { showLogSheet(text, "Your browser wouldn't copy it by itself. Select all, then copy."); });
-      return;
-    }
-    var t = document.createElement("textarea"); t.value = text; t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0";
-    document.body.appendChild(t); t.focus(); t.select(); try { t.setSelectionRange(0, text.length); } catch (e) {}
-    var ok = false; try { ok = fresh && document.execCommand("copy"); } catch (e) {}
-    t.remove();
-    if (ok) toast("Log copied"); else showLogSheet(text, "Your browser wouldn't copy it by itself. Select all, then copy.");
-  });
-  setTimeout(warmLog, 1500);
   $("feedsBack").onclick = function () { show("home"); };
 
   // ---- Games: search, a featured rail, the grid, and a sheet to download one to the console ---------

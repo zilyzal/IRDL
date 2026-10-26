@@ -43,7 +43,7 @@ html[lang=fa] .label,html[lang=fa] .subtle,html[lang=fa] .stat span{letter-spaci
     "Choose a file": "انتخاب فایل", "Upload": "آپلود", "Connection to the console": "اتصال به کنسول", "PIN": "رمز",
     "Search games": "جستجوی بازی", "Search homebrew": "جستجوی هوم‌برو", "Up": "بالا", "Left": "چپ", "Cross": "ضربدر", "Right": "راست", "Down": "پایین",
     "Paste a post's address, download links (any order, one per line), or both": "آدرس پست، لینک‌های دانلود (به هر ترتیب، هر خط یکی) یا هر دو را بچسبانید",
-    "Batch name": "نام دسته", "One download link per line": "هر خط یک لینک دانلود", "Or paste the catalog JSON here": "یا JSON کاتالوگ را اینجا بچسبانید",
+    "Batch name": "نام دسته", "Archive password (optional)": "رمز آرشیو (اختیاری)", "Archive password": "رمز آرشیو", "One download link per line": "هر خط یک لینک دانلود", "Or paste the catalog JSON here": "یا JSON کاتالوگ را اینجا بچسبانید",
     "Reading on the console…": "در حال خواندن روی کنسول…", "The page took too long. Try again, or paste its download links into the box.": "صفحه خیلی طول کشید. دوباره تلاش کنید یا لینک‌های دانلود را در کادر بچسبانید.",
     "Other files (not .rar)": "فایل‌های دیگر (غیر rar)", "tick the ones to keep": "مواردی که می‌خواهید بماند را تیک بزنید", "Not .rar": "غیر rar",
     "Keep this batch": "نگه داشتن این دسته", "Keep only this batch": "فقط این دسته بماند", "Hide links": "پنهان کردن لینک‌ها", "Show links": "نمایش لینک‌ها",

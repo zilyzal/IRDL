@@ -5,6 +5,8 @@
 import { useRef, useState } from 'react';
 import { NO_FILTERS, activeCount } from '../state/catalog.js';
 import { useNavActions, useNavState } from '../state/nav.jsx';
+import { getGame, listedId } from '../state/catalog.js';
+import { recentIds } from '../state/recent.js';
 import { useQueryActive, useStoreActions, useStoreState } from '../state/store.jsx';
 
   var KEYS2 = {
@@ -33,10 +35,13 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
   }
   function sectionOf({ filters, sort }, query) {
     if (filters.wishlist) return "favorites";
-    if (sort === "rating") return "top";
-    if (sort === "newest") return "new";
     if (activeCount(filters) > 0 || query) return "catalog";
     return "discover";
+  }
+  // The first game of the Recently added row, which is where "Recent" puts the cursor; the library when there is none.
+  function firstRecentKey() {
+    const id = recentIds().map(listedId).find((item) => getGame(item));
+    return id ? `recent:${getGame(id).id}` : "catalog:filters";
   }
   function useSections() {
     const store = { ...useStoreState(), ...useStoreActions() };
@@ -53,8 +58,9 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
       show,
       search: () => topName.current !== "search" && nav.push({ name: "search" }, "nav:search"),
       discover: () => show(NO_FILTERS, "relevance", "spotlight:cta"),
-      top: () => show(NO_FILTERS, "rating"),
-      new: () => show(NO_FILTERS, "newest"),
+      // "Recent": the Recently added row; "Browse": the whole library below it.
+      top: () => show(NO_FILTERS, "relevance", firstRecentKey()),
+      new: () => show(NO_FILTERS, "relevance", "catalog:filters"),
       favorites: () => show({ ...NO_FILTERS, wishlist: true }, "relevance"),
       downloads: () => topName.current !== "downloads" && nav.push({ name: "downloads" }, "nav:downloads"),
       // The Homebrew section, apart from the store: from one of its app pages it goes back to the section.

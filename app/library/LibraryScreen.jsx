@@ -40,10 +40,11 @@ import { colors, radius } from '../ui/colors.js';
 import { EASE_OUT } from '../ui/ease.js';
 import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFocused } from '@ps5-react/core';
 
-  var PER_ROW = 3, GAP = 36;
-  var TILE = Math.floor((1920 - 2 * 48 - (PER_ROW - 1) * GAP) / PER_ROW);
-  var BANNER = Math.round(TILE * 9 / 16);
-  var COVER = { position: "absolute", left: 0, top: 0, width: Math.round(BANNER * 3 / 4), height: BANNER };
+  // The same cards as the store page: 182 wide, covers 3:4 (browse/Catalog.jsx CARD_WIDTH).
+  var PER_ROW = 6, GAP = 36;
+  var TILE = 182;
+  var BANNER = Math.round(TILE * 4 / 3);
+  var COVER = { width: TILE, height: BANNER };
   var ARM_MS = 4e3;
   var GREEN = "#4ade80", RED = "#f87171", AMBER = "#fbbf24";
   var MANAGE_KEY = "library:manage";
@@ -82,15 +83,15 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
     // A Homebrew app: its own picture on its category's colors; IRDL itself, its mark.
     const app = game.homebrewApp;
     if (app?.self) return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", backgroundColor: colors.canvas2 }, children: /* @__PURE__ */ (0, jsx)(JLMark, { height: 64 }) });
-    if (app) return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", backgroundGradient: gradientOf(app.category) }, children: /* @__PURE__ */ (0, jsx)(HomebrewArt, { app, size: BANNER - 40, round: radius.lg }) });
-    if (game.art?.hero) return /* @__PURE__ */ (0, jsx)(Image, { source: { uri: game.art.hero }, resizeMode: "cover", style: { width: TILE, height: BANNER } });
-    if (game.art?.cover) return /* @__PURE__ */ (0, jsx)(Cover, { game, label: false, style: COVER });
-    return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, jsx)(Icon, { name: "disc", size: 48, color: colors.subtle }) });
+    if (app) return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", backgroundGradient: gradientOf(app.category) }, children: /* @__PURE__ */ (0, jsx)(HomebrewArt, { app, size: TILE - 40, round: radius.lg }) });
+    // The cover, as on the store page; with none, the colour tile with the name.
+    return /* @__PURE__ */ (0, jsx)(Cover, { game, style: COVER });
   }
-  function Hint({ button, label }) {
+  function Hint({ button, label, glyphOnly = false }) {
     return /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: "row", alignItems: "center", gap: 9 }, children: [
       /* @__PURE__ */ (0, jsx)(ButtonGlyph, { button, size: 17 }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 20, fontWeight: 600, lineHeight: 28, color: colors.fg }, children: label })
+      // The tile is the width of a store card, so only the main action keeps its words.
+      glyphOnly ? null : /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 17, fontWeight: 600, lineHeight: 24, color: colors.fg, numberOfLines: 1 }, children: label })
     ] });
   }
   // Where the game stands, in one line: moving (and how far), a move that stopped, what ShadowMount's health
@@ -123,15 +124,15 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
         /* @__PURE__ */ (0, jsx)(FocusRing, { round: "lg" })
       ] }),
       /* @__PURE__ */ (0, jsxs)(View, { style: { width: TILE, gap: 2, paddingTop: 18, paddingHorizontal: 4 }, children: [
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 28, fontWeight: 600, lineHeight: 38, color: colors.fg, numberOfLines: 1, ellipsizeMode: "tail" }, children: game.title }),
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 21, lineHeight: 30, color: status.tone, numberOfLines: 1, ellipsizeMode: "tail" }, children: status.text || " " }),
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 21, lineHeight: 30, color: colors.subtle, numberOfLines: 1, ellipsizeMode: "tail" }, children: [playLine(t2, entry.played), entry.kept ? t2("shelf.keptTag") : ""].filter(Boolean).join(" \xB7 ") }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 22, fontWeight: 600, lineHeight: 30, color: colors.fg, numberOfLines: 1, ellipsizeMode: "tail" }, children: game.title }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: status.tone, numberOfLines: 1, ellipsizeMode: "tail" }, children: status.text || " " }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: colors.subtle, numberOfLines: 1, ellipsizeMode: "tail" }, children: [playLine(t2, entry.played), entry.kept ? t2("shelf.keptTag") : ""].filter(Boolean).join(" \xB7 ") }),
         // The tile's buttons, shown while it has focus; the row keeps its height so nothing moves.
-        /* @__PURE__ */ (0, jsx)(View, { style: { height: 44, flexDirection: "row", alignItems: "center", gap: 30, paddingTop: 10 }, children: focused && !busy ? /* @__PURE__ */ (0, jsxs)(Fragment, { children: [
+        /* @__PURE__ */ (0, jsx)(View, { style: { height: 44, flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 10 }, children: focused && !busy ? /* @__PURE__ */ (0, jsxs)(Fragment, { children: [
           action ? /* @__PURE__ */ (0, jsx)(Hint, { button: "cross", label: t2(action.label) }) : null,
-          entry.catalog && action?.name !== "gamePage" ? /* @__PURE__ */ (0, jsx)(Hint, { button: "triangle", label: t2("hints.gamePage") }) : null,
-          /* @__PURE__ */ (0, jsx)(Hint, { button: "square", label: t2(armed ? "hints.confirmDelete" : "hints.delete") }),
-          /* @__PURE__ */ (0, jsx)(Hint, { button: "options", label: t2("hints.options") })
+          entry.catalog && action?.name !== "gamePage" ? /* @__PURE__ */ (0, jsx)(Hint, { button: "triangle", glyphOnly: true, label: t2("hints.gamePage") }) : null,
+          /* @__PURE__ */ (0, jsx)(Hint, { button: "square", glyphOnly: true, label: t2(armed ? "hints.confirmDelete" : "hints.delete") }),
+          /* @__PURE__ */ (0, jsx)(Hint, { button: "options", glyphOnly: true, label: t2("hints.options") })
         ] }) : null })
       ] })
     ] });

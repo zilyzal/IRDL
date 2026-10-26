@@ -590,6 +590,8 @@ import { webURL } from './download-sources.js';
       for (const char of firstUrl) sum = (sum * 31 + char.charCodeAt(0)) % 46656;
       // The same links imported again make the same record (so they replace themselves); other links add a new one.
       const record = `import-${slug(batch?.key || label)}-${sum.toString(36)}`;
+      // Optional: the password the batch's archives are locked with (the extractor tries it first).
+      const password = typeof batch?.password === "string" ? batch.password.trim().slice(0, 256) : "";
       for (const group of Array.isArray(batch?.hosts) ? batch.hosts.slice(0, 24) : []) {
         const links = (Array.isArray(group?.links) ? group.links : []).filter((item) => typeof item?.url === "string").slice(0, 200);
         links.forEach((item, at) => {
@@ -613,7 +615,8 @@ import { webURL } from './download-sources.js';
             format: extension === "7z" || extension === "zip" ? extension : "rar",
             filename,
             requiresBrowser: needsBrowser(url),
-            ...site ? { site } : {}
+            ...site ? { site } : {},
+            ...password ? { archivePassword: password } : {}
           });
         });
       }

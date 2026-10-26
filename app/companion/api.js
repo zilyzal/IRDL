@@ -291,6 +291,7 @@
           return failure(409, error.message);
         }
       },
+      "GET /api/import/lookup": (request) => importer ? json(200, importer.lookup(params(request.query).id || "")) : failure(404, "Unknown request."),
       "GET /api/import/game": (request) => {
         if (!importer) return failure(404, "Unknown request.");
         try {

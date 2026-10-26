@@ -12,6 +12,7 @@
 import { INCOMPLETE_PART, STALE_PARTIAL, cause } from '../downloads/errors.js';
 import { t } from '../i18n/core.js';
 import { archivePassword } from './archive-password.js';
+import { connections } from './connections.js';
 import { deleteArchiveAfterExtract } from './auto-continue.js';
 import { diagnoseLaunch, launchOutcomes } from './launch-diagnosis.js';
 import { reportLink } from './link-health.js';
@@ -621,7 +622,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         fs.mkdir(job2.artifact.directory, { recursive: true });
         fs.mkdir(job2.downloadDestination.slice(0, job2.downloadDestination.lastIndexOf("/")), { recursive: true });
         active2.transferring = true;
-        task = downloads.enqueue({ ...job2.options, rejectHtml: true, mirrors: void 0, connections: 64, adaptive: true, rangeBytes: 16 * 1024 * 1024, destination: job2.downloadDestination, storageRoot: job2.root, recoverCompleted: true });
+        task = downloads.enqueue({ ...job2.options, rejectHtml: true, mirrors: void 0, connections: connections(), adaptive: true, rangeBytes: 16 * 1024 * 1024, destination: job2.downloadDestination, storageRoot: job2.root, recoverCompleted: true });
         active2.task = task;
         // Most catalog releases do not say their size, so the check above had nothing to go on: once the
         // server does, the rest is checked against the drive once, before it fills (the partial file counts
@@ -1161,7 +1162,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
           const task = downloads.enqueue({
             ...part.options,
             rejectHtml: true,
-            connections: 64,
+            connections: connections(),
             adaptive: true,
             destination: part.destination,
             storageRoot: job2.root,

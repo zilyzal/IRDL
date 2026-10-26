@@ -3,6 +3,29 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.0
+
+### New
+
+- **Archive password.** Each batch has an optional password field in the phone's Import tab (before saving)
+  and in Edit. It is tried first when the archive is extracted; a missing or wrong password shows "The archive's
+  password is missing or wrong" with what to do.
+- **Names and covers by Title ID** in the phone page too: fetching a game shows its real name and cover, and
+  saved games use the game's name instead of the one in the link (rename it in Edit to keep your own).
+- **Connections per download** (Settings → Downloads, above the speed limit): 8, 16, 32 or 64. The default is
+  now 16 (it was 64). Some links misbehave with more connections.
+
+### Changed
+
+- The home page is more compact: a smaller "add games" panel so the covers fit without scrolling, and
+  "Continue downloading" is gone. The top bar reads **Home**, **Recent** (jumps to Recently added) and
+  **Browse** (jumps to the library).
+- The Library shows the same covers as the store page.
+- The game page no longer has the Details panel.
+- Download sources show just the version (from the link or file name) instead of "Archive".
+- The pop-up's Back button is the same size as Download.
+- "Report a problem" is gone from the phone page.
+
 ## 1.1.2
 
 ### Changed

@@ -310,7 +310,7 @@ test('companion: the debug log comes as plain text, and only when the app hands 
   assert.equal(createCompanionApi({ ...base, logs: () => '' })({ method: 'GET', path: '/api/logs', query: '', body: '' }).body, '(the log is empty)');
   assert.equal(createCompanionApi(base)({ method: 'GET', path: '/api/logs', query: '', body: '' }).status, 404);
   const { PAGE } = await load('app/companion/page.js');
-  for (const id of ['shareLog', 'saveLog', 'copyLog']) assert.ok(PAGE.includes(`id="${id}"`), id);
+  for (const id of ['shareLog', 'saveLog', 'copyLog']) assert.ok(!PAGE.includes(`id="${id}"`), `${id} is gone from the page (the route stays)`);
   const script = /<script>([\s\S]*?)<\/script>/.exec(PAGE)[1];
   assert.doesNotThrow(() => new Function(script), 'the page script parses');
 });

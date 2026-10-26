@@ -20,7 +20,7 @@ import { t } from '../i18n/core.js';
     [/needs more memory to extract/i, "archiveTooLarge", "otherSource"],
     // The engine's heap had no room for the extraction; a fresh launch frees it.
     [/not enough memory to extract/i, "noMemory", "reopenApp"],
-    [/archive password/i, "archivePassword", "otherSource"],
+    [/archive password/i, "archivePassword", "checkPassword"],
     // A set's last volume ends where the archive goes on, or its first is not where it starts: the source lists
     // too few volumes, and downloading them again fails the same way. A lone archive the worker cannot open
     // fails with the same words; that one is downloaded again.

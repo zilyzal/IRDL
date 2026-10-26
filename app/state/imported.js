@@ -8,6 +8,7 @@ import { MAX_RELEASES, MAX_TOTAL_RELEASES, feedDocument, parseFeed } from './fee
 import { buildGame, hostName, randomTint, releasesFromBatches, squash } from './page-import.js';
 import { webURL } from './download-sources.js';
 import { loadList, saveList } from './saved.js';
+import { coverFor, titleFor } from './covers.js';
 
   var FILE = "imported.json";
   // The "address" this list is parsed under: it only names the release ids, which stay the same across
@@ -46,7 +47,9 @@ import { loadList, saveList } from './saved.js';
     }
     const readDocument = () => {
       const saved = load(FILE, "imported games");
-      return { version: 1, name: "Imported games", games: Array.isArray(saved?.games) ? saved.games : [] };
+      const games = Array.isArray(saved?.games) ? saved.games : [];
+      // The game's name goes by its Title ID (JobeesLair's list), not the name found in a link, unless the player renamed it.
+      return { version: 1, name: "Imported games", games: games.map((game) => !game?.titleEdited && titleFor(game?.id) ? { ...game, title: titleFor(game.id) } : game) };
     };
     const write = (games) => persist(FILE, "imported games", { version: 1, name: "Imported games", games });
 
@@ -71,7 +74,7 @@ import { loadList, saveList } from './saved.js';
           id: String(raw.id),
           title: String(raw.title || raw.id),
           platform: raw.platform === "ps4" ? "ps4" : "ps5",
-          cover: typeof raw.art?.cover === "string" ? raw.art.cover : null,
+          cover: typeof raw.art?.cover === "string" ? raw.art.cover : coverFor(String(raw.id))?.cover ?? null,
           tint: typeof raw.art?.tint === "string" ? raw.art.tint : null,
           links: releases.length,
           batches: [...labels].filter(Boolean),
@@ -167,14 +170,14 @@ import { loadList, saveList } from './saved.js';
       const batches = [];
       for (const release of Array.isArray(raw.releases) ? raw.releases : []) {
         let batch = batches.find((item) => item.record === release.record);
-        if (!batch) batches.push(batch = { record: String(release.record || ""), label: baseLabel(release.label), links: [] });
+        if (!batch) batches.push(batch = { record: String(release.record || ""), label: baseLabel(release.label), password: typeof release.archivePassword === "string" ? release.archivePassword : "", links: [] });
         batch.links.push({ url: release.url, filename: release.filename || "", provider: release.provider || "", part: Number(/part\s*(\d+)\s*$/i.exec(release.label || "")?.[1]) || null, site: release.site || "" });
       }
       return {
         id: raw.id,
         title: String(raw.title || raw.id),
         platform: raw.platform === "ps4" ? "ps4" : "ps5",
-        cover: typeof raw.art?.cover === "string" ? raw.art.cover : "",
+        cover: typeof raw.art?.cover === "string" ? raw.art.cover : coverFor(String(raw.id))?.cover ?? "",
         tint: typeof raw.art?.tint === "string" ? raw.art.tint : "",
         sourceUrl: typeof raw.importedFrom === "string" ? raw.importedFrom : "",
         batches
@@ -200,7 +203,13 @@ import { loadList, saveList } from './saved.js';
             const release = pool.find((item) => item.url === url);
             if (!release) continue;
             const part = /(\s*part\s*\d+)\s*$/i.exec(release.label || "")?.[1];
-            next.push({ ...release, label: `${label || baseLabel(release.label)}${part ? ` ${part.trim()}` : ""}`.slice(0, 80) });
+            const renamed = { ...release, label: `${label || baseLabel(release.label)}${part ? ` ${part.trim()}` : ""}`.slice(0, 80) };
+            if (typeof batch.password === "string") {
+              const password = batch.password.trim().slice(0, 256);
+              if (password) renamed.archivePassword = password;
+              else delete renamed.archivePassword;
+            }
+            next.push(renamed);
           }
         } else if (urls.length) {
           const groups = new Map();
@@ -214,7 +223,7 @@ import { loadList, saveList } from './saved.js';
             groups.set(host, [...groups.get(host) ?? [], { url }]);
           }
           const hosts = [...groups].map(([host, links]) => ({ host, links }));
-          next.push(...releasesFromBatches([{ key: label || "added", label: label || "Added", hosts }], title, raw.importedFrom));
+          next.push(...releasesFromBatches([{ key: label || "added", label: label || "Added", password: batch.password, hosts }], title, raw.importedFrom));
         }
       }
       if (!next.length) throw new Error("A game needs at least one link. Remove the game instead.");
@@ -237,6 +246,7 @@ import { loadList, saveList } from './saved.js';
         art.tint = typeof spec?.tint === "string" && /^#[0-9a-f]{6}$/i.test(spec.tint) ? spec.tint : art.tint || randomTint();
       }
       const edited = { ...raw, title, art, releases: next.slice(0, MAX_RELEASES) };
+      if (title !== raw.title) edited.titleEdited = true;
       const checked = parseFeed({ version: 1, name: "check", games: [edited] }, KEY);
       if (!checked.games.length) throw new Error("None of those links could be used.");
       games[at] = edited;

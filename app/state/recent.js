@@ -33,5 +33,6 @@ import { savedList } from './saved.js';
     return value;
   }
   var useRecent = recent.useList;
+  var recentIds = () => recent.get();
 
-export { announceAdded, dismissAdded, recordAdded, useAnnounced, useRecent };
+export { recentIds, announceAdded, dismissAdded, recordAdded, useAnnounced, useRecent };

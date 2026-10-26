@@ -47,6 +47,7 @@ input.field.bad{border-color:rgba(248,113,113,.7)}
 .ed-link{display:flex;gap:8px;align-items:center;padding:4px 0;border-top:1px solid var(--line);font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
 .ed-link span{flex:1;min-width:0;word-break:break-all}
 .ed-link.gone span{text-decoration:line-through;opacity:.5}
+input.field.pw{margin-top:8px;padding:8px 10px;font-size:13px;direction:ltr}
 .btn.mini.sq{padding:6px 10px}
 textarea.field{width:100%;padding:12px 14px;border:1px solid var(--line);background:var(--deep);color:var(--fg);font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;outline:none;resize:vertical;border-radius:12px;min-height:110px}
 textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,240,.16)}
@@ -131,7 +132,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   function impShow(preview) {
     imp.preview = preview; imp.hostOff = {}; 
     imp.batches = preview.batches.map(function (b) {
-      return { key: b.key, label: b.label, on: true, open: false, sizeGb: b.sizeGb, warnings: b.warnings, hosts: b.hosts.map(function (h) { return { host: h.host, links: h.links, missing: h.missing, on: true }; }) };
+      return { key: b.key, label: b.label, password: "", on: true, open: false, sizeGb: b.sizeGb, warnings: b.warnings, hosts: b.hosts.map(function (h) { return { host: h.host, links: h.links, missing: h.missing, on: true }; }) };
     });
     imp.other = preview.other && preview.other.length ? { key: "other", label: "Other files (not .rar)", on: false, open: false, sizeGb: null, warnings: [], hosts: groupOther(preview.other) } : null;
     $("impTitle").value = preview.title || ""; $("impId").value = preview.titleId || "";
@@ -139,6 +140,28 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     impStatus((preview.notice ? preview.notice + " " : "") + (found ? "Found " + found + " batch" + (found === 1 ? "" : "es") + ". Untick what you don't want." : "No .rar links found. Paste the download links into the box."));
     $("impEditor").hidden = false; $("impBanner").hidden = true;
     impRender(); window.scrollTo(0, $("impEditor").offsetTop - 70);
+  }
+  function impTile(cover, title) {
+    var tile = $("impTile"); tile.textContent = "";
+    if (/^https:\/\//.test(cover || "")) {
+      var pic = img(null, cover); pic.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:12px";
+      pic.onerror = function () { tile.textContent = title || ""; };
+      tile.appendChild(pic);
+    } else tile.textContent = title || "";
+  }
+  var lookupTimer = null;
+  function impLookup() {
+    clearTimeout(lookupTimer);
+    var id = $("impId").value.trim().toUpperCase().replace(/[\s_-]/g, "");
+    if (!ID_PATTERN.test(id)) return;
+    lookupTimer = setTimeout(function () {
+      api("GET", "/api/import/lookup?id=" + encodeURIComponent(id)).then(function (r) {
+        if ($("impId").value.trim().toUpperCase().replace(/[\s_-]/g, "") !== id) return;
+        if (r.title) $("impTitle").value = r.title;
+        if (imp.preview) imp.preview.cover = r.cover || "";
+        impTile(r.cover, $("impTitle").value); impSummary();
+      }).catch(function () {});
+    }, 350);
   }
   function groupOther(list) {
     var by = {}, order = [];
@@ -157,7 +180,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   function impRender() {
     var p = imp.preview;
-    $("impTile").textContent = p.title || "";
+    impTile(p.cover, $("impTitle").value || p.title);
     // Hosts: one chip each, across every batch, to drop a host everywhere in a tap.
     var hosts = {}, order = [];
     allBatches().forEach(function (b) { b.hosts.forEach(function (h) { if (!hosts[h.host]) { hosts[h.host] = 0; order.push(h.host); } hosts[h.host] += h.links.length; }); });
@@ -193,6 +216,11 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       chips.appendChild(c);
     });
     card.appendChild(chips);
+    if (b !== imp.other) {
+      var pw = el("input", "field pw"); pw.type = "text"; pw.value = b.password || ""; pw.maxLength = 256; pw.placeholder = "Archive password (optional)"; pw.autocomplete = "off"; pw.autocapitalize = "off"; pw.spellcheck = false;
+      pw.setAttribute("aria-label", "Archive password"); pw.oninput = function () { b.password = pw.value; };
+      card.appendChild(pw);
+    }
     (b.warnings || []).forEach(function (w) { card.appendChild(el("div", "warn", "⚠ " + w)); });
     var actions = el("div", "actions");
     if (imp.batches.length > 1 && b !== imp.other) {
@@ -233,7 +261,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     return {
       id: $("impId").value, title: $("impTitle").value, sourceUrl: imp.preview.sourceUrl || "",
       batches: allBatches().filter(function (b) { return b.on; }).map(function (b) {
-        return { key: b.key, label: b.label, hosts: hostList(b).filter(function (h) { return !imp.hostOff[h.host]; }).map(function (h) { return { host: h.host, links: h.links.map(function (l) { return { url: l.url, part: l.part, filename: l.filename }; }) }; }) };
+        return { key: b.key, label: b.label, password: (b.password || "").trim(), hosts: hostList(b).filter(function (h) { return !imp.hostOff[h.host]; }).map(function (h) { return { host: h.host, links: h.links.map(function (l) { return { url: l.url, part: l.part, filename: l.filename }; }) }; }) };
       }).filter(function (b) { return b.hosts.length; })
     };
   }
@@ -255,7 +283,8 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       if (d.restart) { bannerText(false); $("impBanner").hidden = false; }
       d.games.forEach(function (g) {
         var row = el("div", "panel imp-saved block");
-        if (g.cover) row.appendChild(img(null, g.cover)); else { var sw = el("span", "imp-sw"); sw.style.background = g.tint || "#333"; row.appendChild(sw); }
+        var sw = el("span", "imp-sw"); sw.style.background = g.tint || "#333";
+        if (g.cover) { var pic = img(null, g.cover); pic.onerror = function () { pic.replaceWith(sw); }; row.appendChild(pic); } else row.appendChild(sw);
         var info = el("div", "grow");
         info.appendChild(el("div", "t", g.title));
         info.appendChild(el("div", "subtle", g.id + " · " + g.links + " link" + (g.links === 1 ? "" : "s") + " · " + (g.batches.length ? g.batches.join(", ") : "")));
@@ -275,14 +304,14 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   }
   $("impGo").onclick = function () { var text = $("impInput").value.trim(); if (!text) { $("impInput").focus(); return; } impStart({ input: text }); };
   $("impClear").onclick = function () { $("impInput").value = ""; impStatus(""); $("impInput").focus(); };
-  $("impTitle").oninput = impSummary; $("impId").oninput = function () { this.value = this.value.toUpperCase(); impSummary(); };
+  $("impTitle").oninput = impSummary; $("impId").oninput = function () { this.value = this.value.toUpperCase(); impSummary(); impLookup(); };
   $("impSave").onclick = impSave;
   $("impCancel").onclick = function () { impReset(); impStatus(""); };
   // ---- Edit one saved game: title, batch names and order, single links, and new links as a batch ----------
   var ed = null;
   function edOpen(id) {
     api("GET", "/api/import/game?id=" + encodeURIComponent(id)).then(function (g) {
-      ed = { id: g.id, title: g.title, batches: g.batches.map(function (b) { return { record: b.record, label: b.label, links: b.links.map(function (l) { return { url: l.url, part: l.part, provider: l.provider, off: false }; }), off: false }; }) };
+      ed = { id: g.id, title: g.title, batches: g.batches.map(function (b) { return { record: b.record, label: b.label, password: b.password || "", links: b.links.map(function (l) { return { url: l.url, part: l.part, provider: l.provider, off: false }; }), off: false }; }) };
       $("edId").textContent = g.id; $("edTitle").value = g.title; $("edNewName").value = ""; $("edNewLinks").value = "";
       $("impEdit").hidden = false; edRender(); $("impEdit").scrollIntoView({ behavior: "smooth", block: "start" });
     }).catch(function (e) { toast(e.message, true); });
@@ -299,6 +328,11 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       var del = el("button", "btn mini sq danger", b.off ? "Undo" : "Delete"); del.type = "button"; del.onclick = function () { b.off = !b.off; edRender(); };
       top.appendChild(name); top.appendChild(up); top.appendChild(down); top.appendChild(del); card.appendChild(top);
       if (at === 0 && !b.off) card.appendChild(el("div", "imp-note good", "Default download"));
+      if (!b.off) {
+        var pw = el("input", "field pw"); pw.type = "text"; pw.value = b.password || ""; pw.maxLength = 256; pw.placeholder = "Archive password (optional)"; pw.autocomplete = "off"; pw.autocapitalize = "off"; pw.spellcheck = false;
+        pw.setAttribute("aria-label", "Archive password"); pw.oninput = function () { b.password = pw.value; };
+        card.appendChild(pw);
+      }
       if (!b.off) b.links.forEach(function (l) {
         var row = el("div", "ed-link" + (l.off ? " gone" : ""));
         row.appendChild(el("span", null, (l.part != null ? "part " + l.part + " · " : "") + l.url));
@@ -311,7 +345,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
   function edSave() {
     if (!ed) return;
     var batches = ed.batches.filter(function (b) { return !b.off; }).map(function (b) {
-      return { record: b.record, label: b.label, links: b.links.filter(function (l) { return !l.off; }).map(function (l) { return { url: l.url }; }) };
+      return { record: b.record, label: b.label, password: b.password || "", links: b.links.filter(function (l) { return !l.off; }).map(function (l) { return { url: l.url }; }) };
     }).filter(function (b) { return b.links.length; });
     var extra = $("edNewLinks").value.split(/\s+/).filter(function (u) { return /^https:\/\//i.test(u); });
     if (extra.length) batches.push({ label: $("edNewName").value.trim() || "Added", links: extra.map(function (u) { return { url: u }; }) });

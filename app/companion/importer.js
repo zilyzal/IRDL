@@ -3,6 +3,7 @@
 // cover and rar batches (state/page-import.js), and the phone shows them to keep or drop. Fetching takes
 // seconds, so a request starts a job the phone asks about every moment; nothing waits inside a request.
 
+import { coverFor, titleFor } from '../state/covers.js';
 import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, planInput, titleFromFiles } from '../state/page-import.js';
 
   // The JS heap is 32 MiB for everything: a post page is read whole, so a page is capped. 1.5 MiB covers long
@@ -48,6 +49,10 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
               preview.platform = found.startsWith("CUSA") ? "ps4" : "ps5";
             }
           }
+          // The game's real name and cover come from its Title ID, not from the link or the page.
+          const known = lookup(preview.titleId);
+          if (known.title) preview.title = known.title;
+          preview.cover = known.cover || "";
           if (notice) preview.notice = notice;
           job.preview = preview;
           job.state = preview.batches.length || preview.other.length || !notice ? "ready" : "failed";
@@ -84,6 +89,12 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
       }
       return id;
     }
+    // { title, cover } for a Title ID: the name when the list has it, and the cover address (or "").
+    function lookup(id) {
+      const key = String(id || "").trim().toUpperCase().replace(/[\s_-]/g, "");
+      if (!/^(?:PPSA|CUSA)\d{5}$/.test(key)) return { title: "", cover: "" };
+      return { title: titleFor(key), cover: coverFor(key)?.cover ?? "" };
+    }
     function job(id) {
       const found = jobs.get(id);
       if (!found) return null;
@@ -92,6 +103,7 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
     return {
       start,
       job,
+      lookup,
       // What the player kept; the store throws a plain sentence when it cannot be made into a game.
       save: (draft) => ({ ...store.save(draft), saved: true }),
       list: () => ({ games: store.entries(), restart: store.needsRestart() }),

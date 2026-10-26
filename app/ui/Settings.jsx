@@ -18,6 +18,7 @@ import { formatDate2 } from '../i18n/core.js';
 import { chooseLanguage, languageChoice, systemLocale, useT } from '../i18n/index.js';
 import { LOCALES } from '../i18n/locales.js';
 import { setTorBoxKey, testTorBox, useDebrid } from '../state/debrid.js';
+import { CHOICES as CONNECTION_CHOICES, setConnections, useConnections } from '../state/connections.js';
 import { LIMITS as SPEED_LIMITS, setSpeedLimit, useSpeedLimit } from '../state/speed-limit.js';
 import { setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract } from '../state/auto-continue.js';
 import { useNavActions } from '../state/nav.jsx';
@@ -279,6 +280,25 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
       }, value)) })
     ] });
   }
+  // Connections per download (state/connections.js): one pill per choice, with a note about links that misbehave.
+  function ConnectionsRow() {
+    const t2 = useT();
+    const count = useConnections();
+    return /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 10 }, children: [
+      /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 3 }, children: [
+        /* @__PURE__ */ (0, jsx)(Text, { style: text(23, colors.fg, { fontWeight: 600 }), children: t2("settings.connections") }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.connectionsDetail") }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: text(17, colors.subtle), children: t2("settings.connectionsNote") })
+      ] }),
+      /* @__PURE__ */ (0, jsx)(View, { style: { flexDirection: "row", gap: 12 }, children: CONNECTION_CHOICES.map((value) => /* @__PURE__ */ (0, jsx)(View, {
+        focusKey: `settings:connections:${value}`,
+        focusable: true,
+        onPress: () => setConnections(value),
+        style: { position: "relative", flex: 1, height: 56, alignItems: "center", justifyContent: "center", borderRadius: radius.md, backgroundColor: value === count ? colors.accent : colors.surface2 },
+        children: /* @__PURE__ */ (0, jsx)(SpeedFace, { label: String(value), chosen: value === count })
+      }, value)) })
+    ] });
+  }
   // Drives, the speed limit and whether a download in parts opens the browser for its next part by itself.
   function DownloadsCard() {
     const t2 = useT();
@@ -290,6 +310,8 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:autoParts", name: t2("settings.autoParts"), detail: t2("settings.autoPartsDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: autoParts }), onPress: () => setAutoContinueParts(!autoParts) }),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:deleteRar", name: t2("settings.deleteArchive"), detail: t2("settings.deleteArchiveDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: deleteRar }), onPress: () => setDeleteArchiveAfterExtract(!deleteRar) }),
+      /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
+      /* @__PURE__ */ (0, jsx)(ConnectionsRow, {}),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
       /* @__PURE__ */ (0, jsx)(SpeedLimitRow, {}),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
