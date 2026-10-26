@@ -10,7 +10,7 @@ namespace archives {
 // Reads the archive headers before libarchive does and returns why the archive must be refused, or an
 // empty string when its declared decoder windows fit the console's memory budget.
 // The dictionary the RAR worker takes while downloads run (they share the heap) and when nothing downloads.
-constexpr std::uint64_t rar_window_busy = 32ULL * 1024 * 1024, rar_window_idle = 128ULL * 1024 * 1024;
+constexpr std::uint64_t rar_window_busy = 32ULL * 1024 * 1024, rar_window_idle = 1024ULL * 1024 * 1024;
 // rar_worker_window: when set, a RAR5 set the RAR worker extracts is held to that dictionary, not libarchive's
 // doubled one; rar_after_window is the larger limit once downloads stop, named in the refusal.
 std::string preflight(const std::vector<std::string>& sources, std::uint64_t rar_worker_window = 0, std::uint64_t rar_after_window = 0);

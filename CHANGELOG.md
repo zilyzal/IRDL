@@ -3,6 +3,15 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.5
+
+### Changed
+
+- **1024 MiB limit after downloading.** RAR archives with up to a 1 GiB dictionary are accepted when nothing is
+  downloading (it was 128 MiB). The limit is only a ceiling: an archive uses the dictionary it declares. While
+  downloads run, or a set extracts as it downloads, it stays 32 MiB. If the console cannot give that much
+  memory the download fails with "the decoder ran out of memory". Untested on a console.
+
 ## 1.2.4
 
 ### New
