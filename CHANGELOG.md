@@ -10,7 +10,7 @@ files and their SHA-256 checksums.
 - **1024 MiB limit after downloading.** RAR archives with up to a 1 GiB dictionary are accepted when nothing is
   downloading (it was 128 MiB). The limit is only a ceiling: an archive uses the dictionary it declares. While
   downloads run, or a set extracts as it downloads, it stays 32 MiB. If the console cannot give that much
-  memory the download fails with "the decoder ran out of memory". Untested on a console.
+  memory the download fails with "the decoder ran out of memory".
 
 ## 1.2.4
 
@@ -22,15 +22,15 @@ files and their SHA-256 checksums.
   downloading; while downloads run (or a set extracts as it downloads) the limit stays 32 MiB.
 - **Extracting while downloading** now says when Extract after downloading (Settings → Downloads) would fix it,
   instead of the general message. The check at the start of a download no longer refuses what the later
-  extraction could take. Untested on a console.
+  extraction could take.
 
 ## 1.2.3
 
 ### Fixed
 
-- **Large RAR dictionaries.** 1.2.2's 64 MiB limit never took effect, because a memory check before extraction
-  still counted every RAR dictionary twice. The check now uses the RAR worker's real limit (64 MiB when nothing
-  downloads, 32 MiB while downloads run). Untested on a console.
+- **Large RAR dictionaries.** The memory check before extraction counted every RAR dictionary twice, so the
+  larger limit added in 1.2.2 never took effect. It now compares the archive's real dictionary with the RAR
+  worker's limit.
 
 ## 1.2.2
 
@@ -38,9 +38,8 @@ files and their SHA-256 checksums.
 
 - **Extract after downloading** (Settings → Downloads, off by default). A set is extracted only once every
   part has downloaded instead of while later parts still download.
-- **Larger RAR dictionaries.** When nothing else is downloading, RAR archives with up to a 64 MiB dictionary
-  extract (it was 32 MiB). While downloads run, the 32 MiB limit stays. This needs the new build and has not been
-  tested on a console.
+- **Larger RAR dictionaries (first step).** The RAR worker takes a larger dictionary when nothing else is
+  downloading. A second check before extraction still refused them; 1.2.3 fixes that.
 
 ## 1.2.1
 
