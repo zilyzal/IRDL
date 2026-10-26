@@ -3,6 +3,13 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.1
+
+### Fixed
+
+- **Recent and Browse tabs.** They are now real tabs like Home: they stay highlighted, and L1 / R1 step
+  Home → Recent → Browse → Homebrew and back.
+
 ## 1.2.0
 
 ### New

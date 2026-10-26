@@ -1414,12 +1414,12 @@ test('a set of images unpacked into one folder moves image by image, and the emp
   assert.deepEqual(state.manual, [`${usb}/Game.exfat`, `${usb}/Game-Update-1.05.exfat`]);
 });
 
-test('versions: 0.2.0 is newer than every 0.1.1 beta and 0.1.1, and the app now reports 1.2.0', async () => {
+test('versions: 0.2.0 is newer than every 0.1.1 beta and 0.1.1, and the app now reports 1.2.1', async () => {
   assert.equal(newer('v0.2.0', '0.1.1-beta.4'), true);
   assert.equal(newer('v0.2.0', '0.1.1'), true);
   assert.equal(newer('0.1.1-beta.4', '0.2.0'), false);
   const { VERSION, VERSION_LABEL } = await load('app/version.js');
-  assert.deepEqual([VERSION, VERSION_LABEL], ['1.2.0', '1.2.0']);
+  assert.deepEqual([VERSION, VERSION_LABEL], ['1.2.1', '1.2.1']);
 });
 
 
@@ -1430,20 +1430,20 @@ const { VERSION, TITLE_ID } = await load('app/version.js');
 
 const SHA = (c) => c.repeat(64);
 const releaseJson = (overrides = {}) => ({
-  tag_name: 'v1.2.1', html_url: 'https://github.com/zilyzal/IRDL/releases/tag/v1.2.1', body: 'notes', published_at: '2026-10-20T00:00:00Z',
+  tag_name: 'v1.2.2', html_url: 'https://github.com/zilyzal/IRDL/releases/tag/v1.2.2', body: 'notes', published_at: '2026-10-20T00:00:00Z',
   assets: [
-    { name: 'IRDL.exfat', size: 5000, digest: `sha256:${SHA('a')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.1/IRDL.exfat' },
-    { name: 'update.zip', size: 300, digest: `sha256:${SHA('b')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.1/update.zip' },
+    { name: 'IRDL.exfat', size: 5000, digest: `sha256:${SHA('a')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.2/IRDL.exfat' },
+    { name: 'update.zip', size: 300, digest: `sha256:${SHA('b')}`, browser_download_url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.2/update.zip' },
   ],
   ...overrides,
 });
 
-test('versions: 1.2.0 is newer than 0.5.0 and 0.4.1, and older than 1.2.1; its package version is 02.002.000', () => {
-  assert.equal(VERSION, '1.2.0');
-  assert.equal(newer('v1.2.0', '0.5.0'), true, '0.5.0 is offered 1.2.0');
+test('versions: 1.2.1 is newer than 0.5.0 and 0.4.1, and older than 1.2.2; its package version is 02.002.001', () => {
+  assert.equal(VERSION, '1.2.1');
+  assert.equal(newer('v1.2.1', '0.5.0'), true, '0.5.0 is offered 1.2.1');
   assert.equal(newer('0.5.0', '0.4.1'), true, 'and so is everyone on 0.4.1');
-  assert.equal(newer('v1.2.1', '1.2.0'), true, '1.2.1 will be offered to 1.2.0');
-  assert.equal(contentVersionOf('1.2.0'), '02.002.000');
+  assert.equal(newer('v1.2.2', '1.2.1'), true, '1.2.2 will be offered to 1.2.1');
+  assert.equal(contentVersionOf('1.2.1'), '02.002.001');
   assert.equal(newer('0.2.1-beta.1', '0.2.0'), true);
   assert.equal(newer('v0.2.1', '0.2.1-beta.1'), true);
   assert.equal(newer('0.2.0', '0.2.1-beta.1'), false);
@@ -1475,20 +1475,20 @@ test('versions: 1.2.0 is newer than 0.5.0 and 0.4.1, and older than 1.2.1; its p
 test("release assets: offered only at the release's own download path, with GitHub's SHA-256 and a size", () => {
   const offered = describeRelease(releaseJson(), 'zilyzal/IRDL');
   assert.deepEqual(offered.assets, {
-    image: { url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.1/IRDL.exfat', size: 5000, sha256: SHA('a') },
-    zip: { url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.1/update.zip', size: 300, sha256: SHA('b') },
+    image: { url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.2/IRDL.exfat', size: 5000, sha256: SHA('a') },
+    zip: { url: 'https://github.com/zilyzal/IRDL/releases/download/v1.2.2/update.zip', size: 300, sha256: SHA('b') },
   });
   assert.deepEqual(Object.values(ASSETS), ['IRDL.exfat', 'update.zip']);
   const without = (change) => describeRelease(releaseJson({ assets: releaseJson().assets.map((asset) => asset.name === 'IRDL.exfat' ? change(asset) : asset) }), 'zilyzal/IRDL');
   assert.equal(without((asset) => ({ ...asset, digest: undefined })).assets, null, 'no digest, nothing to check it against');
   assert.equal(without((asset) => ({ ...asset, digest: 'sha1:abc' })).assets, null);
   assert.equal(without((asset) => ({ ...asset, browser_download_url: 'https://evil.example/IRDL.exfat' })).assets, null, 'another host');
-  assert.equal(without((asset) => ({ ...asset, browser_download_url: 'https://github.com/someone/fork/releases/download/v1.2.1/IRDL.exfat' })).assets, null, 'another repository');
-  assert.equal(without((asset) => ({ ...asset, browser_download_url: asset.browser_download_url.replace('v1.2.1', 'v0.2.1') })).assets, null, "another release's file");
+  assert.equal(without((asset) => ({ ...asset, browser_download_url: 'https://github.com/someone/fork/releases/download/v1.2.2/IRDL.exfat' })).assets, null, 'another repository');
+  assert.equal(without((asset) => ({ ...asset, browser_download_url: asset.browser_download_url.replace('v1.2.2', 'v0.2.1') })).assets, null, "another release's file");
   assert.equal(without((asset) => ({ ...asset, size: '5000' })).assets, null);
   assert.equal(without((asset) => ({ ...asset, size: 0 })).assets, null);
   assert.equal(describeRelease(releaseJson({ assets: releaseJson().assets.slice(0, 1) }), 'zilyzal/IRDL').assets, null, 'both files, or neither');
-  assert.equal(describeRelease(releaseJson({ assets: undefined }), 'zilyzal/IRDL').version, '1.2.1', 'still offered to read and install by hand');
+  assert.equal(describeRelease(releaseJson({ assets: undefined }), 'zilyzal/IRDL').version, '1.2.2', 'still offered to read and install by hand');
 });
 
 test('the queue lends the network only while idle, and takes it back the moment a game download is queued', async () => {
@@ -1561,7 +1561,7 @@ function installWorld({ param: paramFields = {}, eboot = 2000, lendable = () => 
       world.extracts.push(options);
       return task(() => {
         const top = `${options.destination}/${TITLE_ID}`;
-        fs.file(`${top}/sce_sys/param.json`, 0, JSON.stringify({ titleId: TITLE_ID, contentVersion: '02.002.001', ...paramFields }));
+        fs.file(`${top}/sce_sys/param.json`, 0, JSON.stringify({ titleId: TITLE_ID, contentVersion: '02.002.002', ...paramFields }));
         if (eboot) fs.file(`${top}/eboot.bin`, eboot);
         return { artifacts: [] };
       });
@@ -1587,7 +1587,7 @@ function installWorld({ param: paramFields = {}, eboot = 2000, lendable = () => 
   });
   world.saved = saved;
   world.release = { ...describeRelease(releaseJson(), 'zilyzal/IRDL') };
-  // A release one version past this build (1.2.1, package version 02.002.001), with its assets.
+  // A release one version past this build (1.2.2, package version 02.002.002), with its assets.
   world.until = async (test, limit = 500) => {
     for (let i = 0; i < limit; i++) {
       if (test(world.updater.state())) return world.updater.state();
@@ -1597,7 +1597,7 @@ function installWorld({ param: paramFields = {}, eboot = 2000, lendable = () => 
   };
   return world;
 }
-const STAGED = `/mnt/usb0/${STAGING}/1.2.1`;
+const STAGED = `/mnt/usb0/${STAGING}/1.2.2`;
 
 test('install: both files download into staging on the installed image\'s drive, checked against their SHA-256; update.zip is unpacked, checked and removed', async () => {
   const world = installWorld();
@@ -1616,7 +1616,7 @@ test('install: both files download into staging on the installed image\'s drive,
   assert.equal(world.saved.value.target, '/mnt/usb0/homebrew/IRDL.exfat');
   assert.equal(world.saved.value.checked, true);
   assert.equal(state.written, 5300, 'progress counts both files');
-  assert.deepEqual(world.notified, ['1.2.1']);
+  assert.deepEqual(world.notified, ['1.2.2']);
   assert.equal(world.borrower, null, 'the network is given back');
   assert.deepEqual(world.arms, [], 'nothing is armed without automatic installs');
 });
@@ -1640,7 +1640,7 @@ test('install: one failed try is retried and the install goes on', async () => {
 
 for (const [name, fields, eboot, reason] of [
   ['another title', { titleId: 'PPSA12345' }, 2000, /is for PPSA12345, not PPSA99573/],
-  ['another version', { contentVersion: '01.002.000' }, 2000, /is version 01\.002\.000, not 02.002.001/],
+  ['another version', { contentVersion: '01.002.000' }, 2000, /is version 01\.002\.000, not 02.002.002/],
   ['no eboot.bin', {}, 0, /has no eboot\.bin/],
 ]) {
   test(`install: an update.zip for ${name} fails the check, and the image is never downloaded`, async () => {
@@ -1695,7 +1695,7 @@ test('install: Restart to apply writes apply.txt for the updater and arms it; a 
   assert.deepEqual(world.updater.applyNow(), { ok: true });
   assert.deepEqual(world.arms, ['/data/IRDL/update']);
   assert.equal(world.fs.readFile('/data/IRDL/update/apply.txt'),
-    `UPD1\nversion=1.2.1\ntarget=/mnt/usb0/homebrew/IRDL.exfat\nstaged=${STAGED}/${IMAGE_NAME}\nsize=5000\nrelaunch=1\n`);
+    `UPD1\nversion=1.2.2\ntarget=/mnt/usb0/homebrew/IRDL.exfat\nstaged=${STAGED}/${IMAGE_NAME}\nsize=5000\nrelaunch=1\n`);
   assert.equal(world.updater.state().phase, 'armed');
   const failing = installWorld({ armed: () => 'payload loader: connection refused' });
   failing.updater.download(failing.release);
@@ -1732,13 +1732,13 @@ test('install: without automatic installs a found release only shows; cancel rem
 });
 
 test('install: the new build at launch says it started, cleans up its staging and reports the update', async () => {
-  const world = installWorld({ version: '1.2.1' });
-  world.saved.value = { phase: 'armed', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+  const world = installWorld({ version: '1.2.2' });
+  world.saved.value = { phase: 'armed', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
   world.fs.file(`${STAGED}/leftover`, 1);
-  world.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=swapped\nversion=1.2.1\nreason=\n');
+  world.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=swapped\nversion=1.2.2\nreason=\n');
   world.updater.start();
   await new Promise((resolve) => setImmediate(resolve));
-  assert.equal(world.fs.readFile('/data/IRDL/update/booted.txt'), '1.2.1\n', 'the updater waits for this');
+  assert.equal(world.fs.readFile('/data/IRDL/update/booted.txt'), '1.2.2\n', 'the updater waits for this');
   assert.ok(world.fs.exists('/data/IRDL/update/result.txt'), 'the updater still watches: its result stays');
   assert.ok(!world.fs.exists(STAGED));
   assert.deepEqual(world.saved.value, {});
@@ -1747,8 +1747,8 @@ test('install: the new build at launch says it started, cleans up its staging an
 
 test('install: after a rollback the old build reports why; after a refusal the update stays ready (and is armed again when automatic)', async () => {
   const rolled = installWorld();
-  rolled.saved.value = { phase: 'armed', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
-  rolled.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=rolledback\nversion=1.2.1\nreason=the new version closed before it finished starting\n');
+  rolled.saved.value = { phase: 'armed', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+  rolled.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=rolledback\nversion=1.2.2\nreason=the new version closed before it finished starting\n');
   rolled.updater.start();
   assert.equal(rolled.updater.state().phase, 'failed');
   assert.equal(rolled.updater.state().outcome.reason, 'the new version closed before it finished starting');
@@ -1756,29 +1756,29 @@ test('install: after a rollback the old build reports why; after a refusal the u
   assert.equal(rolled.fs.readFile('/data/IRDL/update/booted.txt'), `${VERSION}\n`);
 
   const refused = installWorld({ automatic: true });
-  refused.saved.value = { phase: 'armed', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+  refused.saved.value = { phase: 'armed', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
   refused.fs.file(`${STAGED}/${IMAGE_NAME}`, 5000);
-  refused.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=refused\nversion=1.2.1\nreason=ShadowMount+ keeps the image mounted (persistent image mounts?)\n');
+  refused.fs.file('/data/IRDL/update/result.txt', 0, 'outcome=refused\nversion=1.2.2\nreason=ShadowMount+ keeps the image mounted (persistent image mounts?)\n');
   refused.updater.start();
   assert.equal(refused.updater.state().phase, 'armed', 'automatic: armed again for the next close');
   assert.deepEqual(refused.arms, ['/data/IRDL/update']);
 
   const rebooted = installWorld();
-  rebooted.saved.value = { phase: 'armed', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+  rebooted.saved.value = { phase: 'armed', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
   rebooted.fs.file(`${STAGED}/${IMAGE_NAME}`, 5000);
   rebooted.updater.start();
   assert.equal(rebooted.updater.state().phase, 'ready', 'armed, but the updater never ran (the console restarted): ready again');
   assert.equal(rebooted.updater.state().error, '');
 
   const gone = installWorld();
-  gone.saved.value = { phase: 'ready', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+  gone.saved.value = { phase: 'ready', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
   gone.updater.start();
   assert.equal(gone.updater.state().phase, 'failed', 'the staged image was deleted: download it again');
 });
 
 test('install: a download cut off by closing the app resumes when the release is offered again', async () => {
   const world = installWorld();
-  world.saved.value = { phase: 'downloading', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: world.release.assets.image, zip: world.release.assets.zip, checked: true };
+  world.saved.value = { phase: 'downloading', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: world.release.assets.image, zip: world.release.assets.zip, checked: true };
   world.updater.start();
   assert.equal(world.updater.state().phase, 'paused');
   world.updater.offer(world.release);
@@ -1888,7 +1888,7 @@ test("links: a download that fails with 404 falls over to the mirror, and report
     const id = queue.enqueue(game, dead, '/data', [mirror]);
     const job = await settle(queue, id);
     assert.equal(job.release.url, mirror.url, 'the mirror took over');
-    assert.deepEqual(reports, [], 'IRDL 1.2.0 keeps no link health: nothing is reported');
+    assert.deepEqual(reports, [], 'IRDL 1.2.1 keeps no link health: nothing is reported');
   } finally {
     off();
   }
@@ -1949,17 +1949,17 @@ test('unknown size: when the reported size fits, the download carries on', async
 
 // ---- the updater loop: a release whose build is not the version its tag says ----
 test('install: a swapped-in release that starts as another version fails once with why, and is never fetched by itself again', async () => {
-  // The swap happened (result says 1.2.1 swapped/applied), but the build that started reports this VERSION.
+  // The swap happened (result says 1.2.2 swapped/applied), but the build that started reports this VERSION.
   for (const outcome of ['swapped', 'applied']) {
     const world = installWorld({ automatic: true });
-    world.saved.value = { phase: 'armed', version: '1.2.1', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
-    world.fs.file('/data/IRDL/update/result.txt', 0, `outcome=${outcome}\nversion=1.2.1\nreason=\n`);
+    world.saved.value = { phase: 'armed', version: '1.2.2', staging: STAGED, target: '/mnt/usb0/homebrew/IRDL.exfat', image: { size: 5000 } };
+    world.fs.file('/data/IRDL/update/result.txt', 0, `outcome=${outcome}\nversion=1.2.2\nreason=\n`);
     world.fs.file('/data/IRDL/update/apply.txt', 0, 'UPD1\n');
     world.updater.start();
     const state = world.updater.state();
     assert.equal(state.phase, 'failed', outcome);
-    assert.match(state.error, new RegExp(`^The 1.2.1 update started as version ${VERSION.replace(/\./g, '\.')}: the release's files are not the version it says`));
-    assert.equal(world.saved.value.mismatched, '1.2.1');
+    assert.match(state.error, new RegExp(`^The 1.2.2 update started as version ${VERSION.replace(/\./g, '\.')}: the release's files are not the version it says`));
+    assert.equal(world.saved.value.mismatched, '1.2.2');
     assert.ok(!world.fs.exists('/data/IRDL/update/apply.txt'), 'nothing left armed');
     assert.deepEqual(world.arms, [], 'not armed again');
     // The daily check finds the same release: with automatic installs on, it is shown, not downloaded.
@@ -1974,13 +1974,13 @@ test('install: a swapped-in release that starts as another version fails once wi
 });
 
 test('install: the set-aside version does not hold back the next release', async () => {
-  const world = installWorld({ automatic: true, param: { contentVersion: '02.002.002' } });
-  world.saved.value = { phase: 'failed', version: '1.2.1', mismatched: '1.2.1', error: 'x' };
-  const next = { ...world.release, version: '1.2.2', assets: {
-    image: { ...world.release.assets.image, url: world.release.assets.image.url.replace('v1.2.1', 'v1.2.2') },
-    zip: { ...world.release.assets.zip, url: world.release.assets.zip.url.replace('v1.2.1', 'v1.2.2') } } };
+  const world = installWorld({ automatic: true, param: { contentVersion: '02.002.003' } });
+  world.saved.value = { phase: 'failed', version: '1.2.2', mismatched: '1.2.2', error: 'x' };
+  const next = { ...world.release, version: '1.2.3', assets: {
+    image: { ...world.release.assets.image, url: world.release.assets.image.url.replace('v1.2.2', 'v1.2.3') },
+    zip: { ...world.release.assets.zip, url: world.release.assets.zip.url.replace('v1.2.2', 'v1.2.3') } } };
   world.updater.offer(next);
-  const done = await world.until((s) => ['ready', 'armed', 'failed'].includes(s.phase) && s.version === '1.2.2');
+  const done = await world.until((s) => ['ready', 'armed', 'failed'].includes(s.phase) && s.version === '1.2.3');
   assert.equal(done.phase, 'armed', done.error);
   assert.equal(world.requests.length, 2, 'the newer release downloaded by itself');
 });

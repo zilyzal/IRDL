@@ -125,18 +125,23 @@ jobs:
           tag="v$version"
           # Both files: an installed copy installs a release only when it can check both.
           assets="IRDL.exfat update.zip"
+          # The notes are this version's section of CHANGELOG.md (tools/release-notes.mjs); a version with none says
+          # it is a test build.
+          notes() { node tools/release-notes.mjs "$version" "$@" 2>/dev/null || echo "Test build of $GITHUB_SHA."; }
           draft=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
             --jq ".[] | select(.tag_name == \"$tag\") | .draft")
           case "$draft" in
             "")
               gh release create "$tag" $assets --draft --target "$GITHUB_SHA" \
-                --title "IRDL $tag" --notes "Test build of $GITHUB_SHA." ;;
+                --title "IRDL $tag" --notes "$(notes --no-sums)" ;;
             true)
-              gh release edit "$tag" --target "$GITHUB_SHA" --notes "Test build of $GITHUB_SHA."
+              gh release edit "$tag" --target "$GITHUB_SHA" --notes "$(notes --no-sums)"
               gh release upload "$tag" $assets --clobber ;;
             *)
               echo "$tag is already published: raise the version in app/version.js" >&2
               exit 1 ;;
           esac
+          # With the files' checksums, now that they are uploaded.
+          gh release edit "$tag" --notes "$(notes)"
           gh release view "$tag" --json isDraft,tagName,assets \
             --jq '"\(.tagName) draft=\(.isDraft) " + ([.assets[] | "\(.name) \(.size)"] | join(", "))'

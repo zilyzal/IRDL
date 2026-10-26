@@ -2,7 +2,7 @@
 // reconstructed from the esbuild bundle in eboot.bin
 // MODIFIED (0.5.0 Pre Release 3): Settings is a section, the last one (after Files), not a screen over the page.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NO_FILTERS, activeCount } from '../state/catalog.js';
 import { useNavActions, useNavState } from '../state/nav.jsx';
 import { getGame, listedId } from '../state/catalog.js';
@@ -33,10 +33,27 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
     });
     return show;
   }
-  function sectionOf({ filters, sort }, query) {
+  // Home, Recent and Browse are one page; which of the three was chosen last is the highlighted tab.
+  var homeTab = "discover";
+  var homeListeners = new Set();
+  function chooseHomeTab(name) {
+    if (homeTab === name) return;
+    homeTab = name;
+    homeListeners.forEach((fn) => fn(name));
+  }
+  function useHomeTab() {
+    const [tab, setTab] = (0, useState)(homeTab);
+    (0, useEffect)(() => {
+      homeListeners.add(setTab);
+      setTab(homeTab);
+      return () => { homeListeners.delete(setTab); };
+    }, []);
+    return tab;
+  }
+  function sectionOf({ filters, sort }, query, tab = "discover") {
     if (filters.wishlist) return "favorites";
     if (activeCount(filters) > 0 || query) return "catalog";
-    return "discover";
+    return tab;
   }
   // The first game of the Recently added row, which is where "Recent" puts the cursor; the library when there is none.
   function firstRecentKey() {
@@ -49,18 +66,19 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
     const nav = useNavActions();
     const { top } = useNavState();
     const show = useShowLibrary();
+    const homeChoice = useHomeTab();
     // "storage" (Manage files) is part of the Files section, under its library.
-    const underneath = top.name === "downloads" || top.name === "files" || top.name === "homebrew" || top.name === "settings" ? top.name : top.name === "storage" ? "files" : top.name === "homebrew-app" ? "homebrew" : sectionOf(store, queryActive);
+    const underneath = top.name === "downloads" || top.name === "files" || top.name === "homebrew" || top.name === "settings" ? top.name : top.name === "storage" ? "files" : top.name === "homebrew-app" ? "homebrew" : sectionOf(store, queryActive, homeChoice);
     const section = top.name === "search" ? "search" : top.name === "game" ? null : underneath;
     const topName = (0, useRef)(top.name);
     topName.current = top.name;
     const [on] = (0, useState)(() => ({
       show,
       search: () => topName.current !== "search" && nav.push({ name: "search" }, "nav:search"),
-      discover: () => show(NO_FILTERS, "relevance", "spotlight:cta"),
+      discover: () => { chooseHomeTab("discover"); show(NO_FILTERS, "relevance", "spotlight:cta"); },
       // "Recent": the Recently added row; "Browse": the whole library below it.
-      top: () => show(NO_FILTERS, "relevance", firstRecentKey()),
-      new: () => show(NO_FILTERS, "relevance", "catalog:filters"),
+      top: () => { chooseHomeTab("top"); show(NO_FILTERS, "relevance", firstRecentKey()); },
+      new: () => { chooseHomeTab("new"); show(NO_FILTERS, "relevance", "catalog:filters"); },
       favorites: () => show({ ...NO_FILTERS, wishlist: true }, "relevance"),
       downloads: () => topName.current !== "downloads" && nav.push({ name: "downloads" }, "nav:downloads"),
       // The Homebrew section, apart from the store: from one of its app pages it goes back to the section.
