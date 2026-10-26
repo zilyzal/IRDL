@@ -3,12 +3,14 @@
 // Additional attribution term: see LICENSE-ATTRIBUTION.
 #pragma once
 #include <chrono>
+#include <cstdint>
 #include <string>
 #include <vector>
 namespace archives {
 // Reads the archive headers before libarchive does and returns why the archive must be refused, or an
 // empty string when its declared decoder windows fit the console's memory budget.
-std::string preflight(const std::vector<std::string>& sources);
+// rar_worker_window: when set, a RAR5 set the RAR worker extracts is held to that dictionary, not libarchive's doubled one.
+std::string preflight(const std::vector<std::string>& sources, std::uint64_t rar_worker_window = 0);
 // `title`: the title id a PKG's content id names (its header's "UP0001-CUSA01234_00-..." at 0x40),
 // so the app can tell another game's file from the one chosen before it has all downloaded.
 struct Inspection { std::string kind, refusal, title{}; };

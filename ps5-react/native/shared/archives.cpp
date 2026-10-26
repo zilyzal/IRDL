@@ -775,7 +775,7 @@ void run(const std::shared_ptr<Job>& pointer) {
         std::none_of(request.sources.begin(), request.sources.end(), [](const std::string& path) { return path.find('\n') != std::string::npos; });
     return found.kind != "rar" || !lines ? std::string("Only a RAR set can be extracted while it downloads.") : found.refusal;
   };
-  if (const auto refusal = request.stream ? streamed() : preflight(request.sources); !refusal.empty()) {
+  if (const auto refusal = request.stream ? streamed() : preflight(request.sources, rar_volumes(request) ? rar_window(request) : 0); !refusal.empty()) {
     trace("preflight refused", refusal.c_str());
     fail(job, refusal);
     return;
@@ -833,6 +833,11 @@ void run(const std::shared_ptr<Job>& pointer) {
   if (request.stream) {
     if (!extract_rar(job, staging, receipt, error) && error.empty()) error = "Extracting while downloading needs the RAR worker.";
   } else if (!rar_volumes(request) || !extract_rar(job, staging, receipt, error)) {
+    // libarchive doubles every RAR5 dictionary: a set the worker alone was cleared for must not fall back to it.
+    if (const auto refusal = preflight(request.sources); !refusal.empty()) {
+      fail(job, error.empty() ? refusal : error);
+      return;
+    }
     const MemoryHold memory;
     std::unique_ptr<Rar5PasswordReader> decrypted;
     auto* archive = open_archive(job, error, decrypted);

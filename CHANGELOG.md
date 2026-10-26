@@ -3,6 +3,14 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.3
+
+### Fixed
+
+- **Large RAR dictionaries.** 1.2.2's 64 MiB limit never took effect, because a memory check before extraction
+  still counted every RAR dictionary twice. The check now uses the RAR worker's real limit (64 MiB when nothing
+  downloads, 32 MiB while downloads run). Untested on a console.
+
 ## 1.2.2
 
 ### New
