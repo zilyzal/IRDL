@@ -100,7 +100,7 @@ import { coverFor, titleFor } from './covers.js';
       if (at >= 0) {
         const fresh = new Set(raw.releases.map((release) => release.record));
         const kept = (games[at].releases || []).filter((release) => !fresh.has(release.record));
-        games[at] = { ...raw, releases: [...raw.releases, ...kept].slice(0, 200), art: Object.keys(raw.art || {}).length ? raw.art : games[at].art };
+        games[at] = { ...raw, releases: [...raw.releases, ...kept].slice(0, MAX_RELEASES), art: Object.keys(raw.art || {}).length ? raw.art : games[at].art };
       } else games.push(raw);
       write(games);
       const live = applyLive([raw.id]);
@@ -153,7 +153,7 @@ import { coverFor, titleFor } from './covers.js';
         }
         const fresh = new Set(raw.releases.map((release) => release.url));
         const kept = (games[at].releases || []).filter((release) => !fresh.has(release.url));
-        games[at] = { ...games[at], ...raw, releases: [...raw.releases, ...kept].slice(0, MAX_RELEASES), art: raw.art && Object.keys(raw.art).length ? raw.art : games[at].art };
+        games[at] = { ...games[at], ...raw, title: games[at].titleEdited ? games[at].title : raw.title, releases: [...raw.releases, ...kept].slice(0, MAX_RELEASES), art: raw.art && Object.keys(raw.art).length ? raw.art : games[at].art };
         updated++;
       }
       checkRoom(games);
@@ -252,7 +252,7 @@ import { coverFor, titleFor } from './covers.js';
       games[at] = edited;
       checkRoom(games);
       write(games);
-      const live = applyLive([id]);
+      const live = applyLive([id], true);
       if (!live) restartNeeded = true;
       return { entry: entries().find((entry) => entry.id === id), live, restart: restartNeeded };
     }

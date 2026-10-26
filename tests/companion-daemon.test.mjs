@@ -93,7 +93,7 @@ test('the closed-app companion signs phones in, launches the app, gives the port
   assert.equal(wrong.status, 401);
   const signedIn = await http(web, 'POST', '/auth', { body: { pin: '482913' } });
   assert.equal(signedIn.status, 200);
-  assert.equal(signedIn.cookie, `jbh=${SESSION}; Path=/; HttpOnly; SameSite=Strict`, 'the app\'s own cookie, so the app takes it too');
+  assert.equal(signedIn.cookie, `jbh=${SESSION}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict`, 'the app\'s own cookie, so the app takes it too');
   // A phone signed in on the app's page carries that cookie already: no PIN when the helper takes over.
   const cookie = `other=1; jbh=${SESSION}`;
   assert.deepEqual(JSON.parse((await http(web, 'GET', '/api/status', { cookie })).text), { app: 'closed', title: 'PPSA99573' });

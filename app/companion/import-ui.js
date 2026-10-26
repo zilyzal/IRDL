@@ -149,7 +149,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
       tile.appendChild(pic);
     } else tile.textContent = title || "";
   }
-  var lookupTimer = null;
+  var lookupTimer = null, lastLooked = "";
   function impLookup() {
     clearTimeout(lookupTimer);
     var id = $("impId").value.trim().toUpperCase().replace(/[\s_-]/g, "");
@@ -157,7 +157,8 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     lookupTimer = setTimeout(function () {
       api("GET", "/api/import/lookup?id=" + encodeURIComponent(id)).then(function (r) {
         if ($("impId").value.trim().toUpperCase().replace(/[\s_-]/g, "") !== id) return;
-        if (r.title) $("impTitle").value = r.title;
+        // Only a title the lookup itself filled in (or an empty one) is replaced: not what was typed.
+        if (r.title && (!$("impTitle").value.trim() || $("impTitle").value === lastLooked)) { $("impTitle").value = r.title; lastLooked = r.title; }
         if (imp.preview) imp.preview.cover = r.cover || "";
         impTile(r.cover, $("impTitle").value); impSummary();
       }).catch(function () {});
@@ -373,7 +374,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     if (!games.length) { catStatus("The catalog has no games."); return; }
     var pieces = [], cur = [], size = 0, skipped = 0;
     games.forEach(function (g) {
-      var n = JSON.stringify(g).length;
+      var n = unescape(encodeURIComponent(JSON.stringify(g))).length;
       if (n > 60000) { skipped++; return; }
       if (cur.length && size + n > CHUNK) { pieces.push(cur); cur = []; size = 0; }
       cur.push(g); size += n;

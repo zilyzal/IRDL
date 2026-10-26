@@ -12,18 +12,18 @@ const load = (rel) => import(pathToFileURL(path.join(repo, rel)).href);
 const en = (await load('app/i18n/locales/en.json')).default;
 (await load('app/i18n/core.js')).configure(() => en, en);
 
-const staging = '/mnt/usb0/IRDL/update_staging/1.2.6';
-const asset = (name, size) => ({ url: `https://github.com/zilyzal/IRDL/releases/download/v1.2.6/${name}`, size, sha256: 'a'.repeat(64) });
-const latest = { version: '1.2.6', url: 'https://github.com/zilyzal/IRDL/releases/tag/v1.2.6', notes: 'Fixes.', published: '', assets: which === 'none' ? null : { image: asset('IRDL.exfat', 466616320), zip: asset('update.zip', 21421243) } };
+const staging = '/mnt/usb0/IRDL/update_staging/1.2.7';
+const asset = (name, size) => ({ url: `https://github.com/zilyzal/IRDL/releases/download/v1.2.7/${name}`, size, sha256: 'a'.repeat(64) });
+const latest = { version: '1.2.7', url: 'https://github.com/zilyzal/IRDL/releases/tag/v1.2.7', notes: 'Fixes.', published: '', assets: which === 'none' ? null : { image: asset('IRDL.exfat', 466616320), zip: asset('update.zip', 21421243) } };
 const saved = {
-  ready: { phase: 'ready', version: '1.2.6', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
-  paused: { phase: 'downloading', version: '1.2.6', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
-  failed: { phase: 'armed', version: '1.2.6', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
+  ready: { phase: 'ready', version: '1.2.7', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
+  paused: { phase: 'downloading', version: '1.2.7', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
+  failed: { phase: 'armed', version: '1.2.7', staging, target: '/mnt/usb0/homebrew/IRDL.exfat', image: latest.assets?.image },
 }[which] ?? {};
 const files = new Map([
   ['/download0/IRDL/update-check.json', JSON.stringify({ checkedAt: Date.now(), latest })],
   ['/download0/IRDL/auto-update.json', JSON.stringify(saved)],
-  ['/data/IRDL/update/result.txt', which === 'failed' ? 'outcome=rolledback\nversion=1.2.6\nreason=the new version closed before it finished starting\n' : null],
+  ['/data/IRDL/update/result.txt', which === 'failed' ? 'outcome=rolledback\nversion=1.2.7\nreason=the new version closed before it finished starting\n' : null],
 ]);
 const sizes = new Map([[`${staging}/IRDL.exfat.staged`, 466616320]]);
 const writes = [];
@@ -69,7 +69,7 @@ if (which === 'ready') {
   assert.ok(has(/^Update ready – Restart app to apply$/), 'the ready badge');
   assert.ok(has(/^Restart to apply$/) && has(/^View release$/));
   assert.ok(has(/the new version takes this one's place/));
-  assert.ok(writes.some(([p, text]) => p === '/data/IRDL/update/booted.txt.tmp' && text === '1.2.5\n'), 'this build said it started');
+  assert.ok(writes.some(([p, text]) => p === '/data/IRDL/update/booted.txt.tmp' && text === '1.2.6\n'), 'this build said it started');
 } else if (which === 'paused') {
   assert.ok(has(/^Download and install$/) && has(/download stopped when IRDL closed/));
 } else if (which === 'failed') {

@@ -390,7 +390,7 @@ void sign_in(int fd, const std::string& client, const std::string& body) {
     }
   }
   if (status == 200)
-    return reply(fd, 200, "application/json", "{\"ok\":true}", "Set-Cookie: jbh=" + cookie + "; Path=/; HttpOnly; SameSite=Strict\r\n");
+    return reply(fd, 200, "application/json", "{\"ok\":true}", "Set-Cookie: jbh=" + cookie + "; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict\r\n");
   const std::string retry = wait ? ",\"retryAfter\":" + std::to_string(wait) : "";
   reply(fd, status, "application/json", "{\"error\":\"" + message + "\"" + retry + "}",
         wait ? "Retry-After: " + std::to_string(wait) + "\r\n" : std::string());

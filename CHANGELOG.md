@@ -3,6 +3,22 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.6
+
+### New
+
+- **The phone stays signed in.** After the PIN is entered once, the phone is remembered for a year (until the
+  PIN is changed), also while the app is closed.
+
+### Fixed
+
+- Editing a game from the phone no longer pops up "added" for it.
+- A game you renamed keeps its name when the same game is imported again.
+- Typing a title before the Title ID lookup finishes no longer gets it overwritten.
+- A catalog upload measures each game in bytes, so a game with non-English text is not sent past the console's
+  request limit.
+- A game keeps at most 64 links everywhere, as the feed format allows.
+
 ## 1.2.5
 
 ### Changed

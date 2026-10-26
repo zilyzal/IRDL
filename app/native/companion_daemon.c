@@ -482,7 +482,7 @@ static void serve(int fd) {
       g_next_session = (g_next_session + 1) % MAX_SESSIONS;
     }
     char cookie[160];
-    snprintf(cookie, sizeof cookie, "Set-Cookie: jbh=%s; Path=/; HttpOnly; SameSite=Strict\r\n", token);
+    snprintf(cookie, sizeof cookie, "Set-Cookie: jbh=%s; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict\r\n", token);
     respond(fd, 200, "application/json", "{\"ok\":true,\"app\":\"closed\"}", 26, cookie);
     return;
   }
