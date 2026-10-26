@@ -51,4 +51,27 @@ import { loadList, saveList } from './saved.js';
     return on;
   }
 
-export { autoContinueParts, deleteArchiveAfterExtract, setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract };
+// 1.2.2: extract a set once every part has downloaded, not while the later parts still download. Off by default.
+  var extractLater = null;
+  var extractLaterListeners = /* @__PURE__ */ new Set();
+  function extractAfterDownload() {
+    if (extractLater === null) extractLater = loadList(SETTINGS, "settings").extractAfterDownload === true;
+    return extractLater;
+  }
+  function setExtractAfterDownload(on) {
+    extractLater = Boolean(on);
+    saveList(SETTINGS, "settings", { ...loadList(SETTINGS, "settings"), extractAfterDownload: extractLater });
+    for (const listener of extractLaterListeners) listener(extractLater);
+  }
+  function useExtractAfterDownload() {
+    const [on, setOn] = useState(extractAfterDownload);
+    useEffect(() => {
+      extractLaterListeners.add(setOn);
+      return () => {
+        extractLaterListeners.delete(setOn);
+      };
+    }, []);
+    return on;
+  }
+
+export { extractAfterDownload, setExtractAfterDownload, useExtractAfterDownload, autoContinueParts, deleteArchiveAfterExtract, setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract };

@@ -3,6 +3,16 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.2
+
+### New
+
+- **Extract after downloading** (Settings → Downloads, off by default). A set is extracted only once every
+  part has downloaded instead of while later parts still download.
+- **Larger RAR dictionaries.** When nothing else is downloading, RAR archives with up to a 64 MiB dictionary
+  extract (it was 32 MiB). While downloads run, the 32 MiB limit stays. This needs the new build and has not been
+  tested on a console.
+
 ## 1.2.1
 
 ### Fixed

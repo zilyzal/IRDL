@@ -13,7 +13,7 @@ import { INCOMPLETE_PART, STALE_PARTIAL, cause } from '../downloads/errors.js';
 import { t } from '../i18n/core.js';
 import { archivePassword } from './archive-password.js';
 import { connections } from './connections.js';
-import { deleteArchiveAfterExtract } from './auto-continue.js';
+import { deleteArchiveAfterExtract, extractAfterDownload } from './auto-continue.js';
 import { diagnoseLaunch, launchOutcomes } from './launch-diagnosis.js';
 import { reportLink } from './link-health.js';
 import { BrowserRequired, RESOLVED_KINDS, archiveRefusal, cancellation, createSourceResolver, sourceKind, webURL } from './download-sources.js';
@@ -1112,7 +1112,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
       let streamed = null;
       try {
         for (let index = 0; index < job2.parts.length; index++) {
-          if (!streamed && index > 0 && job2.parts[0].completed && fs.exists(job2.parts[0].destination)) streamed = active2.streamed = streamSet(job2);
+          if (!streamed && !extractAfterDownload() && index > 0 && job2.parts[0].completed && fs.exists(job2.parts[0].destination)) streamed = active2.streamed = streamSet(job2);
           job2.partIndex = index;
           const part = job2.parts[index];
           if (job2.state === "pausing") return;

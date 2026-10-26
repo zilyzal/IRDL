@@ -557,7 +557,7 @@ std::string extract(Job& job, archive* archive, const std::string& staging, std:
 // path takes those), so every part must start a volume.
 constexpr std::array<std::string_view, 2> rar_signatures{std::string_view("Rar!\x1A\x07\x01\x00", 8), std::string_view("Rar!\x1A\x07\x00", 7)};
 // The decoder window the worker accepts, the RAR5 window the preflight admits for libarchive.
-constexpr std::uint64_t rar_window = 32ULL * 1024 * 1024;
+constexpr std::uint64_t rar_window_busy = 32ULL * 1024 * 1024, rar_window_idle = 64ULL * 1024 * 1024;
 // Reports come a few times a second; read_rar_worker waits about a quarter second each time.
 constexpr unsigned rar_silent_reads = 120, rar_cancel_reads = 40;
 bool rar_volumes(const Request& request) {
@@ -575,9 +575,13 @@ bool rar_volumes(const Request& request) {
 // Decoder threads: PS5 has 8 cores; the interface keeps two either way, and downloads (a streamed set's own
 // included) two more.
 unsigned rar_threads(const Request& request) { return request.stream || downloading() ? 4 : 6; }
+// While anything downloads (a streamed set included) the heap is shared, so the decoder keeps the smaller
+// window; extracting on its own it may use a 64 MiB dictionary. The worker reports a failed allocation as an
+// ordinary error rather than aborting the app.
+std::uint64_t rar_window(const Request& request) { return request.stream || downloading() ? rar_window_busy : rar_window_idle; }
 std::string rar_request(const Request& request, const std::string& staging) {
   constexpr char digits[] = "0123456789abcdef";
-  std::string text = "RARX1\nthreads " + std::to_string(rar_threads(request)) + "\nwindow " + std::to_string(rar_window) + "\nlimit " + std::to_string(request.max_bytes) + "\n";
+  std::string text = "RARX1\nthreads " + std::to_string(rar_threads(request)) + "\nwindow " + std::to_string(rar_window(request)) + "\nlimit " + std::to_string(request.max_bytes) + "\n";
   for (auto extension : image_extensions) text += "flatten " + std::string(extension) + "\n";
   text += "reserved .ps5-react-\n";
   if (request.stream) text += "wait 1\n";

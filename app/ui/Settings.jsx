@@ -20,7 +20,7 @@ import { LOCALES } from '../i18n/locales.js';
 import { setTorBoxKey, testTorBox, useDebrid } from '../state/debrid.js';
 import { CHOICES as CONNECTION_CHOICES, setConnections, useConnections } from '../state/connections.js';
 import { LIMITS as SPEED_LIMITS, setSpeedLimit, useSpeedLimit } from '../state/speed-limit.js';
-import { setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract } from '../state/auto-continue.js';
+import { setExtractAfterDownload, useExtractAfterDownload, setAutoContinueParts, setDeleteArchiveAfterExtract, useAutoContinueParts, useDeleteArchiveAfterExtract } from '../state/auto-continue.js';
 import { useNavActions } from '../state/nav.jsx';
 import { downloadQueue, driveName } from '../state/downloads.js';
 import { useDrives } from '../state/drives.js';
@@ -305,11 +305,14 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
     const drives = useDrives();
     const autoParts = useAutoContinueParts();
     const deleteRar = useDeleteArchiveAfterExtract();
+    const extractLater = useExtractAfterDownload();
     return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: CARD, children: [
       /* @__PURE__ */ (0, jsx)(CardHead, { icon: "download", title: t2("settings.card.downloads") }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:autoParts", name: t2("settings.autoParts"), detail: t2("settings.autoPartsDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: autoParts }), onPress: () => setAutoContinueParts(!autoParts) }),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
       /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:deleteRar", name: t2("settings.deleteArchive"), detail: t2("settings.deleteArchiveDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: deleteRar }), onPress: () => setDeleteArchiveAfterExtract(!deleteRar) }),
+      /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
+      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:extractLater", name: t2("settings.extractLater"), detail: t2("settings.extractLaterDetail"), end: /* @__PURE__ */ (0, jsx)(Switch, { on: extractLater }), onPress: () => setExtractAfterDownload(!extractLater) }),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
       /* @__PURE__ */ (0, jsx)(ConnectionsRow, {}),
       /* @__PURE__ */ (0, jsx)(View, { style: { height: 1, marginVertical: 8, backgroundColor: colors.line } }),
