@@ -59,7 +59,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 <div class="label" style="margin-top:0">Import a game <span>from a post page</span></div>
 <textarea class="field" id="impInput" rows="3" placeholder="Paste a post's address, download links (any order, one per line), or both" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
 <div class="row" style="margin-top:8px"><button class="btn primary grow" id="impGo">Fetch</button><button class="btn" id="impClear" type="button">Clear</button></div>
-<p class="subtle" style="margin:10px 0 0">The console reads the page for the title, Title ID, cover and .rar links, and sorts any links you paste into their parts. You pick which batch to keep.</p>
+<p class="subtle" style="margin:10px 0 0">The console reads the page for the title, Title ID, cover and download links (.rar, .pkg, .exfat, .ffpfsc), and sorts any links you paste into their parts. You pick which batch to keep.</p>
 <div class="subtle" id="impStatus" style="margin-top:10px" role="status"></div>
 </div>
 <div id="impEditor" hidden>
@@ -137,7 +137,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
     imp.other = preview.other && preview.other.length ? { key: "other", label: "Other files (not .rar)", on: false, open: false, sizeGb: null, warnings: [], hosts: groupOther(preview.other) } : null;
     $("impTitle").value = preview.title || ""; $("impId").value = preview.titleId || "";
     var found = preview.batches.length;
-    impStatus((preview.notice ? preview.notice + " " : "") + (found ? "Found " + found + " batch" + (found === 1 ? "" : "es") + ". Untick what you don't want." : "No .rar links found. Paste the download links into the box."));
+    impStatus((preview.notice ? preview.notice + " " : "") + (found ? "Found " + found + " batch" + (found === 1 ? "" : "es") + ". Untick what you don't want." : "No download links found. Paste the download links into the box."));
     $("impEditor").hidden = false; $("impBanner").hidden = true;
     impRender(); window.scrollTo(0, $("impEditor").offsetTop - 70);
   }

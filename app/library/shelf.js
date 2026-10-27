@@ -5,9 +5,16 @@
 
 import { COMPLETE } from '../state/download-queue.js';
 import { cardPick, readinessOf } from '../state/readiness.js';
+import { coverFor, titleFor } from '../state/covers.js';
 
   // Every path a job put on its drive, as the Files screen counts them (files/useFiles.js).
   var ownedBy = (job2) => [job2.artifact?.destination, ...job2.artifact?.images ?? [], job2.downloadDestination, job2.output, job2.publishTo, job2.backportPath, job2.extras].filter(Boolean);
+  // A game the catalog does not list (it is on the drive, not added to IRDL): its name and cover by Title ID, from the
+  // cover list, else the cover guessed for that ID; with no ID the colour tile shows.
+  function standIn(id, name) {
+    const found = typeof id === "string" ? coverFor(id) : null;
+    return { id, title: titleFor(id) || name, art: found ? { cover: found.cover, coverFallbacks: found.coverFallbacks } : {} };
+  }
   var related = (a, b) => a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`);
   // A game copied over FTP: installed once its title ID is in /user/app, else waiting on ShadowMount.
   var untracked = (file) => readinessOf({ state: file.installed ? "installed" : "downloaded", artifact: { nextAction: "shadowmount" } });
@@ -28,7 +35,7 @@ import { cardPick, readinessOf } from '../state/readiness.js';
     jobs.forEach((job2, index) => {
       owned.push(...ownedBy(job2));
       if (!COMPLETE.includes(job2.removingFrom ?? job2.state)) return;
-      const game = gameOf(job2.gameId) ?? { id: job2.gameId, title: job2.title, art: {} };
+      const game = gameOf(job2.gameId) ?? standIn(job2.gameId, job2.title);
       entryOf(job2.gameId, game, index).jobs.push(job2);
     });
     for (const file of files) {
@@ -37,7 +44,7 @@ import { cardPick, readinessOf } from '../state/readiness.js';
       // IRDL's own image is not a game of the library: nothing here should offer to delete it.
       if (isSelf?.(file)) continue;
       const key = file.titleId ?? file.path;
-      const game = (file.titleId && gameOf(file.titleId)) ?? { id: key, title: file.name, art: {} };
+      const game = (file.titleId && gameOf(file.titleId)) ?? standIn(file.titleId ?? key, file.name);
       entryOf(key, game, -1).files.push(file);
     }
     return [...entries.values()].map((entry) => {

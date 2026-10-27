@@ -370,21 +370,26 @@ __IMPORT_HTML__
   // ---- Games: search, a featured rail, the grid, and a sheet to download one to the console ---------
   var query = "", offset = 0, searchTimer, searchId = 0;
   var FEATURED = 8;
+  var loading = false;
   function loadGames(reset) {
+    loading = true;
     if (reset) { offset = 0; $("grid").textContent = ""; $("rail").textContent = ""; }
     var id = ++searchId;
-    api("GET", "/api/games?q=" + encodeURIComponent(query) + "&offset=" + offset + "&limit=30").then(function (data) {
+    api("GET", "/api/games?q=" + encodeURIComponent(query) + "&offset=" + offset + "&limit=60").then(function (data) {
       if (id !== searchId) return;
       $("count").textContent = data.total + (data.total === 1 ? " game" : " games");
-      var featured = !query && data.offset === 0;
+      // The rail is a shortcut to the first few; the list below always holds every game, and the rail stays while
+      // more of the list is loaded (it is only hidden while searching).
+      var featured = !query;
       $("featured").hidden = !featured;
       data.games.forEach(function (g, i) {
-        if (featured && i < FEATURED) $("rail").appendChild(card(g, i));
-        else $("grid").appendChild(card(g, i));
+        if (featured && data.offset === 0 && i < FEATURED) $("rail").appendChild(card(g, i));
+        $("grid").appendChild(card(g, i));
       });
       offset = data.offset + data.games.length;
       $("more").hidden = offset >= data.total;
-    }).catch(function (e) { toast(e.message, true); });
+      loading = false;
+    }).catch(function (e) { loading = false; toast(e.message, true); });
   }
   function card(g, i) {
     var b = el("button", "card");
@@ -397,7 +402,11 @@ __IMPORT_HTML__
     return b;
   }
   $("q").oninput = function () { clearTimeout(searchTimer); searchTimer = setTimeout(function () { query = $("q").value; loadGames(true); }, 250); };
-  $("more").onclick = function () { loadGames(false); };
+  $("more").onclick = function () { if (!loading) loadGames(false); };
+  // The rest of the list loads by itself as the end comes into view; the button stays as a fallback.
+  if (window.IntersectionObserver) new IntersectionObserver(function (seen) {
+    if (seen[0].isIntersecting && !$("more").hidden && !loading) loadGames(false);
+  }, { rootMargin: "600px" }).observe($("more"));
   function sheetOf() {
     var sheet = el("div", "sheet"), box = el("div");
     sheet.appendChild(box);

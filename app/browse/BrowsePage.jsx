@@ -24,7 +24,10 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
 
   function Footer() {
     const t2 = useT();
-    return /* @__PURE__ */ (0, jsxs)(View, { style: { marginHorizontal: -48, marginTop: 120, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderTopWidth: 2, borderColor: colors.line, paddingHorizontal: 48, paddingVertical: 48 }, children: [
+    // A page scrolls only to what holds focus, and the games grid is the last thing that can: with nothing below it the
+    // footer was never brought into view (it used to ride on the Homebrew lane). The footer is itself a quiet focus
+    // stop (no ring), so moving down past the last game scrolls it into view.
+    return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, focusKey: "browse:footer", onPress: () => {}, style: { marginHorizontal: -48, marginTop: 120, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderTopWidth: 2, borderColor: colors.line, paddingHorizontal: 48, paddingVertical: 48 }, children: [
       /* @__PURE__ */ (0, jsx)(Logo, { color: colors.muted }),
       /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 21, color: colors.subtle, lineHeight: 30 }, children: t2("browse.footer") })
     ] });

@@ -3,6 +3,25 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.9
+
+### New
+
+- The link fetcher accepts `.pkg`, `.exfat` and `.ffpfsc` links, single or several per batch. Each file is its own
+  source (they are not joined as archive volumes).
+
+### Changed
+
+- The app logo is the new transparent logo (top, bottom of the home page and Settings).
+- The Library's badges ("Played", "Getting ready", ...) are smaller to match the tiles, and titles use the whole
+  tile width.
+
+### Fixed
+
+- The bottom of the home page (logo, "by Zilyzal", "Open-source download manager") is reachable again.
+- The Library shows the name and cover of games that are on the console but not added to IRDL.
+- The phone's Games tab keeps the Popular rail, lists every game, and loads the rest of the list as you scroll.
+
 ## 1.2.8
 
 ### Changed

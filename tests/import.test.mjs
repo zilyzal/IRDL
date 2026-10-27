@@ -487,3 +487,23 @@ test('api: queue moves to the top, and pause all / resume all reach the queue', 
   assert.equal(handle(request('POST', '/api/queue/resume-all')).status, 200);
   assert.deepEqual(calls, [['top', 'b'], ['pauseAll'], ['resumeAll']]);
 });
+
+test('import: .pkg, .exfat and .ffpfsc links are found, single or several, and are never joined into an archive set', () => {
+  const links = [
+    'https://pixeldrain.com/u/aaaa1111  Some.Game.PPSA01234.v1.00.pkg',
+    'https://pixeldrain.com/u/bbbb2222  Some.Game.PPSA01234.v1.05.part1.pkg',
+    'https://pixeldrain.com/u/cccc3333  Some.Game.PPSA01234.v1.05.part2.pkg',
+    'https://gofile.io/d/dddd4444  Some.Game.PPSA01234.exfat',
+    'https://gofile.io/d/eeee5555  Some.Game.PPSA01234.ffpfsc'
+  ].join('\n');
+  const found = parsePage(links, '', { assumeRar: true });
+  const names = found.batches.flatMap((batch) => batch.hosts.flatMap((host) => host.links.map((link) => link.filename))).sort();
+  assert.deepEqual(names, [
+    'Some.Game.PPSA01234.exfat', 'Some.Game.PPSA01234.ffpfsc', 'Some.Game.PPSA01234.v1.00.pkg',
+    'Some.Game.PPSA01234.v1.05.part1.pkg', 'Some.Game.PPSA01234.v1.05.part2.pkg'
+  ]);
+  const game = buildGame({ id: 'PPSA01234', title: 'Some Game', batches: found.batches.map((batch) => ({ ...batch })) });
+  const formats = game.releases.map((release) => release.format).sort();
+  assert.deepEqual(formats, ['exfat', 'ffpfsc', 'pkg', 'pkg', 'pkg']);
+  assert.ok(game.releases.every((release) => !/\bpart\s*\d+\b/i.test(release.label)), 'no label says "part N", so none is grouped as archive volumes');
+});

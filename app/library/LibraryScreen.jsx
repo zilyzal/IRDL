@@ -72,9 +72,9 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
     const t2 = useT();
     const bad = ready.tone === "bad" && !moving;
     const ink2 = bad ? "#1c0a0a" : moving ? colors.accentHi : ready.tone === "good" ? GREEN : colors.accentHi;
-    return /* @__PURE__ */ (0, jsxs)(View, { style: { position: "absolute", left: 18, top: 18, height: 46, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: radius.pill, backgroundColor: bad ? RED : `${colors.canvas}e6`, paddingHorizontal: 18 }, children: [
-      /* @__PURE__ */ (0, jsx)(Icon, { name: moving ? "hardDrive" : ready.icon, size: 17, color: ink2 }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 21, fontWeight: 600, lineHeight: 28, color: bad ? ink2 : colors.fg }, children: moving ? t2("shelf.badge.moving") : t2(`ready.stage.${ready.stage}`) })
+    return /* @__PURE__ */ (0, jsxs)(View, { style: { position: "absolute", left: 10, top: 10, height: 30, flexDirection: "row", alignItems: "center", gap: 6, borderRadius: radius.pill, backgroundColor: bad ? RED : `${colors.canvas}e6`, paddingHorizontal: 10 }, children: [
+      /* @__PURE__ */ (0, jsx)(Icon, { name: moving ? "hardDrive" : ready.icon, size: 13, color: ink2 }),
+      /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 15, fontWeight: 600, lineHeight: 20, color: bad ? ink2 : colors.fg }, children: moving ? t2("shelf.badge.moving") : t2(`ready.stage.${ready.stage}`) })
     ] });
   }
   // The game's wide art; without any, its cover at the left over the game's own tint.
@@ -109,7 +109,7 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
         /* @__PURE__ */ (0, jsxs)(View, { style: { width: TILE, height: BANNER, overflow: "hidden", roundedClip: true, borderRadius: radius.lg, backgroundColor: game.art?.tint || colors.surface2 }, children: [
           /* @__PURE__ */ (0, jsx)(Banner, { game }),
           /* @__PURE__ */ (0, jsx)(Badge, { ready: entry.ready, moving: entry.motion?.kind === "moving" }),
-          entry.kept ? /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", right: 18, top: 18, height: 46, width: 46, alignItems: "center", justifyContent: "center", borderRadius: radius.pill, backgroundColor: `${colors.canvas}e6` }, children: /* @__PURE__ */ (0, jsx)(Icon, { name: "star", size: 18, color: colors.accentHi }) }) : null,
+          entry.kept ? /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", right: 10, top: 10, height: 30, width: 30, alignItems: "center", justifyContent: "center", borderRadius: radius.pill, backgroundColor: `${colors.canvas}e6` }, children: /* @__PURE__ */ (0, jsx)(Icon, { name: "star", size: 14, color: colors.accentHi }) }) : null,
           entry.motion?.kind === "moving" ? /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", left: 0, bottom: 0, height: 6, width: Math.max(6, Math.round(TILE * (entry.motion.fraction ?? 0))), backgroundColor: colors.accent } }) : null,
           entry.removing || armed ? /* @__PURE__ */ (0, jsxs)(View, { style: { position: "absolute", left: 0, top: 0, width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", gap: 12, backgroundColor: `${colors.canvas}d9` }, children: [
             /* @__PURE__ */ (0, jsx)(Icon, { name: "trash", size: 30, color: armed ? RED : colors.muted }),
@@ -118,10 +118,10 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
         ] }),
         /* @__PURE__ */ (0, jsx)(FocusRing, { round: "lg" })
       ] }),
-      /* @__PURE__ */ (0, jsxs)(View, { style: { width: TILE, gap: 2, paddingTop: 18, paddingHorizontal: 4 }, children: [
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 22, fontWeight: 600, lineHeight: 30, color: colors.fg, numberOfLines: 1, ellipsizeMode: "tail" }, children: game.title }),
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: status.tone, numberOfLines: 1, ellipsizeMode: "tail" }, children: status.text || " " }),
-        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE - 8, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: colors.subtle, numberOfLines: 1, ellipsizeMode: "tail" }, children: [playLine(t2, entry.played), entry.kept ? t2("shelf.keptTag") : ""].filter(Boolean).join(" \xB7 ") }),
+      /* @__PURE__ */ (0, jsxs)(View, { style: { width: TILE, gap: 2, paddingTop: 18 }, children: [
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE, fontFamily: "Exo2", fontSize: 22, fontWeight: 600, lineHeight: 30, color: colors.fg, numberOfLines: 1, ellipsizeMode: "tail" }, children: game.title }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: status.tone, numberOfLines: 1, ellipsizeMode: "tail" }, children: status.text || " " }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { width: TILE, fontFamily: "Exo2", fontSize: 17, lineHeight: 24, color: colors.subtle, numberOfLines: 1, ellipsizeMode: "tail" }, children: [playLine(t2, entry.played), entry.kept ? t2("shelf.keptTag") : ""].filter(Boolean).join(" \xB7 ") }),
         // The tile's buttons, shown while it has focus; the row keeps its height so nothing moves.
         /* @__PURE__ */ (0, jsx)(View, { style: { height: 44, flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 10 }, children: focused && !busy ? /* @__PURE__ */ (0, jsxs)(Fragment, { children: [
           action ? /* @__PURE__ */ (0, jsx)(Hint, { button: "cross", label: t2(action.label) }) : null,

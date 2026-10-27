@@ -267,8 +267,8 @@ import { webURL } from './download-sources.js';
   }
   var norm = (value) => squash(value).toLowerCase().replace(/[^a-z0-9.]+/g, " ").trim();
   var slug = (value) => squash(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "set";
-  var RAR_HINT = /\.rar\b|\.r\d{2}\b|\bpart\s*0*\d+|\.part0*\d+\b|\brar\b/i;
-  var FILE_NAME = /([^\s/\\"'<>|?*:]+?\.(?:part0*\d+\.)?(?:rar|r\d{2}))(?![a-z0-9])/i;
+  var RAR_HINT = /\.rar\b|\.r\d{2}\b|\bpart\s*0*\d+|\.part0*\d+\b|\brar\b|\.(?:pkg|exfat|ffpfsc)\b/i;
+  var FILE_NAME = /([^\s/\\"'<>|?*:]+?\.(?:part0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc))(?![a-z0-9])/i;
   // The label a link's own surroundings give a batch: its heading text without host names, sizes and ids.
   function labelOf(text) {
     let label = squash(text)
@@ -396,12 +396,12 @@ import { webURL } from './download-sources.js';
   // text and line, the lines just above it, then the heading above those.
   // A file name as words: "Game.v1.05.part2.rar" -> "Game v1.05".
   function stemOf(text) {
-    return String(text || "").replace(/\.(?:part\s*0*\d+\.)?(?:rar|r\d{2})\b.*$/i, "").replace(/(?<!\d)[._]+|[._]+(?!\d)/g, " ").replace(/\s+/g, " ").trim();
+    return String(text || "").replace(/\.(?:part\s*0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc)\b.*$/i, "").replace(/(?<!\d)[._]+|[._]+(?!\d)/g, " ").replace(/\s+/g, " ").trim();
   }
   // A file name with its part number taken out, as one comparable word: "Game.v1.05.part2.rar" and "...part1.rar" agree.
   function setStem(name) {
     if (!name) return "";
-    return norm(String(name).toLowerCase().replace(/[._\s-]*part[._\s-]*0*\d+/g, "").replace(/\.r\d{2}$/, ".rar").replace(/\.rar$/, "")).slice(0, 80);
+    return norm(String(name).toLowerCase().replace(/[._\s-]*part[._\s-]*0*\d+/g, "").replace(/\.r\d{2}$/, ".rar").replace(/\.(?:rar|pkg|exfat|ffpfsc)$/, "")).slice(0, 80);
   }
   function batchOf(link, name) {
     const sources = [name, link.text, link.title, link.before, ...[...link.recent].reverse(), link.heading];
@@ -433,7 +433,7 @@ import { webURL } from './download-sources.js';
       const sameSite = pageRoot && domainMatch(host, pageRoot);
       const name = fileNameOf(link);
       const hinted = HAS_RAR(link, name) || options.assumeRar === true;
-      const rar = hinted && (isFileHost(link.url) || /\.(?:rar|r\d{2})(?:[?#]|$)/i.test(link.url) || !sameSite && /\bpart\s*\d+|\.rar/i.test(`${link.text} ${link.title}`));
+      const rar = hinted && (isFileHost(link.url) || /\.(?:rar|r\d{2}|pkg|exfat|ffpfsc)(?:[?#]|$)/i.test(link.url) || !sameSite && /\bpart\s*\d+|\.rar/i.test(`${link.text} ${link.title}`));
       if (!rar) {
         if (isFileHost(link.url) && !IMAGE_FILE.test(link.url)) {
           seen.add(link.url);
@@ -526,7 +526,7 @@ import { webURL } from './download-sources.js';
   // it: `pages` are addresses to read, `linkText` is the pasted lines that carry download links (kept whole,
   // so file names beside a link still count), `html` means the text is a page's source.
   var URL_IN_TEXT = /https?:\/\/[^\s<>"'\u0001\u0002]+/gi;
-  var isDownloadURL = (url) => isFileHost(url) || /\.(?:rar|r\d{2}|zip|7z)(?:[?#]|$)/i.test(url) || /\.part0*\d+\.rar/i.test(url);
+  var isDownloadURL = (url) => isFileHost(url) || /\.(?:rar|r\d{2}|zip|7z|pkg|exfat|ffpfsc)(?:[?#]|$)/i.test(url) || /\.part0*\d+\.rar/i.test(url);
   function planInput(raw) {
     const text = String(raw ?? "").trim();
     if (!text) return { pages: [], linkText: "", html: false, links: 0 };
@@ -603,16 +603,19 @@ import { webURL } from './download-sources.js';
           }
           const part = Number.isSafeInteger(item.part) && item.part > 0 ? item.part : links.length > 1 ? at + 1 : null;
           let filename = squash(item.filename).replace(/[\/\\]/g, "_").slice(0, 150);
-          if (!/\.(?:rar|7z|zip|r\d{2})$/i.test(filename)) filename = `${slug(title)}-${slug(label)}${part != null ? `.part${String(part).padStart(2, "0")}` : ""}.rar`;
+          if (!/\.(?:rar|7z|zip|r\d{2}|pkg|exfat|ffpfsc)$/i.test(filename)) filename = `${slug(title)}-${slug(label)}${part != null ? `.part${String(part).padStart(2, "0")}` : ""}.rar`;
           if (names.has(`${record}/${hostName(url)}/${filename}`)) filename = filename.replace(/(\.[^.]+)$/, `-${releases.length}$1`);
           names.add(`${record}/${hostName(url)}/${filename}`);
           const extension = /\.([a-z0-9]+)$/i.exec(filename)?.[1].toLowerCase();
+          // A game file (.pkg, .exfat, .ffpfsc) is one file, not a volume of an archive: several in a batch are listed
+          // one by one, never joined into an archive set (which a "part N" in the label would do).
+          const single = extension === "pkg" || extension === "exfat" || extension === "ffpfsc";
           releases.push({
             url,
-            label: part != null ? `${label} part ${part}` : label,
+            label: single ? part != null ? `${label} (${part})` : label : part != null ? `${label} part ${part}` : label,
             record,
             provider: String(group.host || hostName(url)).slice(0, 40),
-            format: extension === "7z" || extension === "zip" ? extension : "rar",
+            format: single || extension === "7z" || extension === "zip" ? extension : "rar",
             filename,
             requiresBrowser: needsBrowser(url),
             ...site ? { site } : {},
