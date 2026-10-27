@@ -12,7 +12,7 @@
 
   var DAY_MS = 24 * 60 * 60 * 1e3;
   var HOUR_MS = 60 * 60 * 1e3;
-  var NOTES_MAX = 1200;
+  var NOTES_MAX = 3000;
   var TAG = /^v?(\d+(?:\.\d+){0,3})(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
   var numbers = (version2) => TAG.exec(String(version2 ?? ""))?.[1].split(".").map(Number) ?? null;
   var prerelease = (version2) => TAG.exec(String(version2 ?? ""))?.[2] ?? "";

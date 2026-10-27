@@ -13,13 +13,39 @@ import { formatBytes } from '../state/size.js';
 import { canInstall, cancelUpdate, closeUpdateDialog, downloadUpdate, restartToApply, useInstall, useUpdate, useUpdateDialog } from '../state/update.js';
 import { VERSION_LABEL } from '../version.js';
 import { Button2 } from './Button.jsx';
-import { ProgressBar } from './ProgressBar.jsx';
+import { readableNotes } from './release-notes.js';
 import { colors, radius } from './colors.js';
 import { FocusScope, Linking, Text, View, motion } from '@ps5-react/core';
 
   var ENTER = { type: "tween", duration: 0.24, ease: [0.22, 1, 0.36, 1] };
-  var BAR = 756;
+  // The card's inner width: the progress track is exactly this wide, however far along it is.
+  var BAR = 884;
+  var NOTES_ROWS = 9;
   var sans = (size, color, extra) => ({ fontFamily: "Exo2", fontSize: size, lineHeight: Math.round(size * 1.42), color, ...extra });
+  // A fixed-size track; the fill and the rest share it by proportion, so the fill can never pass its end.
+  function Track({ fraction, active }) {
+    const filled = Math.round(Math.max(0, Math.min(1, Number(fraction) || 0)) * 1000);
+    return /* @__PURE__ */ (0, jsxs)(View, { style: { width: BAR, height: 10, flexDirection: "row", overflow: "hidden", borderRadius: radius.pill, backgroundColor: colors.surface2 }, children: [
+      /* @__PURE__ */ (0, jsx)(View, { style: { flex: filled, backgroundColor: active ? colors.accent : colors.subtle } }),
+      /* @__PURE__ */ (0, jsx)(View, { style: { flex: 1000 - filled } })
+    ] });
+  }
+  // The notes: headings and bullets in a panel of fixed height, so the card keeps its shape.
+  function Notes({ body }) {
+    const t2 = useT();
+    const { rows, more } = readableNotes(body, NOTES_ROWS);
+    if (!rows.length) return null;
+    return /* @__PURE__ */ (0, jsxs)(View, { style: { width: BAR, gap: 8, borderRadius: radius.lg, backgroundColor: colors.surface2, paddingHorizontal: 28, paddingVertical: 22 }, children: [
+      /* @__PURE__ */ (0, jsx)(Text, { style: sans(19, colors.subtle, { fontWeight: 600, letterSpacing: 2 }), children: t2("update.whatsNew").toUpperCase() }),
+      ...rows.map((row, index) => row.head !== undefined
+        ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(21, colors.accentHi, { fontWeight: 600, marginTop: index ? 8 : 0 }), children: row.head }, index)
+        : /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: "row", gap: 14 }, children: [
+          /* @__PURE__ */ (0, jsx)(Text, { style: sans(22, colors.muted), children: "\u2022" }),
+          /* @__PURE__ */ (0, jsx)(Text, { style: sans(22, colors.fg, { flex: 1, numberOfLines: 2, ellipsizeMode: "tail", lineHeight: 31 }), children: row.item })
+        ] }, index)),
+      more ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(20, colors.subtle), children: t2("update.moreNotes", { count: more }) }) : null
+    ] });
+  }
   var fractionOf = (install) => install.total ? Math.min(1, install.written / install.total) : 0;
   // What the install says under the notes, and in which color, for each phase.
   function status(t2, install, update) {
@@ -89,17 +115,19 @@ import { FocusScope, Linking, Text, View, motion } from '@ps5-react/core';
         initial: { opacity: 0, y: 24 },
         animate: { opacity: 1, y: 0 },
         transition: ENTER,
-        style: { width: 860, gap: 26, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, padding: 52 },
+        style: { width: 980, gap: 24, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, padding: 48 },
         children: [
           /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 10 }, children: [
             /* @__PURE__ */ (0, jsx)(View, { style: { alignSelf: "flex-start", borderRadius: radius.pill, backgroundColor: colors.accent, paddingHorizontal: 18, paddingVertical: 4 }, children: /* @__PURE__ */ (0, jsx)(Text, { style: sans(19, colors.accentFg, { fontWeight: 600 }), children: t2(ready ? "update.install.ready" : "update.available") }) }),
             /* @__PURE__ */ (0, jsx)(Text, { style: sans(60, colors.fg, { fontWeight: 600 }), children: `v${update.version}` }),
             /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "JetBrainsMono-Regular", fontSize: 21, lineHeight: 30, color: colors.muted }, children: `v${VERSION_LABEL}  →  v${update.version}` })
           ] }),
-          update.notes ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(22, colors.fg, { numberOfLines: busy || ready ? 4 : 7, ellipsizeMode: "tail", lineHeight: 33 }), children: update.notes }) : null,
-          busy ? /* @__PURE__ */ (0, jsx)(ProgressBar, { fraction: fractionOf(install), width: BAR, active: phase === "downloading" }) : null,
-          said ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(21, said[1]), children: said[0] }) : null,
-          /* @__PURE__ */ (0, jsx)(Text, { style: sans(21, colors.subtle), children: t2(installable ? "update.howTo" : "update.howToManual") }),
+          update.notes ? /* @__PURE__ */ (0, jsx)(Notes, { body: update.notes }) : null,
+          busy || ready ? /* @__PURE__ */ (0, jsxs)(View, { style: { width: BAR, gap: 10 }, children: [
+            /* @__PURE__ */ (0, jsx)(Track, { fraction: ready ? 1 : fractionOf(install), active: busy ? phase === "downloading" : true }),
+            said ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(21, said[1], { numberOfLines: 2, ellipsizeMode: "tail" }), children: said[0] }) : null
+          ] }) : said ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(21, said[1], { width: BAR }), children: said[0] }) : null,
+          /* @__PURE__ */ (0, jsx)(Text, { style: sans(20, colors.subtle, { width: BAR }), children: t2(installable ? "update.howTo" : "update.howToManual") }),
           note ? /* @__PURE__ */ (0, jsx)(Text, { style: sans(20, "#fbbf24"), children: note }) : null,
           /* @__PURE__ */ (0, jsx)(View, { style: { flexDirection: "row", flexWrap: "wrap", gap: 16 }, children: actions })
         ]

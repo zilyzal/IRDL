@@ -7,7 +7,6 @@ import { useJobs } from '../downloads/useQueue.js';
 import { KINDS, scanDrive } from '../files/scan.js';
 import { installedTitles } from '../files/useFiles.js';
 import { getGame } from '../state/catalog.js';
-import { homebrew } from '../state/homebrew-store.js';
 import { useDrives } from '../state/drives.js';
 import { FileSystem } from '@ps5-react/core';
 
@@ -32,21 +31,15 @@ import { FileSystem } from '@ps5-react/core';
     }
     return modified.get(path);
   };
-  // The Homebrew app a homebrew/ entry is (by what was installed or found there); IRDL's own image is itself.
-  var SELF = { id: "irdl", name: "IRDL", self: true, category: "system", files: [] };
-  function homebrewOf(file) {
-    if (/\/IRDL[^/]*\.(exfat|ffpkg|ffpfs|ffpfsc)$/i.test(file.path)) return SELF;
-    try {
-      return homebrew().ownerOf(file.path, file.titleId);
-    } catch {
-      return null;
-    }
+  // IRDL's own image sits in homebrew/ too: it is not a game of the library.
+  function isSelf(file) {
+    return /\/IRDL[^/]*\.(exfat|ffpkg|ffpfs|ffpfsc)$/i.test(file.path);
   }
   function useShelf(version = 0) {
     const { jobs } = useJobs();
     const drives = useDrives();
     const files = useHomebrew(drives.roots, version);
-    const entries = (0, useMemo)(() => shelfEntries({ jobs, files, gameOf: getGame, homebrewOf }).map((entry) => ({
+    const entries = (0, useMemo)(() => shelfEntries({ jobs, files, gameOf: getGame, isSelf }).map((entry) => ({
       ...entry,
       root: entry.jobs[0]?.root ?? entry.files[0]?.root ?? null,
       addedAt: Math.max(0, ...entry.files.map((file) => file.modified || 0), ...entry.jobs.map((job) => modifiedOf(job.artifact?.destination)))

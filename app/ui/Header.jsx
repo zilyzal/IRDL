@@ -23,7 +23,6 @@ import { NavItem } from './NavItem.jsx';
 import { NavPill, useNavLayouts } from './NavPill.jsx';
 import { useSections } from './useSections.js';
 import { DockCount } from './LibraryCount.jsx';
-import { useHomebrewUpdates } from '../state/homebrew-store.js';
 import { useRemoteShortcuts } from '../companion/remote.js';
 import { FocusScope, Text, View, motion } from '@ps5-react/core';
 import { VERSION } from '../version.js';
@@ -32,7 +31,6 @@ import { EASE_OUT } from './ease.js';
 import { logical, px } from './scale.js';
 import '../assets/JetBrainsMono-Regular.ttf';
 import { colors, radius } from './colors.js';
-import { hb } from '../homebrew/palette.js';
 
   // The island's place, kept clear by the pages under it (index.jsx PAGE_TOP).
   var DOCK_HEIGHT = 80, DOCK_TOP = 24;
@@ -59,12 +57,6 @@ import { hb } from '../homebrew/palette.js';
   var SHORT_VERSION = `v${VERSION.replace(/-pre\.(\d+)$/i, " PRE $1").replace(/-beta\.(\d+)$/i, " BETA $1")}`;
   function VersionTab() {
     return /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", left: 0, right: 0, bottom: -(DOCK_HEIGHT - 60) / 2 - 15, alignItems: "center" }, children: /* @__PURE__ */ (0, jsx)(View, { style: { height: 26, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1, borderColor: colors.glassEdge, backgroundColor: colors.surface, paddingHorizontal: 12 }, children: /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "JetBrainsMono-Regular", fontSize: 14, lineHeight: 18, letterSpacing: 1.5, color: colors.muted }, children: SHORT_VERSION }) }) });
-  }
-  // The Homebrew section's item: its name, and the number of installed apps with a newer release.
-  function HomebrewNavItem({ item, onPress }) {
-    const t2 = useT();
-    const updates = useHomebrewUpdates();
-    return item("homebrew", { icon: "package", label: t2("nav.homebrew"), tone: hb().hi, onPress, children: updates ? /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", top: 6, right: 6, minWidth: 30, height: 30, alignItems: "center", justifyContent: "center", borderRadius: radius.pill, backgroundColor: hb().hi, paddingHorizontal: 8 }, children: /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Exo2", fontSize: 17, fontWeight: 700, lineHeight: 22, color: hb().fgHi }, children: String(updates) }) }) : null });
   }
   var dockArrived = false;
   // Where the island's JL mark sits on screen (dock-mark.js), for the store's reveal to fly its mark to. The
@@ -108,7 +100,6 @@ import { hb } from '../homebrew/palette.js';
       else if (action === "home") on.discover();
       else if (action === "downloads") on.downloads();
       else if (action === "search") on.search();
-      else if (action === "homebrew") on.homebrew();
     });
     const dockBack = () => {
       nav.focusLater(down);
@@ -143,8 +134,6 @@ import { hb } from '../homebrew/palette.js';
         // IRDL: the Browse-by-category dropdown that sat here is gone.
         item("top", { label: t2("nav.top"), onPress: on.top }),
         item("new", { label: t2("nav.new"), onPress: on.new }),
-        divider,
-        /* @__PURE__ */ (0, jsx)(HomebrewNavItem, { item, onPress: on.homebrew }),
         divider,
         item("favorites", { icon: "heart", label: favorites ? String(favorites) : null, caption: t2("filters.favorites"), onPress: on.favorites }),
         item("downloads", { icon: "download", caption: t2("downloads.title"), onPress: on.downloads, children: BADGE }),

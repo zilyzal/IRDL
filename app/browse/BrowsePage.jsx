@@ -13,7 +13,6 @@ import { FilterDrawer } from './FilterDrawer.jsx';
 import { PageHints } from './PageHints.jsx';
 import { RecentRow } from './RecentRow.jsx';
 import { HomeHero } from './HomeHero.jsx';
-import { HomebrewLane } from './Lanes.jsx';
 import { useT } from '../i18n/index.js';
 import { gameCount } from '../state/catalog.js';
 import { useCatalogVersion } from '../state/catalog-live.js';
@@ -31,7 +30,7 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
     ] });
   }
   // IRDL has no bundled catalog, so there is no spotlight, no ranked lanes and no genre rails: the panel that says
-  // how to add games, what is downloading, the games themselves, and the Homebrew lane. With no game yet, the
+  // how to add games, what is downloading, and the games themselves. With no game yet, the
   // grid is left out (it would only say "nothing matches").
   var Sections = (0, memo)(function Sections2({ onOpenFilters }) {
     const onAction = useFavoriteAction();
@@ -41,7 +40,6 @@ import { FocusScope, ScrollView, Text, View } from '@ps5-react/core';
       /* @__PURE__ */ (0, jsx)(View, { scrollAnchor: true, style: { gap: 16, paddingTop: 16 }, children: /* @__PURE__ */ (0, jsx)(HomeHero, {}) }),
       any ? /* @__PURE__ */ (0, jsx)(RecentRow, {}) : null,
       any ? /* @__PURE__ */ (0, jsx)(Catalog, { onOpenFilters }) : null,
-      /* @__PURE__ */ (0, jsx)(HomebrewLane, {}),
       /* @__PURE__ */ (0, jsx)(Footer, {})
     ] }) });
   });

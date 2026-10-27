@@ -28,20 +28,20 @@ import { linkHealth } from '../state/links.js';
 import { loadList, saveList } from '../state/saved.js';
 import { CREATOR, TITLE_ID, VERSION_LABEL } from '../version.js';
 import { FileSystem, Http, LocalServer, Payloads, Platform } from '@ps5-react/core';
-import { PAYLOAD_DIR } from '../state/homebrew-store.js';
 import { createCompanionApi } from './api.js';
 import { createImporter } from './importer.js';
 import * as importedGames from '../state/imported.js';
 import { logger } from '../services/logger.js';
 import { PAGE } from './page.js';
-import { pressRemote, runShortcut } from './remote.js';
+import { runShortcut } from './remote.js';
 import { startRemoteDownload } from './remote-download.js';
-import { homebrew } from '../state/homebrew-store.js';
 
   // Tried in order; 0 lets the system pick any free port. Settings shows the one it got.
   var PORTS = [9898, 8080, 0];
   var PUMP_MS = 100;
   var SETTINGS = "settings.json";
+  // Where the companion's helper (app/native/companion_daemon.c) and the payload loader look for their files.
+  var PAYLOAD_DIR = Platform.OS === "ps5" ? "/data/IRDL/payloads" : `${FileSystem.dataDir}/IRDL/payloads`;
   var handle = createCompanionApi({
     catalog: {
       search: (query) => sortGames(filterGames({ filters: NO_FILTERS, query, wishlist: [] }), "relevance"),
@@ -53,6 +53,9 @@ import { homebrew } from '../state/homebrew-store.js';
     queue: () => downloadQueue().snapshot().filter((job) => !job.cleared),
     control: {
       pause: (id) => downloadQueue().pause(id),
+      top: (id) => downloadQueue().moveToTop(id),
+      pauseAll: () => downloadQueue().pauseAll(),
+      resumeAll: () => downloadQueue().resumeAll(),
       resume: (id) => downloadQueue().resume(id),
       cancel: (id) => downloadQueue().cancel(id),
       clear: (id) => {
@@ -66,29 +69,14 @@ import { homebrew } from '../state/homebrew-store.js';
     },
     storage: drives,
     feeds: { list: () => feedsSnapshot(), add: addFeed, edit: replaceFeed, remove: removeFeed, refresh: refreshFeeds, addMirror, removeMirror },
-    remote: pressRemote,
     // IRDL: the Import tab reads a post page here on the console and keeps what the phone ticks.
     importer: createImporter({ http: Http, store: importedGames }),
     quick: (action) => {
-      if (action === "refresh") void refreshFeeds();
-      else runShortcut(action);
+      runShortcut(action);
     },
     info: () => ({ app: "IRDL", version: VERSION_LABEL, creator: CREATOR }),
     // The last 512 KB of the debug log, for "Report a problem" on the phone (0.5.0 Pre Release 4).
-    logs: () => logger().tail(512 * 1024),
-    // The Homebrew section, read only when a phone first asks for it.
-    homebrew: {
-      get index() {
-        return homebrew().index;
-      },
-      app: (id) => homebrew().app(id),
-      statusOf: (id) => homebrew().statusOf(id),
-      updates: () => homebrew().updates(),
-      installedApps: () => homebrew().installedApps(),
-      install: (id, file) => homebrew().install(id, file),
-      run: (id) => homebrew().run(id),
-      cancel: (id) => homebrew().cancel(id)
-    }
+    logs: () => logger().tail(512 * 1024)
   });
   // Every drive downloads can go to, with its space, from the cache: nothing here waits on a drive. The
   // phone asks again every few seconds, so asking the worker to look again is enough to keep it current.

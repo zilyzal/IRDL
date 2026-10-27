@@ -49,6 +49,8 @@
 #define BOOT_WAIT_MS 600000
 #define POLL_MS 500
 #define SETTLE_MS 1000
+// The app is opened again this long after the new image is in place, so the console has let go of the old one.
+#define RELAUNCH_DELAY_MS 4000
 #define REPLY_MAX (1024 * 1024)
 
 #ifdef UPDATER_HOST_TEST
@@ -413,7 +415,7 @@ static int booted_as(const char* version) {
 
 static void relaunch_if(const Apply* apply) {
   if (!apply->relaunch) return;
-  sleep_ms(SETTLE_MS);
+  sleep_ms(SETTLE_MS + RELAUNCH_DELAY_MS);
   note("%s", launch_title(g_title) == 0 ? "opened the app again" : "could not open the app again");
 }
 

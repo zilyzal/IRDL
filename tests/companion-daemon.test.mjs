@@ -1,6 +1,6 @@
 // The companion's helper for while the app is closed (app/native/companion_daemon.c), built for the desktop
 // with -DCOMPANION_HOST_TEST and run for real: the PIN, the port it lets go while the app runs, a launch, a
-// payload sent to a stand-in loader, new settings handed to the running one, and switching it off.
+// new settings handed to the running one, and switching it off.
 // Needs a C compiler (cc); skipped where there is none (Windows without one). Run: npm test
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -56,26 +56,17 @@ async function http(port, method, route, { body, cookie, jbh = true } = {}) {
 after(() => rmSync(dir, { recursive: true, force: true }));
 const refused = (port) => fetch(`http://127.0.0.1:${port}/`).then(() => false, () => true);
 
-test('the closed-app companion signs phones in, launches the app, gives the port up while it runs and runs payloads', { skip }, async (t) => {
+test('the closed-app companion signs phones in, launches the app, and gives the port up while it runs', { skip }, async (t) => {
   assert.equal(build().status, 0, build().stderr);
-  mkdirSync(path.join(payloads, 'owner__tool'), { recursive: true });
-  writeFileSync(path.join(payloads, 'owner__tool', 'tool.elf'), '\x7fELF-payload-bytes');
-  writeFileSync(path.join(payloads, 'index.json'), JSON.stringify({ apps: [{ name: 'Tool', run: path.join(payloads, 'owner__tool', 'tool.elf') }] }));
+  mkdirSync(payloads, { recursive: true });
   writeFileSync(queue, JSON.stringify({ version: 1, jobs: [{ id: 'g/1', title: 'A Game', state: 'paused', written: 5, total: 10 }] }));
-  const [web, control, loaderPort] = [await freePort(), await freePort(), await freePort()];
-  const received = [];
-  const loader = net.createServer((socket) => {
-    const chunks = [];
-    socket.on('data', (chunk) => chunks.push(chunk));
-    socket.on('end', () => received.push(Buffer.concat(chunks).toString()));
-  }).listen(loaderPort, '127.0.0.1');
-  const env = { COMPANION_TEST_RUNNING: running, COMPANION_TEST_CONTROL: String(control), COMPANION_TEST_LOADER: String(loaderPort) };
+  const [web, control] = [await freePort(), await freePort()];
+  const env = { COMPANION_TEST_RUNNING: running, COMPANION_TEST_CONTROL: String(control) };
   const SESSION = 'abcdefghijklmnopqrstuvwxyz';
   const lines = (pin, session = SESSION) => ['CMP2', 'PPSA99573', String(web), pin, payloads, queue, session];
   const { answer, child } = await start(env, lines('482913'));
   t.after(() => {
     child.kill();
-    loader.close();
   });
   assert.equal(answer, 'ready');
   assert.equal(readFileSync(path.join(payloads, 'helper.txt'), 'utf8'), 'ready\n', 'the answer is also in helper.txt, which the app reads');
@@ -101,14 +92,6 @@ test('the closed-app companion signs phones in, launches the app, gives the port
   assert.equal(unknown.status, 404);
   assert.equal(JSON.parse(unknown.text).app, 'closed', 'the app page\'s own requests learn the app is closed');
   assert.equal(JSON.parse((await http(web, 'GET', '/api/queue', { cookie })).text).jobs[0].title, 'A Game');
-  assert.equal(JSON.parse((await http(web, 'GET', '/api/payloads', { cookie })).text).apps[0].name, 'Tool');
-
-  // Only a payload inside the payload folder runs.
-  assert.equal((await http(web, 'POST', '/api/run', { cookie, body: { path: '/etc/passwd' } })).status, 400);
-  assert.equal((await http(web, 'POST', '/api/run', { cookie, body: { path: `${payloads}/../x.elf` } })).status, 400);
-  assert.equal((await http(web, 'POST', '/api/run', { cookie, body: { path: path.join(payloads, 'owner__tool', 'tool.elf') } })).status, 200);
-  await wait(200);
-  assert.deepEqual(received, ['\x7fELF-payload-bytes']);
 
   // Launching starts the app, and the port is let go while it runs, then taken again once it closes.
   assert.equal((await http(web, 'POST', '/api/launch', { cookie })).status, 200);

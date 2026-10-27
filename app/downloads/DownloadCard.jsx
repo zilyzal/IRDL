@@ -50,7 +50,7 @@ import { Text, View, motion } from '@ps5-react/core';
   }
   // MODIFIED (0.5.0 Pre Release 3): a download in parts waiting on the browser opens it from here ("Wait"
   // while it counts down to opening it by itself), not from the game page.
-  function primary({ state, error: error2, parts, autoOpenAt, aheadAt }, run, openGame, ready) {
+  function primary({ state, error: error2, parts, autoOpenAt, aheadAt, extractFailed }, run, openGame, ready) {
     if (state === "awaiting-browser" && autoOpenAt) return { icon: "pause", label: "downloads.action.waitPart", onPress: () => run("waitForPart") };
     // 0.5.0 Pre Release 4: the next part's browser about to open while this one downloads.
     if (aheadAt && BUSY.includes(state)) return { icon: "pause", label: "downloads.action.waitPart", onPress: () => run("waitForPart") };
@@ -61,6 +61,8 @@ import { Text, View, motion } from '@ps5-react/core';
     if (BUSY.includes(state)) return { icon: "pause", label: "downloads.action.pause", onPress: () => run("pause") };
     if (["paused", "failed"].includes(state) && STALE_PARTIAL.test(cause(error2))) return { icon: "download", label: "downloads.action.restart", onPress: () => run("restart") };
     if (state === "paused") return { icon: "play", label: "downloads.action.resume", onPress: () => run("resume") };
+    // The files are all there: only the extraction runs again.
+    if (state === "failed" && extractFailed) return { icon: "restart", label: "downloads.action.extractAgain", onPress: () => run("resume") };
     if (state === "failed") return { icon: "download", label: "downloads.action.retry", onPress: () => run("resume") };
     if (state === "awaiting-browser") return { icon: "play", label: "downloads.action.continueOnPage", onPress: openGame };
     if (state === "downloaded") return { icon: "circleCheck", label: "downloads.action.install", onPress: () => run("register") };
@@ -100,11 +102,11 @@ import { Text, View, motion } from '@ps5-react/core';
   function CardMeter({ id, tone, moving, complete, waiting: waiting2, label, detail: detail2 }) {
     const t2 = useT();
     const progress = useProgress(id);
-    const { written = 0, total = null, bytesPerSecond = 0 } = progress ?? {};
+    const { written = 0, total = null, estimated = false, bytesPerSecond = 0 } = progress ?? {};
     const fraction = complete ? 1 : fractionOf(progress);
     const percent = complete || total ? `${Math.floor(fraction * 100)}%` : "—";
     const left = moving && total && bytesPerSecond ? formatTimeLeft((total - written) / bytesPerSecond) : "";
-    const size = detail2 ?? (complete ? formatBytes(total || written) : total ? t2("download.status.progress", { done: formatBytes(written), total: formatBytes(total) }) : written ? t2("download.soFar", { size: formatBytes(written) }) : "");
+    const size = detail2 ?? (complete ? formatBytes(total || written) : total ? t2("download.status.progress", { done: formatBytes(written), total: (estimated ? "~" : "") + formatBytes(total) }) : written ? t2("download.soFar", { size: formatBytes(written) }) : "");
     return /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 12 }, children: [
       /* @__PURE__ */ (0, jsxs)(View, { style: { width: INNER, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }, children: [
         waiting2 ? /* @__PURE__ */ (0, jsx)(View, { style: { width: 600 }, children: /* @__PURE__ */ (0, jsx)(ShimmerText, { textStyle: font(21, colors.fg), background: colors.surface, children: label }) }) : /* @__PURE__ */ (0, jsxs)(Text, { style: font(21, colors.fg, { width: 600, numberOfLines: 1, ellipsizeMode: "tail" }), children: [

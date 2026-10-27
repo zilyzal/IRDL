@@ -13,7 +13,7 @@ import { downloadQueue } from '../state/downloads.js';
   }
   // Everything a card or library tile shows that is not progress: the last launch's outcome, the drive (a
   // move changes it) and whether a move is under way or stopped.
-  var shapeOf = (job2) => `${job2.id}|${job2.state}|${job2.phase || ""}|${job2.error}|${job2.message || ""}|${job2.total}|${job2.launch?.outcome || ""}|${job2.root}|${job2.moving ? `${job2.moving.to}:${job2.moving.interrupted ? "stopped" : "moving"}:${job2.moving.error || ""}` : ""}|${job2.extras || ""}|${job2.autoOpenAt || ""}|${job2.partIndex ?? ""}|${job2.inspected || ""}|${job2.fileName || ""}|${job2.aheadAt || ""}|${job2.aheadState || ""}|${job2.aheadPart ?? ""}|${job2.cleared || ""}`;
+  var shapeOf = (job2) => `${job2.id}|${job2.state}|${job2.phase || ""}|${job2.error}|${job2.message || ""}|${job2.total}|${job2.launch?.outcome || ""}|${job2.root}|${job2.moving ? `${job2.moving.to}:${job2.moving.interrupted ? "stopped" : "moving"}:${job2.moving.error || ""}` : ""}|${job2.extras || ""}|${job2.autoOpenAt || ""}|${job2.partIndex ?? ""}|${job2.inspected || ""}|${job2.fileName || ""}|${job2.aheadAt || ""}|${job2.aheadState || ""}|${job2.aheadPart ?? ""}|${job2.cleared || ""}|${job2.extractFailed || ""}`;
   var fractionOf = (progress) => progress?.total ? Math.min(1, progress.written / progress.total) : 0;
   function useJobs() {
     const [state, setState] = (0, useState)({ jobs: [], shape: "", error: "" });
@@ -39,8 +39,8 @@ import { downloadQueue } from '../state/downloads.js';
       let last = null;
       return subscribe2((jobs) => {
         const job2 = jobs.find((item) => item.id === id);
-        if (!job2 || last && last.written === job2.written && last.total === job2.total && last.bytesPerSecond === (job2.bytesPerSecond || 0)) return;
-        last = { written: job2.written, total: job2.total, bytesPerSecond: job2.bytesPerSecond || 0 };
+        if (!job2 || last && last.written === job2.written && last.total === job2.total && last.estimated === Boolean(job2.totalEstimated) && last.bytesPerSecond === (job2.bytesPerSecond || 0)) return;
+        last = { written: job2.written, total: job2.total, estimated: Boolean(job2.totalEstimated), bytesPerSecond: job2.bytesPerSecond || 0 };
         setProgress(last);
       });
     }, [id]);

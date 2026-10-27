@@ -10,7 +10,6 @@ import { useRef, useState } from 'react';
 import { logical } from './scale.js';
 import { View, motion } from '@ps5-react/core';
 import { colors, radius } from './colors.js';
-import { hb, isHomebrewSection } from '../homebrew/palette.js';
 
   var slide2 = { x: { type: "spring", stiffness: 420, damping: 38, mass: 1 }, opacity: { type: "tween", duration: 0.15 } };
   function useNavLayouts() {
@@ -30,11 +29,11 @@ import { hb, isHomebrewSection } from '../homebrew/palette.js';
     return /* @__PURE__ */ (0, jsxs)(
       motion.View,
       {
-        style: [{ position: "absolute", left: 0, top: 10, height: 60, borderRadius: radius.pill, backgroundColor: isHomebrewSection(section) ? hb().soft : colors.surface3 }, { width: last.current.width }],
+        style: [{ position: "absolute", left: 0, top: 10, height: 60, borderRadius: radius.pill, backgroundColor: colors.surface3 }, { width: last.current.width }],
         initial: false,
         animate: { x: last.current.x, opacity: item ? 1 : 0 },
         transition: slide2,
-        children: /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", left: 0, right: 0, bottom: 7, alignItems: "center" }, children: /* @__PURE__ */ (0, jsx)(View, { style: { width: 28, height: 3, borderRadius: radius.pill, backgroundColor: isHomebrewSection(section) ? hb().hi : colors.accentHi } }) })
+        children: /* @__PURE__ */ (0, jsx)(View, { style: { position: "absolute", left: 0, right: 0, bottom: 7, alignItems: "center" }, children: /* @__PURE__ */ (0, jsx)(View, { style: { width: 28, height: 3, borderRadius: radius.pill, backgroundColor: colors.accentHi } }) })
       }
     );
   }

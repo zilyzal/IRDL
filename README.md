@@ -5,7 +5,7 @@
 
 <p align="center">
   <b>A catalog browser and download manager for a jailbroken PS5.</b><br>
-  Version 1.2.6 · Title ID <code>PPSA99573</code>
+  Version 1.2.7 · Title ID <code>PPSA99573</code>
 </p>
 
 <p align="center">
@@ -53,8 +53,6 @@ by Title ID; a game without one gets a colour tile. More in the
 
 - **Catalog feeds** of your own: up to 4 JSON feeds with mirror addresses, so a feed survives its domain going
   down ([FEEDS.md](FEEDS.md)).
-- **Homebrew section:** open-source PS5 apps, emulators and payloads, installed and kept up to date from their
-  authors' own releases (nothing is rehosted).
 - **Downloads** straight to internal storage or a USB drive, with a live dashboard, pause, resume and retry;
   split archives are downloaded and extracted for you, and the `.rar` files can be deleted afterwards. An
   optional password per batch covers protected archives, the number of connections is yours to pick (8 to 64),
@@ -63,7 +61,7 @@ by Title ID; a game without one gets a colour tile. More in the
 - **Labels every source** (Folder Dump, .exfat Image, FFPKG, Backport) and **13.60 Ready**.
 - **Library, play time and Make Room:** what's installed and how long you played it, free up space safely, move
   games between drives, and find out why a game won't start.
-- **Phone companion:** dashboard, queue, feeds and a virtual remote, PIN-protected.
+- **Phone companion:** dashboard, queue management (pause all, resume all, move to top), feeds, and library export and import, PIN-protected.
 
 ## Content Neutrality & DMCA Notice
 
@@ -113,7 +111,7 @@ sudo ../packaging/make-exfat.sh ../stage ../IRDL.exfat IRDL
 The GitHub **build** workflow does the same. The tests need only Node.js 22+: `npm test`.
 
 To release: raise the version in `app/version.js`, run the build workflow, test the image on a console, then
-publish the draft release tagged with the same version (for example `v1.2.6`), with `IRDL.exfat` and `update.zip`
+publish the draft release tagged with the same version (for example `v1.2.7`), with `IRDL.exfat` and `update.zip`
 attached, so installed copies can update themselves.
 
 ## Credits

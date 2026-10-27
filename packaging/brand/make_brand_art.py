@@ -125,7 +125,7 @@ def pic0():
     name, tagline = ImageFont.truetype(str(EXO2), 104), ImageFont.truetype(str(EXO2), 40)
     draw = ImageDraw.Draw(image)
     text_w = round(draw.textlength("IRDL", font=name))
-    tag_w = round(draw.textlength("Open-source homebrew manager.", font=tagline))
+    tag_w = round(draw.textlength("Open-source download manager.", font=tagline))
     left = 1920 - 130 - max(text_w, tag_w)
     image = lighten(image, size, (left + text_w // 2, 430), 360, "#3a0d12", 70)
     m = mark(190, glow=True)
@@ -134,7 +134,7 @@ def pic0():
     draw = ImageDraw.Draw(image)
     draw.text((left - 4, 630), "IRDL", font=name, fill=rgb(FG))
     draw.rectangle((left, 778, left + 300, 781), fill=rgb(J_RED))
-    draw.text((left + 2, 800), "Open-source homebrew manager.", font=tagline, fill=rgb(MUTED))
+    draw.text((left + 2, 800), "Open-source download manager.", font=tagline, fill=rgb(MUTED))
     image.convert("RGB").save(APP / "sce_sys/pic0.png", optimize=True)
 
 

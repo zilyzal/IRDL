@@ -55,7 +55,6 @@ await screen('Header', 'app/ui/Header.jsx', 'Header', { children: null });
 await screen('Downloads', 'app/downloads/DownloadsScreen.jsx', 'DownloadsScreen', { onBack: noop, onOpenGame: noop });
 await screen('Library', 'app/library/LibraryScreen.jsx', 'LibraryScreen', { onBack: noop, onOpenGame: noop });
 await screen('Files', 'app/files/FilesScreen.jsx', 'FilesScreen', { onBack: noop });
-await screen('Homebrew', 'app/homebrew/HomebrewScreen.jsx', 'HomebrewScreen', { onBack: noop, onOpenApp: noop });
 await screen('Settings', 'app/ui/Settings.jsx', 'SettingsScreen', { onBack: noop });
 await screen('Search', 'app/search/index.jsx', 'SearchScreen', { onBack: noop, onOpenGame: noop });
 await screen('What\'s new', 'app/ui/WhatsNew.jsx', 'WhatsNew');

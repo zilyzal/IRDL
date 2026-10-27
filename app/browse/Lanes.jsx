@@ -1,6 +1,5 @@
 // The library's swimlanes under the hero: Featured as wide banner cards, Recently Added and Top Rated as
-// portrait rows. Each "See all" opens the full library sorted to match. Homebrew has its own section since
-// 0.5.0: in its old place a banner, with the section's most-starred apps, opens it.
+// portrait rows. Each "See all" opens the full library sorted to match. 
 // 0.5.0 Pre Release 3: "Ready for 13.60", the games with a folder dump or disk image (state/formats.js); its
 // See all opens the library with the Format filter on 13.60 Ready.
 
@@ -16,14 +15,6 @@ import { useNavActions } from '../state/nav.jsx';
 import { useStoreActions } from '../state/store.jsx';
 import { GameCard } from '../ui/GameCard.jsx';
 import { WideCard } from '../ui/WideCard.jsx';
-import { HomebrewArt } from '../homebrew/HomebrewArt.jsx';
-import { hb } from '../homebrew/palette.js';
-import { homebrew } from '../state/homebrew-store.js';
-import { FocusRing } from '../ui/FocusRing.jsx';
-import { Icon } from '../ui/Icon.jsx';
-import { colors, radius } from '../ui/colors.js';
-import { Text, View, useIsFocused } from '@ps5-react/core';
-import { useEffect, useState } from 'react';
 
   var PORTRAIT = 152;
   // Famous games with banner art, the ones Archive.org serves (fastest) first.
@@ -71,38 +62,6 @@ import { useEffect, useState } from 'react';
     const t2 = useT();
     return /* @__PURE__ */ (0, jsx)(Lane, { name: "recent", title: t2("browse.lane.recent"), list: RECENT, seeAll: useSeeAll()("newest") });
   });
-  // The banner's face: the section's name and size beside a row of its most-starred apps' art, in the Homebrew
-  // section's own color (0.5.0 Pre Release 2), the door to the other side of the store.
-  function PromoFace({ apps, count }) {
-    const t2 = useT();
-    const focused = useIsFocused();
-    return jsxs(View, { style: { height: 220, flexDirection: "row", alignItems: "center", gap: 48, borderRadius: radius.xl, overflow: "hidden", roundedClip: true, paddingHorizontal: 54, backgroundGradient: { type: "linear", to: "right", stops: [{ color: hb().deep, offset: 0 }, { color: colors.surface2, offset: 0.55 }, { color: colors.surface, offset: 1 }] } }, children: [
-      jsx(FocusRing, { round: "lg", color: hb().hi }),
-      jsxs(View, { style: { width: 640, gap: 8 }, children: [
-        jsxs(View, { style: { flexDirection: "row", alignItems: "center", gap: 14 }, children: [
-          jsx(Icon, { name: "package", size: 22, color: hb().hi }),
-          jsx(Text, { style: { fontFamily: "Exo2", fontSize: 40, fontWeight: 700, lineHeight: 50, color: colors.fg }, children: t2("homebrew.promo.title") }),
-          jsx(Icon, { name: "chevronRight", size: 18, color: focused ? hb().hi : colors.muted })
-        ] }),
-        jsx(Text, { style: { fontFamily: "Exo2", fontSize: 22, lineHeight: 32, color: colors.muted }, children: t2("homebrew.promo.detail", { count }) })
-      ] }),
-      jsx(View, { style: { flex: 1, flexDirection: "row", gap: 24, justifyContent: "flex-end" }, children: apps.map((app) => jsx(HomebrewArt, { app, size: 132, round: radius.lg }, app.id)) })
-    ] });
-  }
-  // Read a moment after the store is up, so the store's first screen never waits on the section's index.
-  var HomebrewLane = (0, memo)(function HomebrewLane2() {
-    const { push } = useNavActions();
-    const [shown, setShown] = useState(null);
-    useEffect(() => {
-      const id = setTimeout(() => {
-        const { apps } = homebrew().index;
-        setShown({ count: apps.length, apps: [...apps].filter((app) => app.icon && !app.iconFromAvatar).sort((a, b) => b.stars - a.stars).slice(0, 7) });
-      }, 2500);
-      return () => clearTimeout(id);
-    }, []);
-    if (!shown || !shown.count) return null;
-    return jsx(View, { scrollAnchor: true, focusKey: "lane:homebrew", onPress: () => push({ name: "homebrew" }, "lane:homebrew"), children: jsx(PromoFace, { apps: shown.apps, count: shown.count }) });
-  });
   var ReadyLane = (0, memo)(function ReadyLane2() {
     const t2 = useT();
     const { focusLater } = useNavActions();
@@ -120,4 +79,4 @@ import { useEffect, useState } from 'react';
     return /* @__PURE__ */ (0, jsx)(Lane, { name: "top", title: t2("browse.lane.top"), list: TOP, seeAll: useSeeAll()("rating") });
   });
 
-export { FIRST_FEATURED, FeaturedLane, HomebrewLane, ReadyLane, RecentLane, TopLane };
+export { FIRST_FEATURED, FeaturedLane, ReadyLane, RecentLane, TopLane };

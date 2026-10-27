@@ -3,6 +3,29 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.7
+
+### New
+
+- **Queue management from the phone:** Pause all, Resume all and Move to top.
+- **Export library / Import library** on the phone (Shortcuts), to save your games as a file and add them back.
+- **Resume extraction:** a download whose extraction failed offers **Extract again** instead of downloading
+  again.
+- **Disk space check:** a download refuses to start when the drive has too little room, and says how much is
+  needed.
+- The full download size is read as early as possible; while it is only an estimate it is shown with a `~`.
+- The update window is easier to read: a fixed-position progress bar, a readable changelog and a cleaner layout.
+
+### Changed
+
+- The Homebrew section is removed from the app and the phone, along with the remote tab and the green dot.
+  The version now sits next to the language button. "On the console" is now **Shortcuts**.
+- After an update the app waits a few seconds longer before it opens again.
+
+### Fixed
+
+- Opening IRDL from the phone page while the app is closed no longer shows a false error.
+
 ## 1.2.6
 
 ### New

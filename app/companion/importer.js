@@ -112,6 +112,7 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
       // are feed games; the store checks them and adds them to the running catalog.
       upload: (games) => store.saveMany(games),
       detail: (id) => store.detail(id),
+      exportLibrary: () => store.exportAll(),
       edit: (id, spec) => store.update(id, spec),
       // Exposed for tests: the same checks a save applies, without writing anything.
       check: (draft) => buildGame(draft)

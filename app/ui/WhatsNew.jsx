@@ -1,13 +1,12 @@
 // "What's new in 0.5.0" (0.5.0 Pre Release 4): shown once, a moment after the store first comes up on this
-// release (state/whats-new.js), so the Homebrew section, the 13.60 filter and the phone companion are found.
-// Two buttons: open the Homebrew section, or close it. Circle closes it too.
+// release (state/whats-new.js), so the 13.60 filter and the phone companion are found.
+// One button closes it; Circle closes it too.
 
 import '../assets/Exo2.ttf';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import { useEffect, useRef, useState } from 'react';
 import { FocusScope, Text, View, motion, useIsFocused } from '@ps5-react/core';
 import { useT } from '../i18n/index.js';
-import { useNavActions } from '../state/nav.jsx';
 import { markWhatsNewSeen, shouldShowWhatsNew } from '../state/whats-new.js';
 import { FocusRing } from './FocusRing.jsx';
 import { Icon } from './Icon.jsx';
@@ -17,7 +16,6 @@ import { colors, radius } from './colors.js';
   // After the store's reveal (index.jsx CURTAIN_MS) has finished.
   var DELAY_MS = 4500;
   var ITEMS = [
-    { icon: "package", tone: "#4ade80", title: "whatsNew.homebrew", detail: "whatsNew.homebrewDetail" },
     { icon: "check", tone: "#38bdf8", title: "whatsNew.ready", detail: "whatsNew.readyDetail" },
     { icon: "globe", tone: "#FF5A61", title: "whatsNew.phone", detail: "whatsNew.phoneDetail" },
     { icon: "search", tone: "#facc15", title: "whatsNew.search", detail: "whatsNew.searchDetail" },
@@ -33,7 +31,6 @@ import { colors, radius } from './colors.js';
   }
   function WhatsNew() {
     const t2 = useT();
-    const { push } = useNavActions();
     const [open, setOpen] = useState(false);
     const done = useRef(false);
     useEffect(() => {
@@ -62,7 +59,6 @@ import { colors, radius } from './colors.js';
         ] })
       ] }, item.title)) }),
       jsxs(View, { style: { flexDirection: "row", justifyContent: "flex-end", gap: 16 }, children: [
-        jsx(View, { focusKey: "whatsnew:homebrew", onPress: () => close(() => push({ name: "homebrew" }, "nav:homebrew")), style: (state) => [{ position: "relative", height: 60, justifyContent: "center", borderRadius: radius.md, paddingHorizontal: 28, backgroundColor: state.focused ? colors.surface3 : colors.surface2 }], children: jsx(ButtonFace, { label: t2("whatsNew.openHomebrew") }) }),
         jsx(View, { focusKey: "whatsnew:done", autoFocus: true, onPress: () => close(), style: (state) => [{ position: "relative", height: 60, justifyContent: "center", borderRadius: radius.md, paddingHorizontal: 34, backgroundColor: state.focused ? colors.accentHi : colors.accent }], children: jsx(ButtonFace, { label: t2("whatsNew.done"), primary: true }) })
       ] })
     ] }) }) });

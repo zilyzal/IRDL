@@ -188,7 +188,7 @@ import { Archives, BackHandler, Downloads, FileSystem, Http, Notifications, Plat
     if (!installer) return t("update.install.consoleOnly");
     const { ok, reason } = installer.applyNow();
     if (!ok) return reason;
-    setTimeout(() => BackHandler.exitApp(), 400);
+    setTimeout(() => BackHandler.exitApp(), 1500);
     return "";
   }
   function setAutoInstall(on) {

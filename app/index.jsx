@@ -18,10 +18,7 @@ import { BrowsePage } from './browse/BrowsePage.jsx';
 import { DownloadsScreen } from './downloads/DownloadsScreen.jsx';
 import { FilesScreen } from './files/FilesScreen.jsx';
 import { LibraryScreen } from './library/LibraryScreen.jsx';
-import { HomebrewScreen } from './homebrew/HomebrewScreen.jsx';
-import { HomebrewApp } from './homebrew/HomebrewApp.jsx';
 import { SettingsScreen } from './ui/Settings.jsx';
-import { startHomebrewRefresh } from './state/homebrew-store.js';
 import { GameScreen } from './game/index.jsx';
 import { LocaleProvider, useLocale } from './i18n/index.js';
 import { SearchScreen } from './search/index.jsx';
@@ -55,9 +52,6 @@ import { useInterfaceSounds } from './ui/sounds.js';
     // The Files section opens on the library (the games); its files are one level down ("storage").
     if (screen2.name === "files") return /* @__PURE__ */ (0, jsx)(LibraryScreen, { onBack: pop, onOpenGame: openGame });
     if (screen2.name === "storage") return /* @__PURE__ */ (0, jsx)(FilesScreen, { onBack: pop });
-    // The Homebrew section and one app's page in it (homebrew/).
-    if (screen2.name === "homebrew") return /* @__PURE__ */ (0, jsx)(HomebrewScreen, { onBack: pop, onOpenApp: (id, from) => push({ name: "homebrew-app", id }, from) });
-    if (screen2.name === "homebrew-app") return /* @__PURE__ */ (0, jsx)(HomebrewApp, { id: screen2.id, onBack: pop });
     // Settings, a section since 0.5.0 Pre Release 3.
     if (screen2.name === "settings") return /* @__PURE__ */ (0, jsx)(SettingsScreen, { onBack: pop });
     return /* @__PURE__ */ (0, jsx)(SearchScreen, { onBack: pop, onOpenGame: openCard });
@@ -100,11 +94,9 @@ import { useInterfaceSounds } from './ui/sounds.js';
     (0, useEffect)(() => watchQueue((listener) => downloadQueue().subscribe(listener)), []);
     // The update check: once at launch (after the store is up), then every 24 hours.
     (0, useEffect)(() => startUpdateChecks(), []);
-    // The Homebrew section's live index, fetched once a while after launch (state/homebrew-store.js).
-    (0, useEffect)(() => startHomebrewRefresh(), []);
     const { top } = useNavState();
     const onBrowse = top.name === "browse";
-    const key = top.name === "game" ? `game:${top.id}` : top.name === "homebrew-app" ? `homebrew-app:${top.id}` : top.name;
+    const key = top.name === "game" ? `game:${top.id}` : top.name;
     const immersive = useIsImmersive();
     const { rtl } = useLocale();
     return (

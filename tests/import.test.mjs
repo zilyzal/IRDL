@@ -460,3 +460,30 @@ test('names by Title ID: a saved game shows the name from the list, unless the p
   assert.equal(importer.lookup('ppsa03753').title, 'The Riftbreaker');
   assert.deepEqual(importer.lookup('nonsense'), { title: '', cover: '' });
 });
+
+test('api: the library exports as a feed and imports back into an empty store', () => {
+  const feed = { version: 1, games: [{ id: 'PPSA01234', title: 'Export Me', releases: [{ label: 'v1.00', url: 'https://example.com/a.exfat', filename: 'a.exfat' }] }] };
+  const first = createImporter({ http: {}, store: memoryStore() });
+  first.upload(feed.games);
+  const base = { catalog: {}, describe: () => ({}), download: () => ({}), queue: () => [], control: {}, storage: () => [], feeds: { list: () => [] }, remote: () => {}, quick: () => {}, info: () => ({}) };
+  const out = JSON.parse(createCompanionApi({ ...base, importer: first })(request('GET', '/api/import/export')).body);
+  assert.equal(out.games.length, 1);
+  const second = createImporter({ http: {}, store: memoryStore() });
+  const result = second.upload(out.games);
+  assert.equal(result.added, 1);
+  assert.equal(second.list().games[0].title, 'Export Me');
+});
+
+test('api: queue moves to the top, and pause all / resume all reach the queue', () => {
+  const calls = [];
+  const control = { top: (id) => calls.push(['top', id]), pauseAll: () => calls.push(['pauseAll']), resumeAll: () => calls.push(['resumeAll']) };
+  const jobs = [{ id: 'a', state: 'downloading', title: 'A' }, { id: 'b', state: 'queued', title: 'B' }];
+  const handle = createCompanionApi({ catalog: {}, describe: () => ({}), download: () => ({}), queue: () => jobs, control, storage: () => [], feeds: { list: () => [] }, remote: () => {}, quick: () => {}, info: () => ({}) });
+  const listed = JSON.parse(handle(request('GET', '/api/queue')).body).jobs;
+  assert.deepEqual(listed.find((j) => j.id === 'b').actions, ['top', 'pause', 'cancel']);
+  assert.equal(handle(request('POST', '/api/queue/top', { id: 'a' })).status, 409);
+  assert.equal(handle(request('POST', '/api/queue/top', { id: 'b' })).status, 200);
+  assert.equal(handle(request('POST', '/api/queue/pause-all')).status, 200);
+  assert.equal(handle(request('POST', '/api/queue/resume-all')).status, 200);
+  assert.deepEqual(calls, [['top', 'b'], ['pauseAll'], ['resumeAll']]);
+});

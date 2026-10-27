@@ -15,13 +15,12 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
     catalog: "nav:browse",
     top: "nav:top",
     new: "nav:new",
-    homebrew: "nav:homebrew",
     favorites: "nav:favorites",
     downloads: "nav:downloads",
     files: "nav:files",
     settings: "nav:settings"
   };
-  var TABS = ["search", "discover", "top", "new", "homebrew", "favorites", "downloads", "files", "settings"];
+  var TABS = ["search", "discover", "top", "new", "favorites", "downloads", "files", "settings"];
   function useShowLibrary() {
     const store = useStoreActions();
     const nav = useNavActions();
@@ -68,7 +67,7 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
     const show = useShowLibrary();
     const homeChoice = useHomeTab();
     // "storage" (Manage files) is part of the Files section, under its library.
-    const underneath = top.name === "downloads" || top.name === "files" || top.name === "homebrew" || top.name === "settings" ? top.name : top.name === "storage" ? "files" : top.name === "homebrew-app" ? "homebrew" : sectionOf(store, queryActive, homeChoice);
+    const underneath = top.name === "downloads" || top.name === "files" || top.name === "settings" ? top.name : top.name === "storage" ? "files" : sectionOf(store, queryActive, homeChoice);
     const section = top.name === "search" ? "search" : top.name === "game" ? null : underneath;
     const topName = (0, useRef)(top.name);
     topName.current = top.name;
@@ -81,8 +80,6 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
       new: () => { chooseHomeTab("new"); show(NO_FILTERS, "relevance", "catalog:filters"); },
       favorites: () => show({ ...NO_FILTERS, wishlist: true }, "relevance"),
       downloads: () => topName.current !== "downloads" && nav.push({ name: "downloads" }, "nav:downloads"),
-      // The Homebrew section, apart from the store: from one of its app pages it goes back to the section.
-      homebrew: () => topName.current === "homebrew-app" ? nav.pop() : topName.current !== "homebrew" && nav.push({ name: "homebrew" }, "nav:homebrew"),
       files: () => topName.current === "storage" ? nav.pop() : topName.current !== "files" && nav.push({ name: "files" }, "nav:files"),
       settings: () => topName.current !== "settings" && nav.push({ name: "settings" }, "nav:settings")
     }));
@@ -91,7 +88,7 @@ import { useQueryActive, useStoreActions, useStoreState } from '../state/store.j
       const at = current === "catalog" ? 1.5 : TABS.indexOf(current);
       const next = TABS[forward ? Math.floor(at) + 1 : Math.ceil(at) - 1];
       if (!next) return;
-      if (next === "downloads" || next === "files" || next === "homebrew" || next === "settings") {
+      if (next === "downloads" || next === "files" || next === "settings") {
         store.setQuery("");
         nav.home();
       }

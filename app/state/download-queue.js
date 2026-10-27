@@ -13,6 +13,7 @@ import { INCOMPLETE_PART, STALE_PARTIAL, cause } from '../downloads/errors.js';
 import { t } from '../i18n/core.js';
 import { archivePassword } from './archive-password.js';
 import { connections } from './connections.js';
+import { formatBytes } from './size.js';
 import { deleteArchiveAfterExtract, extractAfterDownload } from './auto-continue.js';
 import { diagnoseLaunch, launchOutcomes } from './launch-diagnosis.js';
 import { reportLink } from './link-health.js';
@@ -701,6 +702,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         const retried = job2.state !== "pausing" && !job2.cancelling && browser && active2.transferring && reresolve(job2);
         const switched = !retried && !expired && job2.state !== "pausing" && !job2.cancelling && failOver(job2, error2);
         if (!retried && !switched && job2.state !== "pausing") {
+          job2.extractFailed = !browser && job2.state === "extracting";
           job2.state = browser ? "awaiting-browser" : "failed";
           job2.error || (job2.error = job2.adopted && STALE_PARTIAL.test(cause(error2.message)) ? ADOPTED : error2.message);
           if (browser) {
@@ -1064,6 +1066,16 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
       return streamed;
     }
     const setDirectory = (job2) => `${job2.root}/downloads/sets/${job2.release.filename}`;
+    // A set's whole size before its last volume has started: the sizes the parts have reported or their sources
+    // declare, and the largest of them (volumes are cut to one size, only the last is smaller) for the rest. An
+    // estimate until every part has reported; it settles to the exact total as they do.
+    function setTotal(job2) {
+      const known = job2.parts.map((item, index) => item.total ?? job2.release.parts?.[index]?.sources?.[0]?.sizeBytes ?? null);
+      const largest = Math.max(0, ...known.filter(Boolean));
+      if (!largest) return { total: null, estimated: false };
+      const exact = job2.parts.every((item) => item.total != null);
+      return { total: known.reduce((sum, size) => sum + (size ?? largest), 0), estimated: !exact && known.some((size) => size == null) };
+    }
     function setNeed(job2, extracted = 0) {
       const sizes = job2.parts.map((item) => item.total ?? item.options?.expectedBytes ?? null);
       const largest = Math.max(0, ...sizes.filter(Boolean));
@@ -1110,6 +1122,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         completed: false
       })));
       let streamed = null;
+      if (!job2.total) Object.assign(job2, (({ total, estimated }) => ({ total, totalEstimated: estimated }))(setTotal(job2)));
       try {
         for (let index = 0; index < job2.parts.length; index++) {
           if (!streamed && !extractAfterDownload() && index > 0 && job2.parts[0].completed && fs.exists(job2.parts[0].destination)) streamed = active2.streamed = streamSet(job2);
@@ -1156,8 +1169,11 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
           }
           if (job2.state === "pausing") return;
           storageIdentity(job2);
-          if (!fs.exists(part.destination) && fs.diskUsage(job2.root).free < setNeed(job2, streamed?.written) + MARGIN2)
-            throw new Error("Not enough space for the remaining volumes and their extraction. Free space and resume.");
+          if (!fs.exists(part.destination)) {
+            const need = setNeed(job2, streamed?.written) + MARGIN2, free = fs.diskUsage(job2.root).free;
+            // Worded as the enqueue check is, so the error carries the numbers and the same advice.
+            if (free < need) throw new Error(`Not enough space on ${job2.root}: needs ${formatBytes(need)}, ${formatBytes(free)} free`);
+          }
           active2.transferring = true;
           const task = downloads.enqueue({
             ...part.options,
@@ -1176,7 +1192,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
             part.written = progress.written || 0;
             part.total = progress.total;
             job2.written = job2.parts.reduce((sum, item) => sum + item.written, 0);
-            job2.total = job2.parts.every((item) => item.total != null) ? job2.parts.reduce((sum, item) => sum + item.total, 0) : null;
+            Object.assign(job2, (({ total, estimated }) => ({ total, totalEstimated: estimated }))(setTotal(job2)));
             job2.received = progress.received || 0;
             job2.connections = progress.connections || 0;
             job2.bytesPerSecond = progress.bytesPerSecond || 0;
@@ -1795,10 +1811,12 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         const orphan = Boolean(partial);
         if (jobs.length === 32) jobs = jobs.filter((job2) => !COMPLETE.includes(job2.state));
         if (jobs.length === 32) throw new Error("Queue has 32 unfinished downloads. Finish or remove one first.");
-        if (release.sizeBytes) {
+        // A set's size is not on the set itself: its volumes' declared sizes add up when every one has one.
+        const declared = release.sizeBytes || (release.parts?.length && release.parts.every((part) => part.sources?.[0]?.sizeBytes) ? release.parts.reduce((sum, part) => sum + part.sources[0].sizeBytes, 0) : 0);
+        if (declared) {
           const pending2 = holding(root2);
-          const held = orphan ? Math.min(fs.stat(partial)?.size || 0, release.sizeBytes) : 0;
-          const need = stillNeeded({ release, artifact: artifact2, total: release.sizeBytes, written: held });
+          const held = orphan ? Math.min(fs.stat(partial)?.size || 0, declared) : 0;
+          const need = stillNeeded({ release, artifact: artifact2, total: declared, written: held });
           const free = fs.diskUsage(root2).free;
           const shortfall = spaceShortfall(root2, need, free, pending2);
           // `shortfall` on the error says how much more the drive needs, for Make Room to free it.
@@ -1833,6 +1851,26 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
       pause(id) {
         pauseJob(find(id));
       },
+      /** Moves a waiting task to the front of the line, so it is the next one to start. */
+      moveToTop(id) {
+        const job2 = find(id);
+        if (job2.state !== "queued") return;
+        const at = jobs.indexOf(job2);
+        if (at > 0) {
+          jobs.splice(at, 1);
+          jobs.unshift(job2);
+        }
+        save();
+        change();
+      },
+      /** Pauses every task that is running or waiting. */
+      pauseAll() {
+        for (const job2 of [...jobs]) if (job2.state === "queued" || ACTIVE.includes(job2.state) && job2.state !== "pausing" && job2.state !== "installing") pauseJob(job2);
+      },
+      /** Resumes every paused or failed task. */
+      resumeAll() {
+        for (const job2 of [...jobs]) if (job2.state === "paused" || job2.state === "failed") this.resume(job2.id);
+      },
       /** Installs a downloaded PKG again, after the console refused it or the app closed while installing. */
       install(id) {
         const job2 = find(id);
@@ -1850,6 +1888,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         const job2 = find(id);
         if (job2.state !== "paused" && job2.state !== "failed") return;
         delete job2.reresolved;
+        delete job2.extractFailed;
         job2.state = "queued";
         job2.error = "";
         change();
@@ -1872,6 +1911,7 @@ import { MARGIN2, spaceShortfall, stillNeeded } from './space.js';
         job2.bytesPerSecond = 0;
         delete job2.options;
         delete job2.inspected;
+        delete job2.extractFailed;
         job2.state = "queued";
         job2.error = "";
         change();

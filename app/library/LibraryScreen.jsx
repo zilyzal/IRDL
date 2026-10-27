@@ -30,7 +30,6 @@ import { formatBytes } from '../state/size.js';
 import { MARGIN2 } from '../state/space.js';
 import { Button2 } from '../ui/Button.jsx';
 import { ButtonGlyph, ButtonHints } from '../ui/ButtonHints.jsx';
-import { HomebrewArt, gradientOf } from '../homebrew/HomebrewArt.jsx';
 import { Cover } from '../ui/Cover.jsx';
 import { JLMark } from '../ui/JLMark.jsx';
 import { FocusRing } from '../ui/FocusRing.jsx';
@@ -80,10 +79,6 @@ import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFoc
   }
   // The game's wide art; without any, its cover at the left over the game's own tint.
   function Banner({ game }) {
-    // A Homebrew app: its own picture on its category's colors; IRDL itself, its mark.
-    const app = game.homebrewApp;
-    if (app?.self) return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", backgroundColor: colors.canvas2 }, children: /* @__PURE__ */ (0, jsx)(JLMark, { height: 64 }) });
-    if (app) return /* @__PURE__ */ (0, jsx)(View, { style: { width: TILE, height: BANNER, alignItems: "center", justifyContent: "center", backgroundGradient: gradientOf(app.category) }, children: /* @__PURE__ */ (0, jsx)(HomebrewArt, { app, size: TILE - 40, round: radius.lg }) });
     // The cover, as on the store page; with none, the colour tile with the name.
     return /* @__PURE__ */ (0, jsx)(Cover, { game, style: COVER });
   }

@@ -52,23 +52,10 @@ The **Terms of Use** appear on every launch; press <kbd>✕</kbd> on **Continue*
 few seconds longer while the app gets file access. Open **Settings** with the gear at the right of the top
 bar; <kbd>L1</kbd> <kbd>R1</kbd> switch sections and <kbd>○</kbd> goes back or closes.
 
-## Homebrew
-
-Select **Homebrew** in the top island. Pick an app and select **Install**: it downloads from its author's own
-GitHub release.
-
-- **Apps** go into `homebrew/`. ShadowMount+ adds them to the home screen once you **close IRDL**.
-- **Payloads** are kept in `/data/IRDL/payloads`. Select **Run** to send one to your ELF loader
-  (port 9021); run it again after each reboot, like any payload.
-- **Updates:** a newer release shows as **Update** on the app's tile, and the Homebrew item in the island
-  counts them. **Other files** lets you pick another file of the same release.
-- **Remove** takes a payload off the console, or takes an app out of `homebrew/` (delete its home-screen
-  icon if it stays).
-
 ## Phone companion
 
-A live dashboard, games, homebrew (install, update and run it), the download queue, your feeds and a
-virtual remote, from your phone. The console serves it, so there is nothing to install.
+A live dashboard, games, the download queue (pause or resume everything, move a game to the top), your feeds
+and your library (export and import it as a file), from your phone. The console serves it, so there is nothing to install.
 
 1. The companion is **on by default**, and so is **Keep it on when IRDL is closed**. **Settings → Phone
    companion & remote access** shows the address and the PIN.

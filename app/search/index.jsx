@@ -1,6 +1,5 @@
 // The search page. MODIFIED (0.5.0 Pre Release 3): the store's own catalog grid with the keyboard as a sheet.
-// Under the island, the query in a wide field, with Games and Homebrew tabs (one search for both sides, each in
-// its own color). Under it a row of chips: "13.60 Ready" first (the games with a folder dump or disk image,
+// Under the island, the query in a wide field, Under it a row of chips: "13.60 Ready" first (the games with a folder dump or disk image,
 // state/formats.js), then each kind of download, favorites, the filter sheet (genres, hosts, sizes ...) and
 // the sort. Then the results as the store's cover grid. The keyboard (DockKeyboard.jsx) pops up over the
 // bottom of the grid when the page opens and whenever the field or Triangle asks for it, and closes when you
@@ -20,11 +19,7 @@ import { FIRST_KEY, KeyboardSheet } from './DockKeyboard.jsx';
 import { forgetSearch, rememberSearch, useSearchHistory } from './history.js';
 import { searchGames } from './match.js';
 import { useCatalogVersion } from '../state/catalog-live.js';
-import { HomebrewGrid } from '../homebrew/HomebrewScreen.jsx';
-import { hb } from '../homebrew/palette.js';
 import { FACETS, NO_FILTERS, activeCount, filterGames, optionLabel, sortGames } from '../state/catalog.js';
-import { searchApps } from '../state/homebrew-index.js';
-import { homebrew } from '../state/homebrew-store.js';
 import { useNavActions } from '../state/nav.jsx';
 import { useStore, useStoreActions } from '../state/store.jsx';
 import { ButtonGlyph } from '../ui/ButtonHints.jsx';
@@ -50,27 +45,20 @@ import { FocusScope, ScrollView, Text, View, motion } from '@ps5-react/core';
     return typed ? settled : query;
   }
   // ---- The bar: the query field, which side is searched, and the filter sheet ---------------------------------
-  function Field({ query, side, typing, onPress }) {
+  function Field({ query, typing, onPress }) {
     const t2 = useT();
     const { rtl } = useLocale();
-    const tone = side === "homebrew" ? hb().hi : colors.accentHi;
+    const tone = colors.accentHi;
     return jsxs(View, { focusKey: "search:field", onPress, style: (state) => [{ position: "relative", flex: 1, height: 84, flexDirection: "row", alignItems: "center", gap: 18, borderRadius: radius.lg, borderWidth: 2, borderColor: typing || state.focused ? tone : colors.line, backgroundColor: colors.surface, paddingHorizontal: 30 }], children: [
       jsx(FocusRing, { round: "lg", color: tone }),
-      jsx(Icon, { name: side === "homebrew" ? "package" : "search", size: 22, color: tone }),
+      jsx(Icon, { name: "search", size: 22, color: tone }),
       query ? jsx(Text, { style: [text(30, colors.fg, { fontWeight: 600 }), { writingDirection: "ltr" }], children: query }) : null,
       typing ? jsx(motion.View, { style: [{ width: 3, height: 34, backgroundColor: tone }, rtl ? { marginRight: -12 } : { marginLeft: -12 }], initial: { opacity: 1 }, animate: { opacity: 0 }, transition: blink }) : null,
-      query ? null : jsx(Text, { style: text(28, colors.subtle, { flex: 1 }), children: side === "homebrew" ? t2("homebrew.searchPlaceholder") : t2("search.placeholder") }),
+      query ? null : jsx(Text, { style: text(28, colors.subtle, { flex: 1 }), children: t2("search.placeholder") }),
       typing ? null : jsxs(View, { style: { marginLeft: "auto", flexDirection: "row", alignItems: "center", gap: 10 }, children: [
         jsx(ButtonGlyph, { button: "triangle", size: 16 }),
         jsx(Text, { style: text(20, colors.muted), children: t2("hints.type") })
       ] })
-    ] });
-  }
-  function SideTab({ id, label, icon, tone, selected, onPress }) {
-    return jsxs(View, { focusKey: `search:side:${id}`, onPress, style: (state) => [{ position: "relative", height: 64, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: radius.pill, paddingHorizontal: 24, backgroundColor: selected ? tone : colors.surface2 }, state.focused && !selected ? { backgroundColor: colors.surface3 } : null], children: [
-      jsx(FocusRing, { round: "full", color: tone }),
-      jsx(Icon, { name: icon, size: 16, color: selected ? "#ffffff" : colors.fg }),
-      jsx(Text, { style: text(21, selected ? "#ffffff" : colors.fg, { fontWeight: 600 }), children: label })
     ] });
   }
   // ---- Chips: 13.60 Ready, each kind of download, favorites, the filter sheet ---------------------------------
@@ -150,23 +138,6 @@ import { FocusScope, ScrollView, Text, View, motion } from '@ps5-react/core';
       list.length ? jsx(GameGrid, { games: list, signature, enter: false }, signature) : jsx(Empty, { text: trimmed ? t2("search.noMatch", { query: trimmed }) : t2("search.noneFiltered") })
     ] });
   });
-  var AppResults = memo(function AppResults2({ query }) {
-    const t2 = useT();
-    const { push } = useNavActions();
-    const trimmed = query.trim();
-    const list = useMemo(() => {
-      const apps = homebrew().index.apps;
-      return trimmed ? searchApps(apps, trimmed) : [...apps].sort((a, b) => b.stars - a.stars);
-    }, [trimmed]);
-    const title = trimmed ? t2("search.resultsFor", { query: trimmed }) : t2("homebrew.rail.popular");
-    return jsxs(View, { scrollAnchor: true, style: { gap: 4 }, children: [
-      jsx(Heading, { title, count: t2("homebrew.results", { count: list.length }) }),
-      jsx(HomebrewGrid, { apps: list, columns: 7, name: "search", onOpen: (app, key) => {
-        rememberSearch(trimmed);
-        push({ name: "homebrew-app", id: app.id }, key);
-      } }, trimmed)
-    ] });
-  });
   // ---- The page --------------------------------------------------------------------------------------------------
   function SearchScreen({ onBack }) {
     const t2 = useT();
@@ -176,7 +147,6 @@ import { FocusScope, ScrollView, Text, View, motion } from '@ps5-react/core';
     const filters = store.filters ?? NO_FILTERS;
     const query = store.query ?? "";
     const settled = useSettled(query);
-    const [side, setSide] = useState("games");
     const [typing, setTyping] = useState(true);
     const [drawer, setDrawer] = useState(false);
     const onFavorite = useFavoriteAction();
@@ -222,30 +192,23 @@ import { FocusScope, ScrollView, Text, View, motion } from '@ps5-react/core';
       else return false;
       return true;
     };
-    const chooseSide = (next) => {
-      setSide(next);
-      focusLater(`search:side:${next}`);
-    };
-    const games = side === "games";
     return jsxs(View, { style: { flex: 1, backgroundColor: colors.canvas }, children: [
       jsx(FocusScope, { autoFocus: !typing, onBack: leave, onAction, inert: typing, children: jsxs(ScrollView, { style: { flex: 1, gap: 26, paddingHorizontal: 48, paddingTop: 24, paddingBottom: typing ? 300 : 72 }, children: [
         jsxs(View, { scrollAnchor: true, style: { gap: 20 }, children: [
           jsxs(View, { style: { height: 84, flexDirection: "row", alignItems: "center", gap: 16 }, children: [
-            jsx(Field, { query, side, typing, onPress: on.type }),
-            jsx(SideTab, { id: "games", label: t2("search.games"), icon: "disc", tone: colors.accent, selected: games, onPress: () => chooseSide("games") }),
-            jsx(SideTab, { id: "homebrew", label: t2("nav.homebrew"), icon: "package", tone: hb().accent, selected: !games, onPress: () => chooseSide("homebrew") })
+            jsx(Field, { query, typing, onPress: on.type })
           ] }),
-          games ? jsx(GameChips, {
+          jsx(GameChips, {
             filters: filters,
             onFormat: (value) => toggleFilter("format", value),
             onWishlist: () => setFilters({ ...filters, wishlist: !filters.wishlist }),
             onFilters: () => {
               setDrawer(true);
             }
-          }) : null,
+          }),
           query ? null : jsx(Recent, { onSearch: on.search })
         ] }),
-        jsx(FocusScope, { focusKey: "search:results", children: games ? jsx(GameResults, { query: settled, filters, wishlist: store.wishlist ?? [], sort: store.sort ?? "relevance" }) : jsx(AppResults, { query: settled }) })
+        jsx(FocusScope, { focusKey: "search:results", children: jsx(GameResults, { query: settled, filters, wishlist: store.wishlist ?? [], sort: store.sort ?? "relevance" }) })
       ] }) }),
       typing ? jsx(KeyboardSheet, { onChange: setQuery, onSubmit: on.submit, onClose: on.close }) : null,
       jsx(FilterDrawer, { open: drawer, onClose: () => {

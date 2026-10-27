@@ -3,12 +3,12 @@
   "titleId": "PPSA99573",
   "contentId": "UP9000-PPSA99573_00-IRDL000000000000",
   "name": "IRDL",
-  "version": "02.002.006",
+  "version": "02.002.007",
   "render": { "width": 1920, "height": 1080 },
   "surface": { "width": 1920, "height": 1080 },
   "refreshRate": 60,
   "textFonts": ["arabic", "chinese", "japanese"],
-  "resources": ["data/homebrew.json", "i18n/locales"],
+  "resources": ["i18n/locales"],
   "payloads": [
     {
       "source": "native/companion_daemon.c",
@@ -23,6 +23,6 @@
   ],
   "filesystemAccess": "console",
   "networking": true,
-  "userAgent": "IRDL/1.2.6 (PS5)",
+  "userAgent": "IRDL/1.2.7 (PS5)",
   "timeoutSeconds": 0
 }

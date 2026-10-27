@@ -16,17 +16,9 @@
 //   POST   /api/feeds/mirrors {"url": "…", "mirror": "…"}   adds a fallback address for a feed
 //   DELETE /api/feeds/mirrors?url=…&mirror=…                removes one
 //   POST   /api/feeds/refresh              fetches every feed again
-//   POST   /api/remote     {"action": "…"} a controller press on the console (REMOTE_ACTIONS)
 //   POST   /api/quick      {"action": "…"} a shortcut on the console (QUICK_ACTIONS)
 //   GET    /api/dashboard                  the Home tab in one answer: info, the download in progress, the
-//                                          queue's counts, the drives and the homebrew with an update
-//   GET    /api/homebrew?q=&category=&filter=&offset=&limit=   the Homebrew section: its categories, and its
-//                                          apps (searched, one category, or installed/updates), most starred first
-//   GET    /api/homebrew/app?id=           one app: everything its console page shows, and its state
-//   POST   /api/homebrew/install {"id": "…", "file": "…"?}   installs (or updates) it from its release
-//   POST   /api/homebrew/run     {"id": "…"}   sends its installed payload to the payload loader
-//   POST   /api/homebrew/cancel  {"id": "…"}   stops its install
-//   POST   /api/homebrew/update-all            installs every update out
+//                                          queue's counts and the drives
 //   POST   /api/import/fetch {"input": "…"}   reads a post address and/or pasted download links; answers {"job"}
 //   GET    /api/import/job?id=             the job: fetching | ready (with the page's title, Title ID, cover, batches) | failed
 //   POST   /api/import/save {…draft}       keeps the batches the player ticked as a game in the store
@@ -37,10 +29,8 @@
 //   DELETE /api/import/library?id=         removes one
 
   var MAX_PAGE = 60;
-  // What the phone's virtual remote may press: the d-pad, Cross, Circle, the shoulders and Options.
-  var REMOTE_ACTIONS = /* @__PURE__ */ new Set(["up", "down", "left", "right", "confirm", "back", "l1", "r1", "options"]);
-  // Shortcuts: refresh the store's feeds, or open a part of it on the console.
-  var QUICK_ACTIONS = /* @__PURE__ */ new Set(["refresh", "home", "downloads", "search", "settings", "homebrew"]);
+  // Shortcuts: open a part of the app on the console.
+  var QUICK_ACTIONS = /* @__PURE__ */ new Set(["home", "downloads", "search", "settings"]);
   // Task states, as state/download-queue.js names them.
   var ACTIVE = ["resolving", "connecting", "downloading", "verifying", "extracting", "installing", "pausing"];
   var COMPLETE = ["downloaded", "file-downloaded", "installer-required", "installed", "extraction-required", "extracted", "attention"];
@@ -85,7 +75,7 @@
   });
   // What the phone may do to a task in its state (the console's own Downloads rules).
   function actionsOf(state) {
-    if (state === "queued" || ACTIVE.includes(state) && state !== "pausing" && state !== "installing") return ["pause", "cancel"];
+    if (state === "queued" || ACTIVE.includes(state) && state !== "pausing" && state !== "installing") return state === "queued" ? ["top", "pause", "cancel"] : ["pause", "cancel"];
     if (state === "paused" || state === "failed") return ["resume", "cancel"];
     // Stopping already: it can still be discarded once it stops (the queue's cancel waits for that).
     // A part waiting on the browser can open it on the console from the phone (0.5.0 Pre Release 3).
@@ -107,6 +97,7 @@
       bytesPerSecond: item.bytesPerSecond || 0,
       connections: item.connections || 0,
       error: item.error || "",
+      extractFailed: Boolean(item.extractFailed),
       message: item.message || "",
       part: item.parts?.length > 1 ? (item.partIndex ?? 0) + 1 : null,
       parts: item.parts?.length > 1 ? item.parts.length : null,
@@ -117,29 +108,9 @@
   // `catalog`: { search(query) -> games, getGame(id) }; `describe(release)` -> { name, detail, size, group };
   // `download(game)` -> { id, source }; `queue()` -> the queue's tasks; `control`: { pause, resume, cancel,
   // clear }(id); `storage()` -> [{ root, name, free, total }]; `feeds`: { list, add, edit, remove, refresh };
-  // `remote(action)` presses a button on the console; `quick(action)` runs a shortcut; `info()` -> /api/info.
+  // `quick(action)` runs a shortcut; `info()` -> /api/info.
   // `releasesOf(game)` -> its sources as the console shows them (with what is known of their links).
-  // A homebrew app as a list shows it, with where it stands on the console.
-  function hbCard(app, status) {
-    return {
-      id: app.id,
-      name: app.name,
-      author: app.author,
-      category: app.category,
-      description: app.description,
-      stars: app.stars,
-      icon: app.icon && !app.iconFromAvatar ? app.icon : null,
-      avatar: app.iconFromAvatar ? app.icon : null,
-      logo: app.logo || null,
-      version: app.release.tag,
-      kind: app.files[0]?.kind ?? "",
-      state: hbState(status),
-      percent: status.task?.total ? Math.min(100, Math.floor(status.task.written / status.task.total * 100)) : null
-    };
-  }
-  var hbState = (status) => status.task ? status.task.phase : status.failed ? "failed" : status.update ? "update" : status.installed ? "installed" : "";
-  // `homebrew`: the section (state/homebrew.js createHomebrew), or null where there is none.
-  function createCompanionApi({ catalog, describe, download, queue, control, storage, feeds, remote, quick, info, homebrew = null, releasesOf = (game) => game.releases, logs = null, importer = null }) {
+  function createCompanionApi({ catalog, describe, download, queue, control, storage, feeds, quick, info, releasesOf = (game) => game.releases, logs = null, importer = null }) {
     const withId = (request, run) => {
       const body = bodyOf(request);
       if (!body || typeof body.id !== "string") return failure(400, "Send {\"id\": \"…\"}.");
@@ -158,26 +129,14 @@
       }
       return json(200, { jobs: queue().map(job) });
     });
-    const hbApp = (request, run) => withId(request, (id) => {
-      if (!homebrew) return failure(404, "Unknown request.");
-      const app = homebrew.app(id);
-      if (!app) return failure(404, "No such app.");
-      return run(app);
-    });
-    const hbDetail = (app) => {
-      const status = homebrew.statusOf(app.id);
-      return {
-        ...hbCard(app, status),
-        repo: app.repo,
-        about: app.about,
-        license: app.license,
-        hero: app.hero,
-        shots: app.shots,
-        release: { tag: app.release.tag, title: app.release.title, date: app.release.date, prerelease: app.release.prerelease, notes: app.release.notes, downloads: app.release.downloads },
-        files: app.files.map((file) => ({ name: file.name, kind: file.kind, size: file.size })),
-        installed: status.record ? { version: status.record.tag, file: status.record.file, runnable: Boolean(status.record.run) } : status.outside ? { version: null, file: null, runnable: false } : null,
-        error: status.failed || ""
-      };
+    const bulk = (name) => {
+      if (!control?.[name]) return failure(404, "Unknown request.");
+      try {
+        Promise.resolve(control[name]()).catch((error) => console.log(`companion: ${name}: ${error?.message}`));
+      } catch (error) {
+        return failure(409, error.message);
+      }
+      return json(200, { jobs: queue().map(job) });
     };
     const routes = {
       "GET /api/info": () => json(200, info()),
@@ -190,74 +149,13 @@
       "GET /api/dashboard": () => {
         const jobs = queue().map(job);
         const active = jobs.find((item) => ACTIVE.includes(item.state) && item.state !== "pausing") ?? null;
-        const updates = homebrew ? homebrew.updates().map((app) => hbCard(app, homebrew.statusOf(app.id))) : [];
         return json(200, {
           info: info(),
           active,
           counts: { active: jobs.filter((item) => item.state === "queued" || ACTIVE.includes(item.state)).length, done: jobs.filter((item) => COMPLETE.includes(item.state)).length, failed: jobs.filter((item) => item.state === "failed").length, total: jobs.length },
           speed: jobs.reduce((sum, item) => sum + (item.bytesPerSecond || 0), 0),
-          drives: storage ? storage() : [],
-          homebrew: homebrew ? { apps: homebrew.index.apps.length, installed: homebrew.installedApps().length, updates } : null
+          drives: storage ? storage() : []
         });
-      },
-      "GET /api/homebrew": (request) => {
-        if (!homebrew) return failure(404, "Unknown request.");
-        const { q = "", category = "", filter = "", offset, limit } = params(request.query);
-        const index = homebrew.index;
-        let apps = filter === "installed" ? homebrew.installedApps() : filter === "updates" ? homebrew.updates() : index.apps;
-        if (category) apps = apps.filter((app) => app.category === category);
-        const words = q.slice(0, 80).toLowerCase().split(/\s+/).filter(Boolean);
-        if (words.length) apps = apps.filter((app) => words.every((word) => app.search.includes(word)));
-        apps = [...apps].sort((a, b) => b.stars - a.stars);
-        const start = integer(offset, 0, 0, apps.length);
-        const size = integer(limit, 40, 1, MAX_PAGE);
-        return json(200, {
-          total: apps.length,
-          offset: start,
-          categories: index.categories.map((c) => ({ id: c.id, name: c.name, count: index.apps.filter((app) => app.category === c.id).length })),
-          counts: { all: index.apps.length, installed: homebrew.installedApps().length, updates: homebrew.updates().length },
-          apps: apps.slice(start, start + size).map((app) => hbCard(app, homebrew.statusOf(app.id)))
-        });
-      },
-      "GET /api/homebrew/app": (request) => {
-        if (!homebrew) return failure(404, "Unknown request.");
-        const app = homebrew.app(params(request.query).id || "");
-        return app ? json(200, hbDetail(app)) : failure(404, "No such app.");
-      },
-      "POST /api/homebrew/install": (request) => hbApp(request, (app) => {
-        const body = bodyOf(request) || {};
-        try {
-          homebrew.install(app.id, typeof body.file === "string" ? body.file : void 0);
-        } catch (error) {
-          return failure(409, error.message);
-        }
-        return json(200, hbDetail(app));
-      }),
-      "POST /api/homebrew/run": (request) => hbApp(request, (app) => {
-        try {
-          const result = homebrew.run(app.id);
-          return result.ok ? json(200, { ran: true, name: app.name }) : failure(409, result.error || "The payload loader did not take it.");
-        } catch (error) {
-          return failure(409, error.message);
-        }
-      }),
-      "POST /api/homebrew/cancel": (request) => hbApp(request, (app) => {
-        homebrew.cancel(app.id);
-        return json(200, hbDetail(app));
-      }),
-      "POST /api/homebrew/update-all": () => {
-        if (!homebrew) return failure(404, "Unknown request.");
-        const started = [];
-        for (const app of homebrew.updates()) {
-          try {
-            const record = homebrew.statusOf(app.id).record;
-            homebrew.install(app.id, record?.file && app.files.some((file) => file.name === record.file) ? record.file : void 0);
-            started.push(app.name);
-          } catch (error) {
-            console.log(`companion: update ${app.id}: ${error.message}`);
-          }
-        }
-        return json(200, { started });
       },
       // IRDL: the Import tab (companion/importer.js).
       "POST /api/import/fetch": (request) => {
@@ -291,6 +189,7 @@
           return failure(409, error.message);
         }
       },
+      "GET /api/import/export": () => importer ? json(200, importer.exportLibrary()) : failure(404, "Unknown request."),
       "GET /api/import/lookup": (request) => importer ? json(200, importer.lookup(params(request.query).id || "")) : failure(404, "Unknown request."),
       "GET /api/import/game": (request) => {
         if (!importer) return failure(404, "Unknown request.");
@@ -346,6 +245,9 @@
       "POST /api/queue/resume": queueAction("resume"),
       "POST /api/queue/cancel": queueAction("cancel"),
       "POST /api/queue/clear": queueAction("clear"),
+      "POST /api/queue/top": queueAction("top"),
+      "POST /api/queue/pause-all": () => bulk("pauseAll"),
+      "POST /api/queue/resume-all": () => bulk("resumeAll"),
       "POST /api/queue/browser": queueAction("browser"),
       "GET /api/storage": () => json(200, { drives: storage ? storage() : [] }),
       "GET /api/feeds": () => json(200, { feeds: feeds.list() }),
@@ -400,13 +302,6 @@
         void feeds.refresh();
         return json(200, { feeds: feeds.list() });
       },
-      "POST /api/remote": (request) => {
-        const body = bodyOf(request);
-        if (!body || !REMOTE_ACTIONS.has(body.action)) return failure(400, `Send {"action": one of ${[...REMOTE_ACTIONS].join(", ")}}.`);
-        if (!remote) return failure(404, "Unknown request.");
-        remote(body.action);
-        return json(200, { ok: true });
-      },
       "POST /api/quick": (request) => {
         const body = bodyOf(request);
         if (!body || !QUICK_ACTIONS.has(body.action)) return failure(400, `Send {"action": one of ${[...QUICK_ACTIONS].join(", ")}}.`);
@@ -428,4 +323,4 @@
     };
   }
 
-export { QUICK_ACTIONS, REMOTE_ACTIONS, createCompanionApi };
+export { QUICK_ACTIONS, createCompanionApi };

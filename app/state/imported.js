@@ -256,9 +256,11 @@ import { coverFor, titleFor } from './covers.js';
       if (!live) restartNeeded = true;
       return { entry: entries().find((entry) => entry.id === id), live, restart: restartNeeded };
     }
-    return { entries, importedIndex, loadImportedGames, detail, needsRestart: () => restartNeeded, onRemoved, onSaved, remove, save, saveMany, update };
+    // Every saved game in the catalog feed format, so the same file imports back (here or on another console).
+    const exportAll = () => ({ version: 1, name: "IRDL library", games: readDocument().games });
+    return { entries, importedIndex, loadImportedGames, detail, exportAll, needsRestart: () => restartNeeded, onRemoved, onSaved, remove, save, saveMany, update };
   }
   var store = createImportedStore();
-  var { detail, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update } = store;
+  var { detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update } = store;
 
-export { createImportedStore, detail, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update };
+export { createImportedStore, detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update };

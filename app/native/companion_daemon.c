@@ -6,14 +6,12 @@
 // (127.0.0.1:9021) when Settings has "Keep the phone page on when IRDL is closed" switched on, stays
 // behind and answers on the same port whenever the app is not running:
 //   - the same 6-digit PIN signs a phone in (wrong PINs are slowed down and lock it after 20 tries);
-//   - the phone sees that the app is closed, the download queue as the app last saved it, and the
-//     homebrew payloads IRDL installed;
-//   - "Open IRDL" launches the app on the console (the phone then switches to the app's own page);
-//   - "Run" sends an installed payload to the payload loader.
+//   - the phone sees that the app is closed and the download queue as the app last saved it;
+//   - "Open IRDL" launches the app on the console (the phone then switches to the app's own page).
 // Whenever the app runs, it lets the port go (checked twice a second), so the app's own server gets it.
 //
 // Request lines from the app: "CMP2", the title ID, the port, the PIN ("-" to switch it off), the payload
-// folder (IRDL keeps index.json there), the queue file, and the app's session cookie ("-" for none).
+// folder (the helper's answer, helper.txt, goes there), the queue file, and the app's session cookie ("-" for none).
 // Answers "ready" when it starts, "updated" when one was already running and took the new settings (a new
 // PIN, say), or "stopped". (0.5.0 Pre Release 1 sent "CMP1", without the session line; one of those still
 // running is told to stop, and this one takes its place.)
@@ -65,10 +63,6 @@ static int control_port(void) {
   const char* value = getenv("COMPANION_TEST_CONTROL");
   return value && *value ? atoi(value) : CONTROL_PORT;
 }
-static int loader_port(void) {
-  const char* value = getenv("COMPANION_TEST_LOADER");
-  return value && *value ? atoi(value) : 9021;
-}
 #else
 typedef struct {
   uint32_t size, user_id, app_opt;
@@ -89,7 +83,6 @@ static int launch_title(const char* title) {
   return sceLncUtilLaunchApp(title, NULL, &param) < 0 ? -1 : 0;
 }
 static int control_port(void) { return CONTROL_PORT; }
-static int loader_port(void) { return 9021; }
 #endif
 
 typedef struct {
@@ -128,7 +121,7 @@ static const char PAGE[] =
   "<div id=\"home\" hidden><div class=\"panel\"><div class=\"row\"><i class=\"dot\"></i><b class=\"grow\">IRDL is closed</b></div>"
   "<p class=\"muted\" style=\"margin:8px 0 14px\">Open it on the console from here. This page then switches to the full companion.</p>"
   "<button class=\"btn primary wide\" id=\"open\">Open IRDL</button><div class=\"err\" id=\"openErr\"></div></div>"
-  "<div class=\"label\">Download queue</div><div id=\"queue\"></div><div class=\"label\">Payloads</div><div id=\"payloads\"></div>"
+  "<div class=\"label\">Download queue</div><div id=\"queue\"></div>"
   "<p class=\"subtle\">Running while IRDL is closed. Turn this off in Settings &rarr; Phone companion.</p></div>"
   "</main><script>(function(){\"use strict\";var $=function(i){return document.getElementById(i)};"
   "function el(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n}"
@@ -137,17 +130,15 @@ static const char PAGE[] =
   "function login(msg){$(\"home\").hidden=true;$(\"login\").hidden=false;$(\"loginErr\").textContent=msg||\"\"}"
   "$(\"login\").onsubmit=function(e){e.preventDefault();var pin=$(\"pin\").value.replace(/[^0-9]/g,\"\");if(pin.length!==6)return;"
   "fetch(\"/auth\",{method:\"POST\",headers:{\"X-JBH\":\"1\",\"Content-Type\":\"application/json\"},body:JSON.stringify({pin:pin}),credentials:\"same-origin\"}).then(function(r){return r.json().catch(function(){return{}}).then(function(d){if(r.ok){$(\"pin\").value=\"\";start()}else{$(\"pin\").value=\"\";$(\"loginErr\").textContent=d.error||\"Wrong PIN.\"}})}).catch(function(){$(\"loginErr\").textContent=\"Couldn't reach the console.\"})};"
-  "function render(q,p){var box=$(\"queue\");box.textContent=\"\";var jobs=(q&&q.jobs)||[];if(!jobs.length)box.appendChild(el(\"p\",\"muted\",\"Nothing in the queue.\"));"
+  "function render(q){var box=$(\"queue\");box.textContent=\"\";var jobs=(q&&q.jobs)||[];if(!jobs.length)box.appendChild(el(\"p\",\"muted\",\"Nothing in the queue.\"));"
   "jobs.forEach(function(j){var d=el(\"div\",\"panel\"),r=el(\"div\",\"row\");r.appendChild(el(\"div\",\"grow ell\",j.title||j.id));r.appendChild(el(\"span\",\"subtle\",String(j.state||\"\").replace(/-/g,\" \")));d.appendChild(r);"
   "if(j.total){var b=el(\"div\",\"bar\"),i=el(\"i\");i.style.width=Math.min(100,Math.round((j.written||0)/j.total*100))+\"%\";b.appendChild(i);d.appendChild(b);d.appendChild(el(\"div\",\"subtle\",bytes(j.written||0)+\" of \"+bytes(j.total)))}box.appendChild(d)});"
-  "var list=$(\"payloads\");list.textContent=\"\";var apps=(p&&p.apps)||[];if(!apps.length)list.appendChild(el(\"p\",\"muted\",\"No payloads installed from IRDL yet.\"));"
-  "apps.forEach(function(a){var d=el(\"div\",\"panel row\"),t=el(\"div\",\"grow\");t.appendChild(el(\"div\",\"ell\",a.name));t.appendChild(el(\"div\",\"subtle ell\",(a.version||\"\")+\" \\u00B7 \"+(a.author||\"\")));d.appendChild(t);"
-  "var b=el(\"button\",\"btn primary\",\"Run\");b.onclick=function(){b.disabled=true;api(\"POST\",\"/api/run\",{path:a.run}).then(function(){b.textContent=\"Sent\"}).catch(function(e){b.textContent=e.message}).then(function(){setTimeout(function(){b.disabled=false;b.textContent=\"Run\"},2500)})};d.appendChild(b);list.appendChild(d)})}"
+  "}"
   "function status(){return fetch(\"/api/status\",{headers:{\"X-JBH\":\"1\"},cache:\"no-store\",credentials:\"same-origin\"}).then(function(r){return r.json().catch(function(){return{}}).then(function(d){if(d.app!==\"closed\"){location.reload();throw new Error(\"The app is back.\")}return r.status})})}"
-  "function refresh(){return status().then(function(s){if(s===401)return login(\"\");return Promise.all([api(\"GET\",\"/api/queue\"),api(\"GET\",\"/api/payloads\")]).then(function(r){render(r[0],r[1])})})}"
+  "function refresh(){return status().then(function(s){if(s===401)return login(\"\");return api(\"GET\",\"/api/queue\").then(function(q){render(q)})})}"
   "$(\"open\").onclick=function(){var b=$(\"open\");b.disabled=true;b.textContent=\"Opening on the console\\u2026\";api(\"POST\",\"/api/launch\").then(function(){var n=0,t=setInterval(function(){n++;"
   "fetch(\"/api/status\",{headers:{\"X-JBH\":\"1\"},cache:\"no-store\",credentials:\"same-origin\"}).then(function(r){return r.json().catch(function(){return{}})}).then(function(d){if(d.app!==\"closed\"){clearInterval(t);location.reload()}}).catch(function(){});"
-  "if(n>40){clearInterval(t);location.reload()}},1500)}).catch(function(e){$(\"openErr\").textContent=e.message;b.disabled=false;b.textContent=\"Open IRDL\"})};"
+  "if(n>40){clearInterval(t);location.reload()}},1500)}).catch(function(e){var k=0,w=setInterval(function(){k++;fetch(\"/api/status\",{headers:{\"X-JBH\":\"1\"},cache:\"no-store\",credentials:\"same-origin\"}).then(function(r){return r.json().catch(function(){return{}})}).then(function(d){if(d.app!==\"closed\"){clearInterval(w);location.reload()}}).catch(function(){location.reload()});if(k>=5){clearInterval(w);$(\"openErr\").textContent=e.message;b.disabled=false;b.textContent=\"Open IRDL\"}},2000)})};"
   "function start(){status().then(function(s){if(s===401)return login(\"\");$(\"login\").hidden=true;$(\"home\").hidden=false;return refresh()}).catch(function(){})}"
   "setInterval(function(){if(document.hidden)return;if(!$(\"home\").hidden)refresh().catch(function(){});else status().catch(function(){})},4000);start()})();</script></body></html>";
 
@@ -429,18 +420,6 @@ static int json_string(const char* body, const char* name, char* out, size_t cap
   return *at == '"';
 }
 
-// Sends the file at `path` to the payload loader and closes the connection: the loader runs it.
-static int run_payload(const char* path) {
-  size_t size = 0;
-  char* data = read_file(path, &size);
-  if (!data) return -1;
-  int fd = connect_local(loader_port());
-  int ok = fd >= 0 && send_all(fd, data, size);
-  free(data);
-  if (fd >= 0) close(fd);
-  return ok ? 0 : -2;
-}
-
 static void serve(int fd) {
   Request request;
   memset(&request, 0, sizeof request);
@@ -493,31 +472,21 @@ static void serve(int fd) {
     char body[96];
     snprintf(body, sizeof body, "{\"app\":\"closed\",\"title\":\"%s\"}", g_config.title);
     json(fd, 200, body);
-  } else if (!strcmp(request.method, "GET") && (!strcmp(request.path, "/api/queue") || !strcmp(request.path, "/api/payloads"))) {
-    char path[600];
-    if (!strcmp(request.path, "/api/queue")) snprintf(path, sizeof path, "%s", g_config.queue);
-    else snprintf(path, sizeof path, "%s/index.json", g_config.payloads);
+  } else if (!strcmp(request.method, "GET") && !strcmp(request.path, "/api/queue")) {
     size_t size = 0;
-    char* data = read_file(path, &size);
+    char* data = read_file(g_config.queue, &size);
     if (data) respond(fd, 200, "application/json", data, size, NULL);
-    else json(fd, 200, !strcmp(request.path, "/api/queue") ? "{\"jobs\":[]}" : "{\"apps\":[]}");
+    else json(fd, 200, "{\"jobs\":[]}");
     free(data);
   } else if (!strcmp(request.method, "POST") && !strcmp(request.path, "/api/launch")) {
-    const int launched = launch_title(g_config.title) == 0;
-    json(fd, launched ? 200 : 500, launched ? "{\"ok\":true}" : "{\"error\":\"The console did not open IRDL.\"}");
-  } else if (!strcmp(request.method, "POST") && !strcmp(request.path, "/api/run")) {
-    char path[512];
-    size_t root = strlen(g_config.payloads);
-    size_t length = 0;
-    // Only an installed payload: a file under the payload folder, named .elf or .bin.
-    if (!json_string(request.body, "path", path, sizeof path) || !valid_path(path) || strncmp(path, g_config.payloads, root) || path[root] != '/' ||
-        (length = strlen(path)) < 5 || (strcmp(path + length - 4, ".elf") && strcmp(path + length - 4, ".bin"))) {
-      json(fd, 400, "{\"error\":\"Not an installed payload.\"}");
-      return;
+    int launched = launch_title(g_config.title) == 0;
+    // The console can report a failure for an app that is starting anyway: before calling it one, give the
+    // title a few seconds to show up as running.
+    for (int tries = 0; !launched && tries < 16; tries++) {
+      usleep(500000);
+      launched = title_running(g_config.title);
     }
-    int result = run_payload(path);
-    if (result == 0) json(fd, 200, "{\"ok\":true}");
-    else json(fd, 500, result == -1 ? "{\"error\":\"The payload's file is gone.\"}" : "{\"error\":\"The payload loader on port 9021 did not answer.\"}");
+    json(fd, launched ? 200 : 500, launched ? "{\"ok\":true}" : "{\"error\":\"The console did not open IRDL.\"}");
   } else {
     // Anything else is a request of the app's own page, which this is not.
     json(fd, 404, "{\"error\":\"IRDL is closed.\",\"app\":\"closed\"}");
