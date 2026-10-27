@@ -5,7 +5,7 @@
 
 <p align="center">
   <b>A catalog browser and download manager for a jailbroken PS5.</b><br>
-  Version 1.2.7 · Title ID <code>PPSA99573</code>
+  Version 1.2.8 · Title ID <code>PPSA99573</code>
 </p>
 
 <p align="center">
@@ -111,7 +111,7 @@ sudo ../packaging/make-exfat.sh ../stage ../IRDL.exfat IRDL
 The GitHub **build** workflow does the same. The tests need only Node.js 22+: `npm test`.
 
 To release: raise the version in `app/version.js`, run the build workflow, test the image on a console, then
-publish the draft release tagged with the same version (for example `v1.2.7`), with `IRDL.exfat` and `update.zip`
+publish the draft release tagged with the same version (for example `v1.2.8`), with `IRDL.exfat` and `update.zip`
 attached, so installed copies can update themselves.
 
 ## Credits

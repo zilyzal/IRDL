@@ -3,6 +3,12 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files and their SHA-256 checksums.
 
+## 1.2.8
+
+### Changed
+
+- The `IRDL.exfat` image is about 95 MB smaller: it no longer carries 128 MiB of unused free space.
+
 ## 1.2.7
 
 ### New

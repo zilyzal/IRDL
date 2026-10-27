@@ -28,7 +28,7 @@ command -v mkfs.exfat >/dev/null || { echo "error: mkfs.exfat not found, install
 # catalog JSON needs 285 MB of 64 KiB clusters. Asking `du` for a block size
 # does not emulate that (it scales the host filesystem's own usage), hence the
 # count here. The slack covers the FAT, the upcase table and the directories.
-slack=$(( 128 * 1024 * 1024 ))
+slack=$(( 32 * 1024 * 1024 ))
 case "$cluster" in
     32K|32k) cluster_bytes=32768 ;;
     128K|128k) cluster_bytes=131072 ;;
