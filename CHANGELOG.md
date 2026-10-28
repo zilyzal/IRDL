@@ -15,7 +15,7 @@ files.
 
 ### New
 
-- **IRDL Companion for Android** (`IRDL-Companion.apk`, under Downloads): a native app that looks like the phone page.
+- **IRDL Companion for Android** (`IRDL-Companion.apk`, a file of the release): a native app that looks like the phone page.
   It finds the console on the Wi-Fi, asks for the PIN once and stays connected, and has Home, Games, Queue, Sites
   and Settings. It notifies you when a download finishes, fails or needs you, when the console goes away or comes
   back, and when a site fetch is done.
@@ -28,8 +28,8 @@ files.
 ### Changed
 
 - The game page is a popup card over the store instead of a full page.
-- The release notes list the download links (the console image, then the Android app) and no longer carry a
-  checksum table. The app still checks downloads against GitHub's own SHA-256.
+- The release notes no longer carry a checksum table. The app still checks downloads against GitHub's own SHA-256.
+  The release lists `IRDL.exfat`, `update.zip`, then the Android app.
 
 ### Fixed
 

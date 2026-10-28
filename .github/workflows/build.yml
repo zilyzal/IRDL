@@ -186,24 +186,24 @@ jobs:
           test -n "$version" || { echo "no VERSION in app/version.js" >&2; exit 1; }
           tag="v$version"
           # The two files an installed copy checks (IRDL.exfat and update.zip), and the Android app, which it ignores.
+          # Uploaded one after the other, so the release lists them in this order: the image, the update, the Android app.
           assets="files/IRDL.exfat files/update.zip"
-          apk=""
-          if [ -f files/IRDL-Companion.apk ]; then assets="$assets files/IRDL-Companion.apk"; apk="--apk"; else echo "::warning::no Android APK in this build"; fi
+          if [ -f files/IRDL-Companion.apk ]; then assets="$assets files/IRDL-Companion.apk"; else echo "::warning::no Android APK in this build"; fi
           # The notes are this version's section of CHANGELOG.md (tools/release-notes.mjs); a version with none says
           # it is a test build.
-          notes() { node tools/release-notes.mjs "$version" $apk 2>/dev/null || echo "Test build of $GITHUB_SHA."; }
+          notes() { node tools/release-notes.mjs "$version" 2>/dev/null || echo "Test build of $GITHUB_SHA."; }
           draft=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
             --jq ".[] | select(.tag_name == \"$tag\") | .draft")
           case "$draft" in
             "")
-              gh release create "$tag" $assets --draft --target "$GITHUB_SHA" \
+              gh release create "$tag" --draft --target "$GITHUB_SHA" \
                 --title "IRDL $tag" --notes "$(notes)" ;;
             true)
-              gh release edit "$tag" --target "$GITHUB_SHA" --notes "$(notes)"
-              gh release upload "$tag" $assets --clobber ;;
+              gh release edit "$tag" --target "$GITHUB_SHA" --notes "$(notes)" ;;
             *)
               echo "$tag is already published: raise the version in app/version.js" >&2
               exit 1 ;;
           esac
+          for asset in $assets; do gh release upload "$tag" "$asset" --clobber; done
           gh release view "$tag" --json isDraft,tagName,assets \
             --jq '"\(.tagName) draft=\(.isDraft) " + ([.assets[] | "\(.name) \(.size)"] | join(", "))'
