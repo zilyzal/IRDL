@@ -134,7 +134,7 @@ jobs:
           gradle --no-daemon --console=plain assembleRelease 2>&1 | tee "$RUNNER_TEMP/android.log" || {
             code=$?
             # Annotations stay readable through the API when the raw log is not.
-            msg=$(grep -E '^e: |What went wrong|^> |error:|Could not' "$RUNNER_TEMP/android.log" | sed 's#file://[^ ]*/android/##' | head -n 25 | cut -c1-300 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            msg=$(grep -E -A3 '^e: |What went wrong|error:|Could not' "$RUNNER_TEMP/android.log" | sed 's#file://[^ ]*/android/##' | head -n 25 | cut -c1-300 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=android build failed::$msg"
             exit $code
           }
