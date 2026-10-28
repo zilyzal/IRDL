@@ -527,6 +527,28 @@ test('import: a .rar link stays a rar when .exfat is mentioned around it', () =>
   assert.equal(formats['Some.Game.PPSA01234.exfat'], 'exfat');
 });
 
+test('import: four .rar volumes with .exfat in their names are one RAR batch, whatever joins the words', () => {
+  for (const name of [(n) => `Game.PPSA01234.exfat_part${n}.rar`, (n) => `Game.exfat-part${n}.rar`, (n) => `Game.exfat.part${n}.rar`]) {
+    for (const asText of [false, true]) {
+      const html = '<h2>Game PPSA01234</h2>' + [1, 2, 3, 4].map((n) => asText ? `<p><a href="https://1fichier.com/?k${n}">${name(n)}</a></p>` : `<p><a href="https://host.test/f/${name(n)}">Download</a></p>`).join('');
+      const found = parsePage(html, 'https://site.test/p/');
+      assert.equal(found.batches.length, 1, `${name(1)}: one batch`);
+      const game = buildGame({ id: 'PPSA01234', title: 'Game', batches: found.batches });
+      assert.deepEqual(game.releases.map((release) => release.format), ['rar', 'rar', 'rar', 'rar'], name(1));
+      assert.equal(releaseSets(game.releases.map((release, at) => ({ ...release, id: `r${at}` }))).length, 1, `${name(1)}: one set of four volumes`);
+    }
+  }
+});
+
+test('import: a game saved with ".exfat" read out of a .rar name loads as one RAR set', () => {
+  const releases = [1, 2, 3, 4].map((n) => ({ label: `Batch 1 (${n})`, url: `https://host.test/files/Old.Save.exfat.part${n}.rar`, provider: 'host', format: 'exfat', filename: 'Old.Save.exfat', record: 'import-batch-1-x' }));
+  const store = createImportedStore({ load: () => ({ games: [{ id: 'PPSA01234', title: 'Old Save', releases }] }), persist: () => {} });
+  const [{ releases: loaded }] = store.loadImportedGames();
+  assert.deepEqual(loaded.map((release) => release.format), ['rar', 'rar', 'rar', 'rar']);
+  assert.deepEqual(loaded.map((release) => release.label), ['Batch 1 part 1', 'Batch 1 part 2', 'Batch 1 part 3', 'Batch 1 part 4']);
+  assert.equal(releaseSets(loaded.map((release, at) => ({ ...release, id: `r${at}` }))).length, 1, 'one set of four volumes');
+});
+
 test('import: .7z, .zip and .iso links are found and kept as single files', () => {
   const links = [
     'https://pixeldrain.com/u/aaaa1111  Some.Game.PPSA01234.v1.00.7z',

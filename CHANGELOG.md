@@ -3,6 +3,14 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files.
 
+## 1.2.11
+
+### Fixed
+
+- Volumes named like `Game.exfat_part1.rar` or `Game.exfat-part1.rar` (any `.exfat` before the `.rar`) are RAR
+  volumes of one batch again, not four `.exfat` sources. The type comes from the last extension in the name.
+- Games saved earlier with that mistake are read as RAR sets again when the app starts.
+
 ## 1.2.10
 
 ### New

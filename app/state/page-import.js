@@ -356,6 +356,17 @@ import { webURL } from './download-sources.js';
     return found;
   }
 
+  // The file name in a piece of text: the first word that has a file extension, cut after its LAST extension, so
+  // "Game.exfat_part1.rar" and "Game.exfat.part1.rar" are RAR volumes, not an .exfat image.
+  var EXTENSION_AT = /\.(?:part0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc|7z|zip|iso)(?![a-z0-9])/gi;
+  function fileNameIn(text) {
+    for (const word of String(text || "").split(/[\s\/\\"'<>|?*:]+/)) {
+      let end = -1;
+      for (const match of word.matchAll(EXTENSION_AT)) if (match.index > 0) end = match.index + match[0].length;
+      if (end > 0) return word.slice(0, end);
+    }
+    return "";
+  }
   function fileNameOf(link) {
     // The address's own file name is what the host will serve, so it wins over a name mentioned in the text around it
     // ("Game.exfat" in a line above a "Game.part1.rar" link must not turn the rar into an exfat).
@@ -367,19 +378,19 @@ import { webURL } from './download-sources.js';
           name = decodeURIComponent(piece);
         } catch {
         }
-        const match = FILE_NAME.exec(name);
-        if (match) return match[1];
+        const found = fileNameIn(name);
+        if (found) return found;
       }
     } catch {
     }
     for (const source of [link.text, link.title]) {
-      const match = FILE_NAME.exec(source || "");
-      if (match) return match[1];
+      const found = fileNameIn(source);
+      if (found) return found;
     }
     // "url  Game.part1.rar": a file name typed next to the link counts when the line holds that one link.
     if (link.lineLinks === 1) {
-      const match = FILE_NAME.exec(link.lineText || "");
-      if (match) return match[1];
+      const found = fileNameIn(link.lineText);
+      if (found) return found;
     }
     return "";
   }

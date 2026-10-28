@@ -45,11 +45,26 @@ import { coverFor, titleFor } from './covers.js';
       }
       return false;
     }
+    // Games saved by an earlier version took ".exfat" in "Game.exfat.part1.rar" for the file's type and listed each volume as an
+    // image of its own. A link whose file name ends in .rar is a RAR volume: it is read that way again, so the volumes form one set.
+    function mendRelease(release) {
+      if (!release || typeof release.url !== "string" || release.format === "rar") return release;
+      let name = release.url.split(/[?#]/)[0].split("/").pop() || "";
+      try {
+        name = decodeURIComponent(name);
+      } catch {
+      }
+      if (!/\.(?:part0*\d+\.rar|rar|r\d{2})$/i.test(name) || name.length > 150) return release;
+      return { ...release, format: "rar", filename: name, label: String(release.label || "").replace(/\s*\((\d+)\)\s*$/, " part $1") };
+    }
     const readDocument = () => {
       const saved = load(FILE, "imported games");
       const games = Array.isArray(saved?.games) ? saved.games : [];
       // The game's name goes by its Title ID (JobeesLair's list), not the name found in a link, unless the player renamed it.
-      return { version: 1, name: "Imported games", games: games.map((game) => !game?.titleEdited && titleFor(game?.id) ? { ...game, title: titleFor(game.id) } : game) };
+      return { version: 1, name: "Imported games", games: games.map((game) => {
+        const named = !game?.titleEdited && titleFor(game?.id) ? { ...game, title: titleFor(game.id) } : game;
+        return Array.isArray(named?.releases) ? { ...named, releases: named.releases.map(mendRelease) } : named;
+      }) };
     };
     const write = (games) => persist(FILE, "imported games", { version: 1, name: "Imported games", games });
 
