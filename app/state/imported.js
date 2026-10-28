@@ -271,104 +271,11 @@ import { coverFor, titleFor } from './covers.js';
       if (!live) restartNeeded = true;
       return { entry: entries().find((entry) => entry.id === id), live, restart: restartNeeded };
     }
-    // ---- a site's whole catalog (the Android app's crawler) -----------------------------------------------------
-    // `drafts`: games as the phone's Import tab keeps them (page-import.js buildGame): { id, title, cover?, sourceUrl,
-    // batches }. Every game is merged like a single save (its new batches first, the same batches replacing
-    // themselves, the older ones kept as other sources), and the file is written once. A game that cannot be made
-    // is skipped. Returns { added, updated, skipped, total, live }.
-    function saveDrafts(drafts) {
-      if (!Array.isArray(drafts) || !drafts.length) throw new Error("Send a list of games.");
-      const games = readDocument().games;
-      let added = 0, updated = 0, skipped = 0;
-      const touched = [];
-      for (const draft of drafts) {
-        let raw;
-        try {
-          raw = buildGame(draft);
-          if (!parseFeed({ version: 1, name: "check", games: [raw] }, KEY).games.length) throw new Error("unusable");
-        } catch {
-          skipped++;
-          continue;
-        }
-        const at = games.findIndex((game) => game.id === raw.id);
-        if (at < 0) {
-          games.push(raw);
-          added++;
-        } else {
-          const fresh = new Set(raw.releases.map((release) => release.record));
-          const kept = (games[at].releases || []).filter((release) => !fresh.has(release.record));
-          games[at] = { ...games[at], ...raw, title: games[at].titleEdited ? games[at].title : raw.title, releases: [...raw.releases, ...kept].slice(0, MAX_RELEASES), art: Object.keys(raw.art || {}).length ? raw.art : games[at].art };
-          updated++;
-        }
-        touched.push(raw.id);
-      }
-      if (!touched.length) throw new Error("None of those games could be used.");
-      checkRoom(games);
-      write(games);
-      const live = applyLive(touched, true);
-      if (!live) restartNeeded = true;
-      return { added, updated, skipped, total: games.length, live, restart: restartNeeded };
-    }
-    // The sites the saved links came from (a link remembers the host of the post it was read from), one line each.
-    function sites() {
-      const found = new Map();
-      for (const raw of readDocument().games) {
-        for (const release of Array.isArray(raw.releases) ? raw.releases : []) {
-          const site = typeof release.site === "string" ? release.site : "";
-          if (!site) continue;
-          const entry = found.get(site) ?? { site, ids: new Set(), links: 0 };
-          entry.ids.add(raw.id);
-          entry.links++;
-          found.set(site, entry);
-        }
-      }
-      return [...found.values()].map(({ site, ids, links }) => ({ site, games: ids.size, links })).sort((a, b) => a.site.localeCompare(b.site));
-    }
-    // Takes a site's links out of every game; a game left with no link goes too. Returns { site, removed, updated,
-    // links, restart } (what was dropped), or null when no link came from that site.
-    function removeSite(site) {
-      const name = String(site || "").toLowerCase();
-      const games = readDocument().games;
-      const next = [];
-      const removed = [], updated = [];
-      let links = 0;
-      for (const raw of games) {
-        const releases = Array.isArray(raw.releases) ? raw.releases : [];
-        const kept = releases.filter((release) => String(release.site || "").toLowerCase() !== name);
-        if (kept.length === releases.length) {
-          next.push(raw);
-          continue;
-        }
-        links += releases.length - kept.length;
-        if (!kept.length) removed.push(raw.id);
-        else {
-          next.push({ ...raw, releases: kept });
-          updated.push(raw.id);
-        }
-      }
-      if (!links) return null;
-      write(next);
-      let live = true;
-      for (const id of removed) {
-        let done = false;
-        for (const listener of removedListeners) {
-          try {
-            if (listener(id) === true) done = true;
-          } catch (error) {
-            console.log(`imported: live removal failed: ${error.message}`);
-          }
-        }
-        if (!done) live = false;
-      }
-      if (updated.length && !applyLive(updated, true)) live = false;
-      if (!live) restartNeeded = true;
-      return { site: name, removed: removed.length, updated: updated.length, links, restart: restartNeeded };
-    }
     // Every saved game in the catalog feed format, so the same file imports back (here or on another console).
     const exportAll = () => ({ version: 1, name: "IRDL library", games: readDocument().games });
-    return { entries, importedIndex, loadImportedGames, detail, exportAll, needsRestart: () => restartNeeded, onRemoved, onSaved, remove, removeSite, save, saveDrafts, saveMany, sites, update };
+    return { entries, importedIndex, loadImportedGames, detail, exportAll, needsRestart: () => restartNeeded, onRemoved, onSaved, remove, save, saveMany, update };
   }
   var store = createImportedStore();
-  var { detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, removeSite, save, saveDrafts, saveMany, sites, update } = store;
+  var { detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update } = store;
 
-export { createImportedStore, detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, removeSite, save, saveDrafts, saveMany, sites, update };
+export { createImportedStore, detail, exportAll, entries, importedIndex, loadImportedGames, needsRestart, onRemoved, onSaved, remove, save, saveMany, update };

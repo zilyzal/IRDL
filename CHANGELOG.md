@@ -3,6 +3,19 @@
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
 files.
 
+## 1.2.12
+
+### Changed
+
+- The Library's tiles fill the whole width of the screen (seven to a row) instead of stopping part of the way.
+- Settings → About: the take-down notice row and the line above it are gone; the rest of the notice is as it was.
+
+### Fixed
+
+- Manage files shows the game's name and cover (by Title ID, or from the download that put the file there) instead of the
+  file or folder name, also for games that are on the console but not added to IRDL. Deleting works as before.
+- In Persian the top bar keeps its English order (left to right), and so does the companion page's bottom bar.
+
 ## 1.2.11
 
 ### Fixed
@@ -15,21 +28,12 @@ files.
 
 ### New
 
-- **IRDL Companion for Android** (`IRDL-Companion.apk`, a file of the release): a native app that looks like the phone page.
-  It finds the console on the Wi-Fi, asks for the PIN once and stays connected, and has Home, Games, Queue, Sites
-  and Settings. It notifies you when a download finishes, fails or needs you, when the console goes away or comes
-  back, and when a site fetch is done.
-- **Site fetcher** (Android app): give it the address of a site's list of games; it reads every page and every post,
-  finds the games and their links (several versions of one game become separate sources on the console's download
-  page), shows the number of pages and games found and asks before adding them. Each added site is listed in the
-  app, and deleting it there removes its games and links from the console too.
 - The link fetcher accepts `.7z`, `.zip` and `.iso` links. Each is one file, like `.pkg` and `.exfat`.
 
 ### Changed
 
 - The game page is a popup card over the store instead of a full page.
 - The release notes no longer carry a checksum table. The app still checks downloads against GitHub's own SHA-256.
-  The release lists `IRDL.exfat`, `update.zip`, then the Android app.
 
 ### Fixed
 

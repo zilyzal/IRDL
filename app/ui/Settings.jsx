@@ -455,21 +455,14 @@ import { FocusScope, Image, Linking, ScrollView, Text, View, motion, useIsFocuse
     ] });
   }
   // The content neutrality and takedown notice (the same text as README.md and LICENSE): what the app is, what it
-  // does not hold, who configures what, and how to report an infringing feed or catalog entry.
+  // does not hold and who configures what.
   function NoticeCard() {
     const t2 = useT();
     return /* @__PURE__ */ (0, jsxs)(View, { scrollAnchor: true, style: CARD, children: [
       /* @__PURE__ */ (0, jsx)(CardHead, { icon: "alert", title: t2("settings.card.legal") }),
       /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.legal.neutral") }),
       /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.legal.nohost") }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.legal.feeds") }),
-      /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.legal.report") }),
-      /* @__PURE__ */ (0, jsx)(Row, { focusKey: "settings:report", name: t2("settings.legal.reportRow"), detail: `github.com/${REPO}/issues`, end: /* @__PURE__ */ (0, jsx)(Icon, { name: "external", color: colors.muted }), onPress: () => {
-        try {
-          Linking.openURL(`https://github.com/${REPO}/issues/new?template=takedown.yml`);
-        } catch {
-        }
-      } })
+      /* @__PURE__ */ (0, jsx)(Text, { style: text(20, colors.muted), children: t2("settings.legal.feeds") })
     ] });
   }
   // ---- The section (0.5.0 Pre Release 3) -------------------------------------------------------------------

@@ -18,7 +18,7 @@ import { colors, radius } from '../ui/colors.js';
 import { px } from '../ui/scale.js';
 import { Text, View, useIsFocused } from '@ps5-react/core';
 
-  var COVER2 = { width: px(36), height: px(48), borderRadius: radius.sm };
+  var COVER2 = { width: 54, height: 72, borderRadius: radius.md };
   var TEXT_WIDTH = 560;
   var ICON_OF = Object.fromEntries(KINDS.map((kind) => [kind.key, kind.icon]));
   function typeOf2(file) {

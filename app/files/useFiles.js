@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { deletionTargets, scanDrive } from './scan.js';
 import { getGame } from '../state/catalog.js';
+import { coverFor, titleFor } from '../state/covers.js';
 import { t } from '../i18n/core.js';
 import { BUSY, DELETABLE } from '../state/download-queue.js';
 import { downloadQueue, shadowMountUp } from '../state/downloads.js';
@@ -150,9 +151,25 @@ import { FileSystem, Http, Packages, Platform } from '@ps5-react/core';
     const rescan = () => setVersion((value) => value + 1);
     const files = (0, useMemo)(() => {
       const installed = installedTitles();
+      let jobs = [];
+      try {
+        jobs = downloadQueue().snapshot();
+      } catch {
+      }
+      // A game the catalog does not list (it is on the drive, not added to IRDL) still shows its name and cover, by
+      // Title ID from the cover list; a file with no Title ID in its name takes the game of the download that put it there.
+      const gameOf = (file) => {
+        const job2 = jobs.find((item) => owned(item).filter(Boolean).some((path) => path === file.path || path.startsWith(`${file.path}/`) || file.path.startsWith(`${path}/`)));
+        const id = file.titleId ?? (job2?.gameId && /^(?:PPSA|CUSA)\d{5}$/.test(job2.gameId) ? job2.gameId : null);
+        if (!id) return null;
+        const found = getGame(id);
+        if (found) return found;
+        const art = coverFor(id);
+        return { id, title: titleFor(id) || job2?.title || file.name, art: art ? { cover: art.cover, coverFallbacks: art.coverFallbacks } : {} };
+      };
       return scanDrive(FileSystem, root2).map((file) => ({
         ...file,
-        game: file.titleId ? getGame(file.titleId) ?? null : null,
+        game: gameOf(file),
         installed: Boolean(!file.backport && file.titleId && installed.has(file.titleId))
       }));
     }, [root2, version2]);

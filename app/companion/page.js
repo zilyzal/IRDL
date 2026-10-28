@@ -86,7 +86,7 @@ button.danger:hover,button.danger:focus-visible{border-color:var(--bad);box-shad
 .drive svg{width:100%;max-width:170px;display:block;margin:0 auto}
 .drive .pct{font-weight:700;font-size:22px;letter-spacing:.04em;margin-top:-30px}
 .drive .name{font-weight:600;margin-top:6px}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:rgba(5,8,17,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+nav{direction:ltr;position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:rgba(5,8,17,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
 nav button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:1px solid transparent;color:var(--subtle);font:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;padding:8px 2px 6px;cursor:pointer;transition:color .2s,border-color .2s,box-shadow .2s}
 nav button svg{width:22px;height:22px;pointer-events:none}
 nav button span{pointer-events:none}

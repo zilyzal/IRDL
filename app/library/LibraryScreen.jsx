@@ -39,9 +39,9 @@ import { colors, radius } from '../ui/colors.js';
 import { EASE_OUT } from '../ui/ease.js';
 import { DeviceInfo, FocusScope, Image, ScrollView, Text, View, motion, useIsFocused } from '@ps5-react/core';
 
-  // The same cards as the store page: 182 wide, covers 3:4 (browse/Catalog.jsx CARD_WIDTH).
-  var PER_ROW = 6, GAP = 36;
-  var TILE = 182;
+  // Tiles fill the row from edge to edge: seven to a row, covers 3:4, the screen's 1920 minus the 48 px margins.
+  var PER_ROW = 7, GAP = 30;
+  var TILE = Math.floor((1920 - 96 - (PER_ROW - 1) * GAP) / PER_ROW);
   var BANNER = Math.round(TILE * 4 / 3);
   var COVER = { width: TILE, height: BANNER };
   var ARM_MS = 4e3;

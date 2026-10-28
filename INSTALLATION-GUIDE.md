@@ -31,13 +31,6 @@ home screen.
 IRDL has its own title ID, so it installs next to Overdrive. If an older IRDL image with
 the same ID is in a `homebrew` folder, remove it first so only one image claims the ID.
 
-## Android companion app
-
-Download `IRDL-Companion.apk` from the same release, open it on your phone (allow installing from your browser or
-file manager when asked) and open **IRDL**. With IRDL open on the console and the phone on the same Wi-Fi, the app
-finds the console by itself and asks for the PIN (Settings → Phone companion) once. It also adds a whole site's
-games from the **Sites** tab. Nothing here has been tested on a real console.
-
 ## Updating
 
 - **From 0.4.1 on,** the app updates itself: a badge with the new version appears in the top bar. Select

@@ -60,8 +60,8 @@ import { colors, radius } from './colors.js';
   }
   var dockArrived = false;
   // Where the island's JL mark sits on screen (dock-mark.js), for the store's reveal to fly its mark to. The
-  // island is centered, so its width (the language, an update badge) moves it; in a right-to-left language the
-  // logo is at the island's right end. The inset: the island's and the home button's padding, half the mark.
+  // island is centered, so its width (the language, an update badge) moves it; the island keeps its left-to-right order in every language, so the
+  // logo is at its left end. The inset: the island's and the home button's padding, half the mark.
   var DOCK_MARK_H = px(34);
   var MARK_INSET = 18 + 18 + Math.round(DOCK_MARK_H * 1.5) / 2;
   Object.assign(dockMark, { y: DOCK_TOP + DOCK_HEIGHT / 2, height: DOCK_MARK_H });
@@ -118,8 +118,8 @@ import { colors, radius } from './colors.js';
       }, style: immersive ? { position: "absolute", left: 0, right: 0, top: DOCK_TOP, zIndex: 40, display: "none" } : { position: "absolute", left: 0, right: 0, top: DOCK_TOP, zIndex: 40, alignItems: "center" }, children: /* @__PURE__ */ (0, jsx)(FocusScope, { focusKey: "header", inert: immersive, onBack: dockBack, children: /* @__PURE__ */ (0, jsxs)(View, { onLayout: (event) => {
         track("header")(event);
         const { x, width } = event.layout;
-        dockMark.x = rtl ? x + width - MARK_INSET : x + MARK_INSET;
-      }, style: { height: DOCK_HEIGHT, flexDirection: "row", alignItems: "center", gap: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.glassEdge, backgroundColor: colors.surface, paddingHorizontal: 18 }, children: [
+        dockMark.x = x + MARK_INSET;
+      }, style: { direction: "ltr", height: DOCK_HEIGHT, flexDirection: "row", alignItems: "center", gap: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.glassEdge, backgroundColor: colors.surface, paddingHorizontal: 18 }, children: [
         /* @__PURE__ */ (0, jsx)(NavPill, { section, layouts }),
         /* @__PURE__ */ (0, jsxs)(View, { focusKey: "nav:home", onPress: on.discover, nextFocusDown: down, style: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: radius.md, paddingHorizontal: 18, height: 60 }, children: [
           /* @__PURE__ */ (0, jsx)(FocusRing, { round: "full" }),
@@ -141,7 +141,7 @@ import { colors, radius } from './colors.js';
         update ? /* @__PURE__ */ (0, jsx)(UpdateNavItem, { update, down }) : null,
         // MODIFIED (0.5.0 Pre Release 3): Settings is a section like the others (ui/Settings.jsx), not a
         // screen over the page.
-        item("settings", { icon: "settings", caption: t2("settings.title"), onPress: on.settings, ...focusEnd(rtl, keyOf("settings")) }),
+        item("settings", { icon: "settings", caption: t2("settings.title"), onPress: on.settings, ...focusEnd(false, keyOf("settings")) }),
         /* @__PURE__ */ (0, jsx)(ButtonGlyph, { button: "r1" })
       ] }) }) })
     ] });

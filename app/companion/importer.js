@@ -113,10 +113,6 @@ import { buildGame, checkPageURL, titleIdFromLinks, mergePasted, parsePage, plan
       upload: (games) => store.saveMany(games),
       detail: (id) => store.detail(id),
       exportLibrary: () => store.exportAll(),
-      // The Android app's crawler: games a few at a time, the sites they came from, and a site taken out again.
-      uploadDrafts: (drafts) => store.saveDrafts(drafts),
-      sites: () => ({ sites: store.sites(), restart: store.needsRestart() }),
-      removeSite: (site) => store.removeSite(site),
       edit: (id, spec) => store.update(id, spec),
       // Exposed for tests: the same checks a save applies, without writing anything.
       check: (draft) => buildGame(draft)

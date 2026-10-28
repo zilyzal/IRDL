@@ -25,9 +25,6 @@
 //   POST   /api/import/catalog {games:[…]}  adds feed games (a few per request) to the store and the running catalog
 //   GET    /api/import/game?id=            one saved game for editing (title, batches, links)
 //   POST   /api/import/edit {id,title,batches,…} applies the edits
-//   POST   /api/import/site-games {games:[draft…]}  keeps a site's games a few per request (the Android app)
-//   GET    /api/import/sites               the sites the saved links came from, with their game and link counts
-//   DELETE /api/import/site?site=          takes a site's links (and the games left empty) out
 //   GET    /api/import/library             the games saved this way
 //   DELETE /api/import/library?id=         removes one
 
@@ -191,23 +188,6 @@
         } catch (error) {
           return failure(409, error.message);
         }
-      },
-      "POST /api/import/site-games": (request) => {
-        if (!importer) return failure(404, "Unknown request.");
-        const body = bodyOf(request);
-        if (!body || !Array.isArray(body.games) || !body.games.length) return failure(400, "Send {\"games\": [ … ]}.");
-        try {
-          return json(200, importer.uploadDrafts(body.games.slice(0, 40)));
-        } catch (error) {
-          return failure(409, error.message);
-        }
-      },
-      "GET /api/import/sites": () => importer ? json(200, importer.sites()) : failure(404, "Unknown request."),
-      "DELETE /api/import/site": (request) => {
-        if (!importer) return failure(404, "Unknown request.");
-        const removed = importer.removeSite(params(request.query).site || "");
-        if (!removed) return failure(404, "No links from that site.");
-        return json(200, { ...removed, ...importer.sites() });
       },
       "GET /api/import/export": () => importer ? json(200, importer.exportLibrary()) : failure(404, "Unknown request."),
       "GET /api/import/lookup": (request) => importer ? json(200, importer.lookup(params(request.query).id || "")) : failure(404, "Unknown request."),
