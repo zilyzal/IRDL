@@ -59,7 +59,7 @@ textarea.field:focus{border-color:var(--ice);box-shadow:0 0 0 3px rgba(76,201,24
 <div class="label" style="margin-top:0">Import a game <span>from a post page</span></div>
 <textarea class="field" id="impInput" rows="3" placeholder="Paste a post's address, download links (any order, one per line), or both" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
 <div class="row" style="margin-top:8px"><button class="btn primary grow" id="impGo">Fetch</button><button class="btn" id="impClear" type="button">Clear</button></div>
-<p class="subtle" style="margin:10px 0 0">The console reads the page for the title, Title ID, cover and download links (.rar, .pkg, .exfat, .ffpfsc), and sorts any links you paste into their parts. You pick which batch to keep.</p>
+<p class="subtle" style="margin:10px 0 0">The console reads the page for the title, Title ID, cover and download links (.rar, .7z, .zip, .iso, .pkg, .exfat, .ffpfsc), and sorts any links you paste into their parts. You pick which batch to keep.</p>
 <div class="subtle" id="impStatus" style="margin-top:10px" role="status"></div>
 </div>
 <div id="impEditor" hidden>

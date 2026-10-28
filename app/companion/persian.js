@@ -31,7 +31,7 @@ html[lang=fa] .label,html[lang=fa] .subtle,html[lang=fa] .stat span{letter-spaci
     "Back": "بازگشت", "Options": "گزینه‌ها",
     "Search": "جستجو", "Settings": "تنظیمات", "Import": "درون‌ریزی", "Games": "بازی‌ها", "Queue": "صف",
     "Import a game": "درون‌ریزی بازی", "from a post page": "از صفحه پست", "Fetch": "دریافت", "Clear": "پاک کردن",
-    "The console reads the page for the title, Title ID, cover and download links (.rar, .pkg, .exfat, .ffpfsc), and sorts any links you paste into their parts. You pick which batch to keep.": "کنسول صفحه را برای عنوان، Title ID و لینک‌های دانلود (rar، pkg، exfat، ffpfsc) می‌خواند و لینک‌های چسبانده‌شده را به پارت‌ها مرتب می‌کند. شما انتخاب می‌کنید کدام دسته بماند.",
+    "The console reads the page for the title, Title ID, cover and download links (.rar, .7z, .zip, .iso, .pkg, .exfat, .ffpfsc), and sorts any links you paste into their parts. You pick which batch to keep.": "کنسول صفحه را برای عنوان، Title ID و لینک‌های دانلود (rar، pkg، exfat، ffpfsc) می‌خواند و لینک‌های چسبانده‌شده را به پارت‌ها مرتب می‌کند. شما انتخاب می‌کنید کدام دسته بماند.",
     "The cover is found from the Title ID": "کاور از روی Title ID پیدا می‌شود", "Title": "عنوان", "Title ID": "Title ID", "Batches": "دسته‌ها",
     "Cancel": "لغو", "Save": "ذخیره", "Saved.": "ذخیره شد.",
     "Close and reopen IRDL on the console to see the changes in the store.": "برای دیدن تغییرات، IRDL را روی کنسول ببندید و دوباره باز کنید.",

@@ -507,3 +507,34 @@ test('import: .pkg, .exfat and .ffpfsc links are found, single or several, and a
   assert.deepEqual(formats, ['exfat', 'ffpfsc', 'pkg', 'pkg', 'pkg']);
   assert.ok(game.releases.every((release) => !/\bpart\s*\d+\b/i.test(release.label)), 'no label says "part N", so none is grouped as archive volumes');
 });
+
+test('import: .7z, .zip and .iso links are found and kept as single files', () => {
+  const links = [
+    'https://pixeldrain.com/u/aaaa1111  Some.Game.PPSA01234.v1.00.7z',
+    'https://pixeldrain.com/u/bbbb2222  Some.Game.PPSA01234.v1.05.zip',
+    'https://gofile.io/d/cccc3333  Some.Game.PPSA01234.iso'
+  ].join('\n');
+  const found = parsePage(links, '', { assumeRar: true });
+  const game = buildGame({ id: 'PPSA01234', title: 'Some Game', batches: found.batches.map((batch) => ({ ...batch })) });
+  assert.deepEqual(game.releases.map((release) => [release.format, release.filename.split('.').pop()]).sort(), [['7z', '7z'], ['binary', 'iso'], ['zip', 'zip']]);
+});
+
+test('api: a site\'s games are kept in one write, listed by site, and taken out again with the site', () => {
+  const store = memoryStore();
+  const importer = createImporter({ http: {}, store });
+  const base = { catalog: {}, describe: () => ({}), download: () => ({}), queue: () => [], control: {}, storage: () => [], feeds: { list: () => [] }, remote: () => {}, quick: () => {}, info: () => ({}), importer };
+  const handle = createCompanionApi(base);
+  const answer = (res) => ({ status: res.status, body: JSON.parse(res.body) });
+  const draft = (id, title, url, from) => ({ id, title, sourceUrl: from, batches: [{ key: `v:${id}`, label: 'v1.00', hosts: [{ host: 'pixeldrain', links: [{ url, part: 1, filename: `${title}.part1.rar` }] }] }] });
+  const first = answer(handle(request('POST', '/api/import/site-games', { games: [draft('PPSA00001', 'One', 'https://pixeldrain.com/u/aaa', 'https://alpha.test/post/1'), draft('PPSA00002', 'Two', 'https://pixeldrain.com/u/bbb', 'https://alpha.test/post/2'), { id: 'bad' }] })));
+  assert.equal(first.status, 200);
+  assert.deepEqual([first.body.added, first.body.updated, first.body.skipped], [2, 0, 1]);
+  // Another site adds a batch to a game that is already there: both batches stay as sources.
+  const second = answer(handle(request('POST', '/api/import/site-games', { games: [draft('PPSA00001', 'One', 'https://pixeldrain.com/u/ccc', 'https://beta.test/p/9')] })));
+  assert.deepEqual([second.body.added, second.body.updated], [0, 1]);
+  assert.deepEqual(answer(handle(request('GET', '/api/import/sites'))).body.sites, [{ site: 'alpha.test', games: 2, links: 2 }, { site: 'beta.test', games: 1, links: 1 }]);
+  assert.equal(answer(handle(request('DELETE', '/api/import/site?site=nope.test'))).status, 404);
+  const gone = answer(handle(request('DELETE', '/api/import/site?site=alpha.test')));
+  assert.deepEqual([gone.body.removed, gone.body.updated, gone.body.links], [1, 1, 2]);
+  assert.deepEqual(answer(handle(request('GET', '/api/import/library'))).body.games.map((game) => [game.id, game.links]), [['PPSA00001', 1]]);
+});

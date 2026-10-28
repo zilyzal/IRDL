@@ -93,4 +93,4 @@ import { colors, radius } from '../ui/colors.js';
     ] });
   }
 
-export { GameHero };
+export { Backdrop, GameHero, Meta };
