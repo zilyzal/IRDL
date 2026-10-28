@@ -459,7 +459,7 @@ class AppModel(application: Application) : AndroidViewModel(application) {
     }
 
     // ---- settings -----------------------------------------------------------------------------------------
-    fun setAlerts(value: Boolean) {
+    fun changeAlerts(value: Boolean) {
         Prefs.alerts = value
         alerts = value
     }

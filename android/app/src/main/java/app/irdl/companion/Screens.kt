@@ -454,7 +454,7 @@ fun SettingsScreen(model: AppModel) {
                     Text("Tell me what happens", color = Ink.fg, fontSize = 15.sp)
                     Note("Downloads that finish, fail or need you, the console going away or coming back, and site fetches.", Ink.subtle)
                 }
-                Switch(model.alerts, { model.setAlerts(it) }, colors = SwitchDefaults.colors(checkedTrackColor = Ink.ice, checkedThumbColor = Ink.canvas))
+                Switch(model.alerts, { model.changeAlerts(it) }, colors = SwitchDefaults.colors(checkedTrackColor = Ink.ice, checkedThumbColor = Ink.canvas))
             }
         }
         Panel {
