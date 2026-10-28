@@ -4,3 +4,9 @@ homebrew/cache.json
 
 # Python bytecode from the brand scripts
 __pycache__/
+
+# Android build output
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties

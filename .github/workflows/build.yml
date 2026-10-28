@@ -111,6 +111,60 @@ jobs:
             ps5-react/dist/PPSA99573.receipt.json
           if-no-files-found: error
 
+  # The Android companion app (android/): one signed APK, built in parallel with the console app.
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Build the APK
+        working-directory: android
+        run: gradle --no-daemon --stacktrace assembleRelease
+
+      - name: Name the APK
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk IRDL-Companion.apk
+          ls -l IRDL-Companion.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IRDL-Companion
+          path: IRDL-Companion.apk
+          if-no-files-found: error
+
+  release:
+    # The console app's release does not wait on the Android app failing: without its APK the draft simply has none.
+    needs: [ps5, android]
+    if: ${{ !cancelled() && needs.ps5.result == 'success' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: IRDL
+          path: files
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: IRDL-Companion
+          path: files
+
       - name: Draft release
         # Only people with write access see a draft, and the in-app update check
         # (releases/latest) never returns one, so a test build reaches nobody else.
@@ -123,25 +177,25 @@ jobs:
           version=$(sed -n 's/.*var VERSION = "\([^"]*\)".*/\1/p' app/version.js)
           test -n "$version" || { echo "no VERSION in app/version.js" >&2; exit 1; }
           tag="v$version"
-          # Both files: an installed copy installs a release only when it can check both.
-          assets="IRDL.exfat update.zip"
+          # The two files an installed copy checks (IRDL.exfat and update.zip), and the Android app, which it ignores.
+          assets="files/IRDL.exfat files/update.zip"
+          apk=""
+          if [ -f files/IRDL-Companion.apk ]; then assets="$assets files/IRDL-Companion.apk"; apk="--apk"; else echo "::warning::no Android APK in this build"; fi
           # The notes are this version's section of CHANGELOG.md (tools/release-notes.mjs); a version with none says
           # it is a test build.
-          notes() { node tools/release-notes.mjs "$version" "$@" 2>/dev/null || echo "Test build of $GITHUB_SHA."; }
+          notes() { node tools/release-notes.mjs "$version" $apk 2>/dev/null || echo "Test build of $GITHUB_SHA."; }
           draft=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
             --jq ".[] | select(.tag_name == \"$tag\") | .draft")
           case "$draft" in
             "")
               gh release create "$tag" $assets --draft --target "$GITHUB_SHA" \
-                --title "IRDL $tag" --notes "$(notes --no-sums)" ;;
+                --title "IRDL $tag" --notes "$(notes)" ;;
             true)
-              gh release edit "$tag" --target "$GITHUB_SHA" --notes "$(notes --no-sums)"
+              gh release edit "$tag" --target "$GITHUB_SHA" --notes "$(notes)"
               gh release upload "$tag" $assets --clobber ;;
             *)
               echo "$tag is already published: raise the version in app/version.js" >&2
               exit 1 ;;
           esac
-          # With the files' checksums, now that they are uploaded.
-          gh release edit "$tag" --notes "$(notes)"
           gh release view "$tag" --json isDraft,tagName,assets \
             --jq '"\(.tagName) draft=\(.isDraft) " + ([.assets[] | "\(.name) \(.size)"] | join(", "))'

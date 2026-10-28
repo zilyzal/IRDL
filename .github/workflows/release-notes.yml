@@ -1,7 +1,7 @@
 name: release notes
 
 # Rewrites the notes of every release (drafts and published) from CHANGELOG.md, with each release's
-# checksums. Run it after editing the changelog. A release whose version has no changelog section is left as it is.
+# download links. Run it after editing the changelog. A release whose version has no changelog section is left as it is.
 on:
   workflow_dispatch:
 
@@ -21,7 +21,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api "repos/$GITHUB_REPOSITORY/releases" --paginate --jq '.[].tag_name' | while read -r tag; do
-            if notes=$(node tools/release-notes.mjs "$tag"); then
+            apk=""
+            gh release view "$tag" --json assets --jq '.assets[].name' | grep -qx 'IRDL-Companion.apk' && apk="--apk"
+            if notes=$(node tools/release-notes.mjs "$tag" $apk); then
               gh release edit "$tag" --notes "$notes" && echo "updated $tag"
             else
               echo "skipped $tag (no changelog section)"

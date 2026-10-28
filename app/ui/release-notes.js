@@ -1,5 +1,5 @@
 // A release's notes as the update dialog shows them: the changelog section's headings and bullets, without
-// the markdown around them (bold marks, code ticks, links), the release title and the checksum table.
+// the markdown around them (bold marks, code ticks, links), the release title and the downloads list (and the checksum table older releases carry).
 // Returns rows: { head: "New" } for a heading, { item: "text" } for a bullet. `max` rows at most; `more` is
 // how many were left out.
 
@@ -18,7 +18,7 @@
     };
     for (const raw of String(body ?? "").split("\n")) {
       const line = raw.trimEnd();
-      if (/^#{1,3}\s*checksums\b/i.test(line.trim())) break;
+      if (/^#{1,3}\s*(?:checksums|downloads)\b/i.test(line.trim())) break;
       if (/^#{1,2}\s/.test(line.trim())) continue;
       const head = /^###\s+(.+)$/.exec(line.trim());
       if (head) {

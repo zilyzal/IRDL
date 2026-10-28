@@ -268,7 +268,7 @@ import { webURL } from './download-sources.js';
   var norm = (value) => squash(value).toLowerCase().replace(/[^a-z0-9.]+/g, " ").trim();
   var slug = (value) => squash(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "set";
   var RAR_HINT = /\.rar\b|\.r\d{2}\b|\bpart\s*0*\d+|\.part0*\d+\b|\brar\b|\.(?:pkg|exfat|ffpfsc|7z|zip|iso)\b/i;
-  var FILE_NAME = /([^\s/\\"'<>|?*:]+?\.(?:part0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc|7z|zip|iso))(?![a-z0-9])/i;
+  var FILE_NAME = /([^\s/\\"'<>|?*:]+?\.(?:part0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc|7z|zip|iso))(?![a-z0-9]|\.(?:part0*\d+\.)?(?:rar|r\d{2}|pkg|exfat|ffpfsc|7z|zip|iso)(?![a-z0-9]))/i;
   // The label a link's own surroundings give a batch: its heading text without host names, sizes and ids.
   function labelOf(text) {
     let label = squash(text)
@@ -357,15 +357,8 @@ import { webURL } from './download-sources.js';
   }
 
   function fileNameOf(link) {
-    for (const source of [link.text, link.title]) {
-      const match = FILE_NAME.exec(source || "");
-      if (match) return match[1];
-    }
-    // "url  Game.part1.rar": a file name typed next to the link counts when the line holds that one link.
-    if (link.lineLinks === 1) {
-      const match = FILE_NAME.exec(link.lineText || "");
-      if (match) return match[1];
-    }
+    // The address's own file name is what the host will serve, so it wins over a name mentioned in the text around it
+    // ("Game.exfat" in a line above a "Game.part1.rar" link must not turn the rar into an exfat).
     try {
       const path = webURL(link.url).path.split(/[?#]/)[0];
       for (const piece of path.split("/").reverse()) {
@@ -378,6 +371,15 @@ import { webURL } from './download-sources.js';
         if (match) return match[1];
       }
     } catch {
+    }
+    for (const source of [link.text, link.title]) {
+      const match = FILE_NAME.exec(source || "");
+      if (match) return match[1];
+    }
+    // "url  Game.part1.rar": a file name typed next to the link counts when the line holds that one link.
+    if (link.lineLinks === 1) {
+      const match = FILE_NAME.exec(link.lineText || "");
+      if (match) return match[1];
     }
     return "";
   }

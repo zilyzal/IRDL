@@ -1,7 +1,31 @@
 # Changelog
 
 What changed in each version of IRDL. Each [release](https://github.com/zilyzal/IRDL/releases) carries its
-files and their SHA-256 checksums.
+files.
+
+## 1.2.10
+
+### New
+
+- **IRDL Companion for Android** (`IRDL-Companion.apk`, under Downloads): a native app that looks like the phone page.
+  It finds the console on the Wi-Fi, asks for the PIN once and stays connected, and has Home, Games, Queue, Sites
+  and Settings. It notifies you when a download finishes, fails or needs you, when the console goes away or comes
+  back, and when a site fetch is done.
+- **Site fetcher** (Android app): give it the address of a site's list of games; it reads every page and every post,
+  finds the games and their links (several versions of one game become separate sources on the console's download
+  page), shows the number of pages and games found and asks before adding them. Each added site is listed in the
+  app, and deleting it there removes its games and links from the console too.
+- The link fetcher accepts `.7z`, `.zip` and `.iso` links. Each is one file, like `.pkg` and `.exfat`.
+
+### Changed
+
+- The game page is a popup card over the store instead of a full page.
+- The release notes list the download links (the console image, then the Android app) and no longer carry a
+  checksum table. The app still checks downloads against GitHub's own SHA-256.
+
+### Fixed
+
+- A link that ends in `.rar` stays a RAR even when `.exfat` is mentioned in the text around it or in its name.
 
 ## 1.2.9
 

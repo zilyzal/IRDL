@@ -508,6 +508,25 @@ test('import: .pkg, .exfat and .ffpfsc links are found, single or several, and a
   assert.ok(game.releases.every((release) => !/\bpart\s*\d+\b/i.test(release.label)), 'no label says "part N", so none is grouped as archive volumes');
 });
 
+test('import: a .rar link stays a rar when .exfat is mentioned around it', () => {
+  const html = `<html><body><h1>Some Game PPSA01234</h1>
+    <p>Also available as Some.Game.PPSA01234.exfat below</p>
+    <p><a href="https://host.test/files/Some.Game.PPSA01234.part1.rar">Some.Game.PPSA01234.exfat</a></p>
+    <p><a href="https://host.test/files/Some.Game.PPSA01234.part2.rar">Some.Game.PPSA01234.exfat</a></p>
+    <p><a href="https://host.test/files/Some.Game.exfat.part3.rar">download</a></p>
+    <p><a href="https://host.test/files/Some.Game.PPSA01234.exfat">download</a></p></body></html>`;
+  const found = parsePage(html, 'https://site.test/post/');
+  const names = found.batches.flatMap((batch) => batch.hosts.flatMap((host) => host.links.map((link) => link.filename))).sort();
+  assert.deepEqual(names, [
+    'Some.Game.PPSA01234.exfat', 'Some.Game.PPSA01234.part1.rar', 'Some.Game.PPSA01234.part2.rar', 'Some.Game.exfat.part3.rar'
+  ]);
+  const game = buildGame({ id: 'PPSA01234', title: 'Some Game', batches: found.batches.map((batch) => ({ ...batch })) });
+  const formats = Object.fromEntries(game.releases.map((release) => [release.filename, release.format]));
+  assert.equal(formats['Some.Game.PPSA01234.part1.rar'], 'rar');
+  assert.equal(formats['Some.Game.exfat.part3.rar'], 'rar');
+  assert.equal(formats['Some.Game.PPSA01234.exfat'], 'exfat');
+});
+
 test('import: .7z, .zip and .iso links are found and kept as single files', () => {
   const links = [
     'https://pixeldrain.com/u/aaaa1111  Some.Game.PPSA01234.v1.00.7z',
