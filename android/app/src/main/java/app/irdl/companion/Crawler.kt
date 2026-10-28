@@ -185,9 +185,9 @@ class SiteCrawler(startUrl: String, private val report: (CrawlProgress) -> Unit)
     }
 
     private fun postLinks(doc: Document, visited: Set<String>): List<String> {
-        val inCards = doc.select(CARDS).filter { !hidden(it) }.mapNotNull { candidate(it.absUrl("href"), visited) }.distinct()
+        val inCards = doc.select(CARDS).toList().filter { !hidden(it) }.mapNotNull { candidate(it.absUrl("href"), visited) }.distinct()
         if (inCards.isNotEmpty()) return inCards
-        return doc.select("a[href]").filter { !hidden(it) }.mapNotNull { candidate(it.absUrl("href"), visited) }.distinct()
+        return doc.select("a[href]").toList().filter { !hidden(it) }.mapNotNull { candidate(it.absUrl("href"), visited) }.distinct()
     }
 
     private fun nextPage(doc: Document, current: String, number: Int, visited: Set<String>, postCount: Int): String? {
